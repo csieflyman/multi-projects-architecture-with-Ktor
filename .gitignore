@@ -1,0 +1,14 @@
+/.gradle
+/.idea
+/out
+/build
+*.iml
+*.ipr
+*.iws
+/src/dist
+/deploy/config/local
+/swagger-ui
+/node_modules
+/postman/**/*-openapi.json
+/postman/**/*-collection.json
+/postman/**/report

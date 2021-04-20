@@ -1,0 +1,29 @@
+{
+  "environment": {
+    "id": "84a119b6-f4b1-9120-5f11-a73b17818d70",
+    "name": "localhost",
+    "values": [
+      {
+        "key": "baseUrl",
+        "value": "http://localhost:9000/club",
+        "type": "text",
+        "enabled": true,
+        "hovered": false
+      },
+      {
+        "key": "X-API-KEY",
+        "value": "???",
+        "type": "text",
+        "enabled": true,
+        "hovered": false
+      },
+      {
+        "key": "sid",
+        "value": "???",
+        "type": "text",
+        "enabled": true,
+        "hovered": false
+      }
+    ]
+  }
+}
