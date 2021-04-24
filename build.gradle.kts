@@ -150,8 +150,8 @@ tasks {
         kotlinOptions.languageVersion = "1.4"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
-        kotlinOptions.freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn",
-            "-Xopt-in=kotlin.ExperimentalStdlibApi") // RequiresOptIn work?
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalStdlibApi"
         //kotlinOptions.useIR = true (1.4 in Alpha)
     }
     compileTestKotlin {
@@ -196,7 +196,7 @@ tasks.determineGitVersion {
 
 gitVersion {
     rules {
-        val branches = listOf("dev", "stage", "prod")
+        val branches = listOf("dev", "main")
         branches.forEach { branch ->
             onBranch(branch) {
                 setVersionByTag(this, branch)
@@ -206,7 +206,7 @@ gitVersion {
 }
 
 fun setVersionByTag(ruleContext: org.unbrokendome.gradle.plugins.gitversion.core.RuleContext, branch: String) {
-    val tagPrefix = if (branch == "prod") "" else "$branch-"
+    val tagPrefix = if (branch == "main") "" else "$branch-"
     val tag = ruleContext.findLatestTag("""${tagPrefix}(\d+)\.(\d+)\.(\d+)""".toPattern())
     if (tag != null) {
         with(ruleContext.version) {
