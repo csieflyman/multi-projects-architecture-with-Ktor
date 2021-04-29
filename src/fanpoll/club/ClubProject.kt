@@ -11,7 +11,7 @@ import fanpoll.infra.ProjectConfig
 import fanpoll.infra.auth.*
 import fanpoll.infra.controller.receiveUTF8Text
 import fanpoll.infra.database.myTransaction
-import fanpoll.infra.openapi.support.OpenApi
+import fanpoll.infra.openapi.ProjectOpenApi
 import io.ktor.request.path
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.select
@@ -24,12 +24,12 @@ object ClubConst {
     const val urlRootPath = "/club"
 }
 
-private val openApi = OpenApi(
+private val openApi = ProjectOpenApi(
     ClubConst.projectId,
     ClubConst.urlRootPath,
     ClubAuth.allAuthSchemes,
-    ClubOpenApiRoutes.all(),
-    ClubReusableComponents
+    ClubOpenApiOperations.all(),
+    ClubComponents
 )
 
 val ClubProject = object : Project(

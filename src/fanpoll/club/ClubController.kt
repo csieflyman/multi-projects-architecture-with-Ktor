@@ -5,14 +5,14 @@
 
 package fanpoll.club
 
-import fanpoll.club.ClubOpenApiRoutes.CreateUser
-import fanpoll.club.ClubOpenApiRoutes.DynamicReport
-import fanpoll.club.ClubOpenApiRoutes.FindUsers
-import fanpoll.club.ClubOpenApiRoutes.Login
-import fanpoll.club.ClubOpenApiRoutes.Logout
-import fanpoll.club.ClubOpenApiRoutes.PushNotification
-import fanpoll.club.ClubOpenApiRoutes.UpdateMyPassword
-import fanpoll.club.ClubOpenApiRoutes.UpdateUser
+import fanpoll.club.ClubOpenApiOperations.CreateUser
+import fanpoll.club.ClubOpenApiOperations.DynamicReport
+import fanpoll.club.ClubOpenApiOperations.FindUsers
+import fanpoll.club.ClubOpenApiOperations.Login
+import fanpoll.club.ClubOpenApiOperations.Logout
+import fanpoll.club.ClubOpenApiOperations.PushNotification
+import fanpoll.club.ClubOpenApiOperations.UpdateMyPassword
+import fanpoll.club.ClubOpenApiOperations.UpdateUser
 import fanpoll.club.features.*
 import fanpoll.infra.DataResponse
 import fanpoll.infra.HttpStatusResponse
@@ -23,7 +23,10 @@ import fanpoll.infra.database.dynamicDBQuery
 import fanpoll.infra.login.AppLoginForm
 import fanpoll.infra.login.LoginResponse
 import fanpoll.infra.notification.NotificationSender
-import fanpoll.infra.openapi.support.*
+import fanpoll.infra.openapi.dynamicQuery
+import fanpoll.infra.openapi.post
+import fanpoll.infra.openapi.postEmptyBody
+import fanpoll.infra.openapi.put
 import fanpoll.infra.respondMyResponse
 import fanpoll.ops.OpsAuth
 import io.ktor.application.call
@@ -49,7 +52,7 @@ fun Routing.club() {
                     call.respond(DataResponse.uuid(id))
                 }
 
-                putLocation<UUIDEntityIdLocation, UpdateUserForm, Unit>(UpdateUser) { _, dto ->
+                put<UUIDEntityIdLocation, UpdateUserForm, Unit>(UpdateUser) { _, dto ->
                     UserService.updateUser(dto)
                     call.respond(HttpStatusCode.OK)
                 }
@@ -66,7 +69,7 @@ fun Routing.club() {
                 call.respond(DataResponse.uuid(message.id))
             }
 
-            post<ClubDynamicReportForm, Unit>("/data/export", DynamicReport) { dto ->
+            post<ClubDynamicReportForm, UUID>("/data/export", DynamicReport) { dto ->
                 val message = ClubNotificationTypes.DynamicReport.buildChannelMessage(dto)
                 //val message = NotificationCmdMessage.create(ClubNotificationTypes.DynamicReport, dto)
                 NotificationSender.sendAsync(message)

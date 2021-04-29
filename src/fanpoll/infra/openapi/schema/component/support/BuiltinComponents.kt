@@ -1,27 +1,23 @@
 /*
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
-package fanpoll.infra.openapi.definition
+
+package fanpoll.infra.openapi.schema.component.support
 
 import fanpoll.infra.*
 import fanpoll.infra.app.AppVersion
-import fanpoll.infra.auth.ClientVersionCheckResult
-import fanpoll.infra.auth.HEADER_CLIENT_VERSION
-import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
-import fanpoll.infra.auth.RunAsAuth.RUN_AS_TOKEN_HEADER_NAME
-import fanpoll.infra.auth.RunAsAuthProviderConfig
+import fanpoll.infra.auth.*
 import fanpoll.infra.openapi.OpenApiConfig
-import fanpoll.infra.openapi.definition.ComponentsUtils.createDataResponse
+import fanpoll.infra.openapi.schema.operation.definitions.*
+import fanpoll.infra.openapi.schema.operation.support.Example
+import fanpoll.infra.openapi.schema.operation.support.Schema
+import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
+import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
 import fanpoll.infra.utils.I18nUtils
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 
-interface ReusableComponents {
-
-    fun loadReferenceObjects(): List<ReferenceObject>
-}
-
-object DefaultReusableComponents : ReusableComponents {
+object BuiltinComponents : ComponentLoader {
 
     // ==================== Schemas ====================
 
@@ -51,9 +47,9 @@ object DefaultReusableComponents : ReusableComponents {
         ).map { it.valuePair() }.toMap()
         return ModelDef(
             ResponseCode::class.simpleName!!, requiredProperties, properties,
-            ComponentsUtils.buildResponseCodesDescription(ResponseCode.values().toList())
+            ResponseUtils.buildResponseCodesDescription(ResponseCode.values().toList())
         ).also {
-            it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }
 
@@ -72,7 +68,7 @@ object DefaultReusableComponents : ReusableComponents {
             ErrorResponseDetailError::class.simpleName!!, requiredProperties, properties,
             kClass = ErrorResponseDetailError::class
         ).also {
-            it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
         val arrayModelDef = ArrayModelDef(
             "${ErrorResponseDetailError::class.simpleName!!}Array", modelDef,
@@ -98,7 +94,7 @@ object DefaultReusableComponents : ReusableComponents {
         ).map { it.valuePair() }.toMap()
 
         return ModelDef(ErrorResponse::class.simpleName!!, requiredProperties, properties, kClass = ErrorResponse::class).also {
-            it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }
 
@@ -119,12 +115,12 @@ object DefaultReusableComponents : ReusableComponents {
                     ArrayModelDef("items", itemSchema),
                 ).map { it.valuePair() }.toMap()
             ).also {
-                it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+                it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
             }
         ).map { it.valuePair() }.toMap()
 
         return ModelDef("DynamicQueryPagingResponse-${itemSchema.name}", requiredProperties, properties).also {
-            it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }
 
@@ -139,7 +135,7 @@ object DefaultReusableComponents : ReusableComponents {
         ).map { it.valuePair() }.toMap()
 
         return ModelDef("DynamicQueryItemsResponse-${itemSchema.name}", requiredProperties, properties).also {
-            it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }
 
@@ -156,7 +152,7 @@ object DefaultReusableComponents : ReusableComponents {
         ).map { it.valuePair() }.toMap()
 
         return ModelDef("DynamicQueryTotalResponse", requiredProperties, properties).also {
-            it.properties.values.forEach { property -> (property.definition as SchemaDef).parent = it }
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }
 
@@ -168,7 +164,7 @@ object DefaultReusableComponents : ReusableComponents {
     // ==================== Parameter Schema ====================
 
     private val runAsTokenSchema = PropertyDef(
-        RUN_AS_TOKEN_HEADER_NAME, SchemaDataType.string,
+        RunAsAuth.RUN_AS_TOKEN_HEADER_NAME, SchemaDataType.string,
         description = RunAsAuthProviderConfig.tokenPatternDescription
     )
 
@@ -193,7 +189,7 @@ object DefaultReusableComponents : ReusableComponents {
 
     // ==================== Headers ====================
 
-    private val ClientVersionCheckResultResponseHeader = HeaderDef(
+    private val ClientVersionCheckResultResponseHeader = HeaderObject(
         true, ClientVersionCheckResultSchema
     ).createRef()
 
@@ -205,9 +201,9 @@ object DefaultReusableComponents : ReusableComponents {
 
     // ===== Parameters(Header) ======
 
-    private val RunAsOptionalHeader = ParameterDef(ParameterInputType.header, false, runAsTokenSchema).createRef()
+    private val RunAsOptionalHeader = ParameterObject(ParameterInputType.header, false, runAsTokenSchema).createRef()
 
-    val ClientVersionOptionalHeader = ParameterDef(ParameterInputType.header, false, ClientVersionSchema).createRef()
+    val ClientVersionOptionalHeader = ParameterObject(ParameterInputType.header, false, ClientVersionSchema).createRef()
 
     private val headerParameterList: List<ReferenceObject> = listOf(
         RunAsOptionalHeader, ClientVersionOptionalHeader
@@ -216,39 +212,39 @@ object DefaultReusableComponents : ReusableComponents {
     // ===== Parameters(Query) ======
 
     val DynamicQueryParameters: List<ReferenceObject> = listOf(
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false,
             PropertyDef("q_fields", SchemaDataType.string),
             "回傳欄位 => 可指定多個欄位，以逗號分隔。如果不指定則回傳所有欄位。"
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_filter", SchemaDataType.string),
             "查詢條件 DSL => 以 '[' 字元開始， ']' 字元結束，" +
                     "每個運算式 expression 的格式是 field operator value ，中間以空白字元分隔，多個條件以 and 或 or 連接 (目前不支援巢狀條件)。" +
                     "operator 支援 = != > >= < <= like in not_in is_null is_not_null 。" +
                     "範例: [name = fanpoll and price > 100 and type in (cpu,memory)] "
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_orderBy", SchemaDataType.string),
             "指定排序欄位 => 可指定多個欄位，以逗號分隔, 例如 name,price- 代表先以 name 欄位 asc 排序，再以 price 欄位 desc 排序 (+ 號代表 asc 預設可省略, - 號代表 desc)",
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_offset", SchemaDataType.integer),
             "限制回傳筆數 => 需一併指定 q_limit，從第 q_offset 筆(start from 0)，回傳 q_limit 筆資料"
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_limit", SchemaDataType.integer),
             "限制回傳筆數 => 需一併指定 q_offset，從第 q_offset 筆(start from 0)，回傳 q_limit 筆資料"
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_pageIndex", SchemaDataType.integer),
             "分頁查詢 => 需一併指定 q_itemsPerPage，回傳第 q_pageIndex 頁，每頁 q_itemsPerPage 筆"
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_itemsPerPage", SchemaDataType.integer),
             "分頁查詢 => 需一併指定 q_pageIndex，回傳第 q_pageIndex 頁，每頁 q_itemsPerPage 筆"
         ).createRef(),
-        ParameterDef(
+        ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_count", SchemaDataType.boolean),
             "僅回傳資料筆數 (預設值 false)"
         ).createRef()
@@ -262,11 +258,11 @@ object DefaultReusableComponents : ReusableComponents {
 
     // ==================== Responses ====================
 
-    val EmptyBodyResponse = ResponseDef(
+    val EmptyBodyResponse = ResponseObject(
         "EmptyBodyResponse", "Success", HttpStatusCode.OK
     ).createRef()
 
-    val StringIdResponse = createDataResponse(
+    val StringIdResponse = ResponseObjectConverter.toDataResponse(
         ModelDef(
             "StringId", listOf("id"),
             mapOf("id" to PropertyDef("id", SchemaDataType.string)),
@@ -274,7 +270,7 @@ object DefaultReusableComponents : ReusableComponents {
         )
     ).createRef()
 
-    val UUIDResponse = createDataResponse(
+    val UUIDResponse = ResponseObjectConverter.toDataResponse(
         ModelDef(
             "UUID", listOf("id"),
             mapOf("id" to PropertyDef("id", SchemaDataType.string, format = "uuid")),
@@ -282,7 +278,7 @@ object DefaultReusableComponents : ReusableComponents {
         )
     ).createRef()
 
-    val LongIdResponse = createDataResponse(
+    val LongIdResponse = ResponseObjectConverter.toDataResponse(
         ModelDef(
             "LongId", listOf("id"),
             mapOf("id" to PropertyDef("id", SchemaDataType.integer)),
@@ -290,12 +286,12 @@ object DefaultReusableComponents : ReusableComponents {
         )
     ).createRef()
 
-    val FreeFormDataResponse = createDataResponse(
+    val FreeFormDataResponse = ResponseObjectConverter.toDataResponse(
         DictionaryPropertyDef("FreeForm", description = "JsonObject or JsonArray")
     ).createRef()
 
-    fun buildDynamicQueryResponse(oneOfSchema: OneOfSchema): ResponseDef {
-        return ResponseDef(
+    fun buildDynamicQueryResponse(oneOfSchema: OneOfSchema): ResponseObject {
+        return ResponseObject(
             "DynamicQueryPagingResponse-${oneOfSchema.name}", "僅查詢筆數 / 查詢資料 / 分頁查詢", HttpStatusCode.OK,
             mapOf(ContentType.Application.Json to MediaTypeObject(oneOfSchema))
         )
@@ -303,18 +299,18 @@ object DefaultReusableComponents : ReusableComponents {
 
     private val DynamicQueryResponse = buildDynamicQueryResponse(DynamicQueryResponseSchemas).createRef()
 
-    private val DynamicQueryPagingResponse = ResponseDef(
+    private val DynamicQueryPagingResponse = ResponseObject(
         "DynamicQueryPagingResponse-default", "分頁查詢", HttpStatusCode.OK,
         mapOf(ContentType.Application.Json to MediaTypeObject(DynamicQueryPagingResponseSchema))
     ).createRef()
 
 
-    private val DynamicQueryItemsResponse = ResponseDef(
+    private val DynamicQueryItemsResponse = ResponseObject(
         "DynamicQueryItemsResponse-default", "查詢資料", HttpStatusCode.OK,
         mapOf(ContentType.Application.Json to MediaTypeObject(DynamicQueryItemsResponseSchema))
     ).createRef()
 
-    private val DynamicQueryTotalResponse = ResponseDef(
+    private val DynamicQueryTotalResponse = ResponseObject(
         "DynamicQueryTotalResponse", "僅查詢筆數", HttpStatusCode.OK,
         mapOf(ContentType.Application.Json to MediaTypeObject(DynamicQueryTotalResponseSchema))
     ).createRef()
@@ -328,9 +324,8 @@ object DefaultReusableComponents : ReusableComponents {
 
     private val exampleList: List<Example> = listOf()
 
-    override fun loadReferenceObjects(): List<ReferenceObject> {
+    override fun load(): List<ReferenceObject> {
         return listOf(headerList, parameterList, requestBodiesList, responseList, schemaList, exampleList).flatten()
-            .map { it.definition.getRef() }
+            .map { it.getReference() }
     }
 }
-

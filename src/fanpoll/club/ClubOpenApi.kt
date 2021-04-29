@@ -7,14 +7,18 @@ package fanpoll.club
 import fanpoll.infra.ResponseCode
 import fanpoll.infra.auth.UserType
 import fanpoll.infra.notification.NotificationType
-import fanpoll.infra.openapi.definition.*
-import fanpoll.infra.openapi.definition.ComponentsUtils.createErrorResponseDef
-import fanpoll.infra.openapi.definition.DefaultReusableComponents.ErrorResponseSchema
-import fanpoll.infra.openapi.support.OpenApiRoute
-import fanpoll.infra.openapi.support.OpenApiRouteSupport
+import fanpoll.infra.openapi.OpenApiOperation
+import fanpoll.infra.openapi.schema.Tag
+import fanpoll.infra.openapi.schema.component.support.BuiltinComponents.ErrorResponseSchema
+import fanpoll.infra.openapi.schema.component.support.ComponentLoader
+import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
+import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
+import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
+import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter.toErrorResponseDef
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.typeOf
 
-object ClubOpenApiRoutes {
+object ClubOpenApiOperations {
 
     private val AuthTag = Tag("auth", "登入、登出、變更密碼")
     private val UserTag = Tag("user", "使用者帳號")
@@ -22,14 +26,14 @@ object ClubOpenApiRoutes {
     private val NotificationTag = Tag("notification", "通知(推播)")
     private val DataTag = Tag("data")
 
-    val CreateUser = OpenApiRoute("CreateUser", listOf(UserTag))
-    val UpdateUser = OpenApiRoute("UpdateUser", listOf(UserTag))
-    val FindUsers = OpenApiRoute("FindUsers", listOf(UserTag))
-    val UpdateMyPassword = OpenApiRoute("UpdateMyPassword", listOf(AuthTag))
+    val CreateUser = OpenApiOperation("CreateUser", listOf(UserTag))
+    val UpdateUser = OpenApiOperation("UpdateUser", listOf(UserTag))
+    val FindUsers = OpenApiOperation("FindUsers", listOf(UserTag))
+    val UpdateMyPassword = OpenApiOperation("UpdateMyPassword", listOf(AuthTag))
 
-    val Login = OpenApiRoute("Login", listOf(AuthTag)) {
+    val Login = OpenApiOperation("Login", listOf(AuthTag)) {
         setErrorResponse(
-            createErrorResponseDef(
+            toErrorResponseDef(
                 setOf(
                     ResponseCode.AUTH_PRINCIPAL_DISABLED,
                     ResponseCode.AUTH_TENANT_DISABLED,
@@ -38,17 +42,19 @@ object ClubOpenApiRoutes {
             )
         )
     }
-    val Logout = OpenApiRoute("Logout", listOf(AuthTag))
+    val Logout = OpenApiOperation("Logout", listOf(AuthTag))
 
-    val PushNotification = OpenApiRoute("PushNotification", listOf(NotificationTag))
-    val DynamicReport = OpenApiRoute("DynamicReport", listOf(DataTag))
+    val PushNotification = OpenApiOperation("PushNotification", listOf(NotificationTag))
+    val DynamicReport = OpenApiOperation("DynamicReport", listOf(DataTag))
 
-    fun all(): List<OpenApiRoute> = ClubOpenApiRoutes::class.memberProperties
-        .filter { it.returnType == OpenApiRouteSupport.routeType }
-        .map { it.getter.call(this) as OpenApiRoute }
+    private val routeType = typeOf<OpenApiOperation>()
+
+    fun all(): List<OpenApiOperation> = ClubOpenApiOperations::class.memberProperties
+        .filter { it.returnType == routeType }
+        .map { it.getter.call(this) as OpenApiOperation }
 }
 
-object ClubReusableComponents : ReusableComponents {
+object ClubComponents : ComponentLoader {
 
     private val UserTypeSchema = PropertyDef(
         UserType::class.simpleName!!, SchemaDataType.string,
@@ -60,10 +66,10 @@ object ClubReusableComponents : ReusableComponents {
         kClass = NotificationType::class
     )
 
-    override fun loadReferenceObjects(): List<ReferenceObject> {
+    override fun load(): List<ReferenceObject> {
         UserTypeSchema.enum = UserType.values().filter { it.projectId == ClubConst.projectId }.map { it.id }
         NotificationTypeSchema.enum = NotificationType.values().filter { it.projectId == ClubConst.projectId }.map { it.id }
-        return listOf(UserTypeSchema, NotificationTypeSchema).map { it.definition.createRef() }
+        return listOf(UserTypeSchema, NotificationTypeSchema).map { it.createRef() }
     }
 }
 

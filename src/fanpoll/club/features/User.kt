@@ -22,6 +22,7 @@ import fanpoll.infra.login.AppLoginForm
 import fanpoll.infra.login.LoginResultCode
 import fanpoll.infra.login.LoginService
 import fanpoll.infra.login.UserPasswordUtils
+import fanpoll.infra.openapi.schema.operation.support.OpenApiModel
 import fanpoll.infra.utils.InstantSerializer
 import fanpoll.infra.utils.UUIDSerializer
 import io.konform.validation.Validation
@@ -122,6 +123,7 @@ object UserService {
     }
 }
 
+@OpenApiModel(propertyNameOrder = ["account", "password", "name", "enabled", "role"])
 @Serializable
 data class CreateUserForm(
     val account: String,
@@ -150,6 +152,7 @@ data class CreateUserForm(
     }
 }
 
+@OpenApiModel(propertyNameOrder = ["id", "name", "enabled", "role"])
 @Serializable
 data class UpdateUserForm(
     @Serializable(with = UUIDSerializer::class) val id: UUID,
@@ -170,6 +173,7 @@ data class UpdateUserForm(
     }
 }
 
+@OpenApiModel(propertyNameOrder = ["id", "account", "name", "enabled", "role"])
 @Serializable
 data class UserDTO(@JvmField @Serializable(with = UUIDSerializer::class) val id: UUID) : EntityDTO<UUID> {
 

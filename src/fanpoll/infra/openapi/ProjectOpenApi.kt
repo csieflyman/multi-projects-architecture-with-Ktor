@@ -2,11 +2,17 @@
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-package fanpoll.infra.openapi.support
+package fanpoll.infra.openapi
 
 import fanpoll.infra.auth.ServiceAuth
-import fanpoll.infra.openapi.OpenApiConfig
-import fanpoll.infra.openapi.definition.*
+import fanpoll.infra.openapi.schema.Info
+import fanpoll.infra.openapi.schema.OpenAPIObject
+import fanpoll.infra.openapi.schema.Server
+import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
+import fanpoll.infra.openapi.schema.component.support.ComponentLoader
+import fanpoll.infra.openapi.schema.component.support.DefaultSecurityScheme
+import fanpoll.infra.openapi.schema.component.support.SecurityScheme
+import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 import fanpoll.infra.utils.DateTimeUtils
 import kotlinx.html.div
 import kotlinx.html.li
@@ -15,30 +21,30 @@ import kotlinx.html.stream.appendHTML
 import kotlinx.html.ul
 import java.time.LocalDateTime
 
-class OpenApi(
+class ProjectOpenApi(
     val projectId: String,
     private val urlRootPath: String,
     private val securitySchemes: List<SecurityScheme>,
-    private val operations: List<OpenApiRoute>,
-    private val projectReusableComponents: ReusableComponents? = null,
-    private val configure: (Root.() -> Unit)? = null
+    private val operations: List<OpenApiOperation>,
+    private val componentLoader: ComponentLoader? = null,
+    private val configure: (OpenAPIObject.() -> Unit)? = null
 ) {
 
-    lateinit var root: Root
+    lateinit var openAPIObject: OpenAPIObject
         private set
 
     fun init(config: OpenApiConfig) {
-        root = Root(
-            info = Information(
+        openAPIObject = OpenAPIObject(
+            info = Info(
                 title = "$projectId API (${config.info.env})", description = buildInfoDescription(config),
                 version = config.info.gitTagVersion
             ),
             servers = listOf(Server(url = urlRootPath)),
             tags = operations.flatMap { it.tags }.toSet()
         )
-        configure?.invoke(root)
+        configure?.invoke(openAPIObject)
 
-        root.initComponents(securitySchemes)
+        openAPIObject.initComponents(securitySchemes)
         loadReusableComponents()
 
         operations.forEach { it.init(this) }
@@ -64,10 +70,10 @@ class OpenApi(
     }
 
     private fun loadReusableComponents() {
-        val reusableComponents = mutableListOf<ReferenceObject>()
-        reusableComponents += DefaultReusableComponents.loadReferenceObjects()
-        projectReusableComponents?.loadReferenceObjects()?.also { reusableComponents += it }
-        reusableComponents.forEach { root.components.reuse(it) }
+        val components = mutableListOf<ReferenceObject>()
+        components += BuiltinComponents.load()
+        componentLoader?.load()?.also { components += it }
+        components.forEach { openAPIObject.components.add(it) }
     }
 
     companion object {

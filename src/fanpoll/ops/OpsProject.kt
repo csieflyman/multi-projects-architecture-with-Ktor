@@ -8,7 +8,7 @@ import fanpoll.MyApplicationConfig
 import fanpoll.infra.Project
 import fanpoll.infra.ProjectConfig
 import fanpoll.infra.auth.PrincipalSource
-import fanpoll.infra.openapi.support.OpenApi
+import fanpoll.infra.openapi.ProjectOpenApi
 
 object OpsConst {
 
@@ -17,8 +17,8 @@ object OpsConst {
     const val urlRootPath = "/ops"
 }
 
-private val openApi = OpenApi(
-    OpsConst.projectId, OpsConst.urlRootPath, OpsAuth.allAuthSchemes, OpsOpenApiRoutes.all()
+private val openApi = ProjectOpenApi(
+    OpsConst.projectId, OpsConst.urlRootPath, OpsAuth.allAuthSchemes, OpsOpenApiOperations.all()
 )
 
 val OpsProject = object : Project(

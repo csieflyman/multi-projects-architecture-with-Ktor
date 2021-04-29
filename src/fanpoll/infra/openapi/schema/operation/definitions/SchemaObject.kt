@@ -2,12 +2,13 @@
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-package fanpoll.infra.openapi.definition
+package fanpoll.infra.openapi.schema.operation.definitions
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
+import fanpoll.infra.openapi.schema.operation.support.Definition
+import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.utils.Jackson
 import kotlin.reflect.KClass
 
@@ -15,34 +16,33 @@ enum class SchemaDataType {
     string, number, integer, boolean, array, `object`
 }
 
-abstract class SchemaDef(
+abstract class SchemaObject(
     name: String,
-    @get:JsonProperty("type") val dataType: SchemaDataType,
+    val type: SchemaDataType,
     val description: String? = null,
     refName: String? = null,
     @JsonIgnore var parent: Schema?,
     @get:JsonIgnore val kClass: KClass<*>? = null
 ) : Definition(name, refName), Schema {
 
+    override fun componentsFieldName(): String = "schemas"
+
     @JsonIgnore
-    override val type: DefinitionType = DefinitionType.Schema
-
-    override fun defPair(): Pair<String, SchemaDef> = definition.name to this
-
-    override fun valuePair(): Pair<String, Schema> = if (hasRef()) refPair() else defPair()
+    override fun getId(): String = path
 
     @get:JsonIgnore
     var kPropertyNullable: Boolean? = null
 
     @JsonIgnore
-    val path: String = ((parent?.definition as? SchemaDef)?.path ?: "") + "/$name"
-
-    @get:JsonIgnore
-    override val id: String = path
+    val path: String = ((parent?.getDefinition() as? SchemaObject)?.path ?: "") + "/$name"
 
     fun debugString(): String =
         if (parent == null) name
         else "$path (${kClass?.qualifiedName}${if (kPropertyNullable == true) "?" else ""})"
+
+    override fun defPair(): Pair<String, SchemaObject> = name to this
+
+    override fun valuePair(): Pair<String, Schema> = if (hasRef()) refPair() else defPair()
 }
 
 open class PropertyDef(
@@ -63,7 +63,7 @@ open class PropertyDef(
     var enum: List<Any>? = null,
     val default: Any? = null,
     val example: Any? = null
-) : SchemaDef(name, dataType, description, refName, parent, kClass)
+) : SchemaObject(name, dataType, description, refName, parent, kClass)
 
 class ModelDef(
     name: String,
@@ -74,7 +74,7 @@ class ModelDef(
     parent: ModelDef? = null,
     kClass: KClass<*>? = null,
     val example: Any? = null
-) : SchemaDef(name, SchemaDataType.`object`, description, refName, parent, kClass)
+) : SchemaObject(name, SchemaDataType.`object`, description, refName, parent, kClass)
 
 class ArrayPropertyDef(
     name: String,
@@ -84,7 +84,7 @@ class ArrayPropertyDef(
     refName: String? = null,
     parent: ModelDef? = null,
     kClass: KClass<*>? = null
-) : SchemaDef(name, SchemaDataType.array, description, refName, parent, kClass)
+) : SchemaObject(name, SchemaDataType.array, description, refName, parent, kClass)
 
 class ArrayModelDef(
     name: String,
@@ -93,7 +93,7 @@ class ArrayModelDef(
     refName: String? = null,
     parent: ModelDef? = null,
     kClass: KClass<*>? = null
-) : SchemaDef(name, SchemaDataType.array, description, refName, parent, kClass)
+) : SchemaObject(name, SchemaDataType.array, description, refName, parent, kClass)
 
 class DictionaryPropertyDef(
     name: String,
@@ -108,15 +108,11 @@ class DictionaryPropertyDef(
 
 abstract class ComplexSchema(@get:JsonIgnore override val name: String) : Schema {
 
-    @get:JsonIgnore
-    override val definition: Definition
-        get() = error("complex schema is not a definition")
+    @JsonIgnore
+    override fun getDefinition(): Definition = error("complex schema is not a definition")
 
-    override fun defPair(): Pair<String, Definition> = error("complex schema is not a definition")
-
-    override fun refPair(): Pair<String, ReferenceObject> = error("complex schema can't be referenced")
-
-    override fun valuePair(): Pair<String, Referenceable> = error("complex schema is not a definition neither be referenced")
+    @JsonIgnore
+    override fun getReference(): ReferenceObject = error("complex schema can't be referenced")
 }
 
 class OneOfSchema(name: String, val oneOf: List<ReferenceObject>) : ComplexSchema(name)

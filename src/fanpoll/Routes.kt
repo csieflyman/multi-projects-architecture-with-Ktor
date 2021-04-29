@@ -5,7 +5,6 @@
 package fanpoll
 
 import fanpoll.club.club
-import fanpoll.infra.openapi.swaggerUI
 import fanpoll.ops.operations
 import io.ktor.application.Application
 import io.ktor.http.content.resources
@@ -19,8 +18,6 @@ fun Application.routing(appConfig: MyApplicationConfig) {
         operations()
 
         club()
-
-        swaggerUI(appConfig.openApi.swaggerUI)
 
         static("public") {
             resources("public")

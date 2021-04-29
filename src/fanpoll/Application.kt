@@ -18,8 +18,8 @@ import fanpoll.infra.httpclient.HttpClientManager
 import fanpoll.infra.logging.*
 import fanpoll.infra.login.SessionService
 import fanpoll.infra.notification.NotificationSender
-import fanpoll.infra.openapi.OpenApiManager
-import fanpoll.infra.openapi.swaggerUI
+import fanpoll.infra.openapi.OpenApi
+import fanpoll.infra.openapi.ProjectOpenApiManager
 import fanpoll.infra.redis.RedisManager
 import fanpoll.infra.utils.json
 import fanpoll.ops.OpsProject
@@ -110,11 +110,6 @@ fun Application.module() {
         ops(appConfig.ops.auth)
 
         club(appConfig.club.auth)
-
-        val swaggerUIConfig = appConfig.openApi.swaggerUI
-        if (swaggerUIConfig.needAuth) {
-            swaggerUI(swaggerUIConfig)
-        }
     }
 
     install(Sessions) {
@@ -128,6 +123,10 @@ fun Application.module() {
         shutDownUrl = appConfig.server.shutDownUrl
         // A function that will be executed to get the exit code of the process
         exitCodeSupplier = { 0 }
+    }
+
+    install(OpenApi) {
+        openApiConfig = appConfig.openApi
     }
 
     routing(appConfig)
@@ -150,7 +149,7 @@ private fun initServices(appConfig: MyApplicationConfig, environment: Applicatio
         initHttpClientServices(appConfig)
 
         AppReleaseService.init()
-        OpenApiManager.init(appConfig.openApi)
+        ProjectOpenApiManager.init(appConfig.openApi)
 
         environment.monitor.subscribe(ApplicationStopping) { HttpClientManager.shutdown() }
         environment.monitor.subscribe(ApplicationStopping) { CacheManager.shutdown() }

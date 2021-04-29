@@ -1,41 +1,27 @@
 /*
- * Copyright (c) 2020. fanpoll All rights reserved.
+ * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-package fanpoll.infra.openapi.definition
+package fanpoll.infra.openapi.schema.operation.definitions
 
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.databind.JsonNode
 import fanpoll.infra.ResponseCode
-import fanpoll.infra.openapi.definition.ComponentsUtils.buildResponseCodesDescription
-import fanpoll.infra.utils.Jackson
-import io.ktor.http.HttpMethod
+import fanpoll.infra.openapi.schema.operation.support.Header
+import fanpoll.infra.openapi.schema.operation.support.Parameter
+import fanpoll.infra.openapi.schema.operation.support.RequestBody
+import fanpoll.infra.openapi.schema.operation.support.Response
+import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
 
-class Paths {
-
-    private val pathItems: MutableMap<String, MutableMap<String, Operation>> = mutableMapOf()
-
-    fun addPath(path: String, method: HttpMethod, operation: Operation) {
-        pathItems.getOrPut(path) { mutableMapOf() }[method.value.toLowerCase()] = operation
-    }
-
-    @JsonValue
-    fun toJson(): JsonNode {
-        return Jackson.toJson(pathItems)
-    }
-}
-
-class Operation(
+class OperationObject(
     var operationId: String? = null,
     var tags: List<String>? = null,
     var summary: String? = null,
     var description: String? = null,
     @JsonIgnore val parameters: MutableList<Parameter> = mutableListOf(),
-    var requestBody: RequestBodies? = null,
+    var requestBody: RequestBody? = null,
     // Multiple Authentication Types: listOf(listOf(A, B), listOf(C, D)) => (A AND B) OR (C AND D)
-    @JsonIgnore var security: List<List<Security>>? = null,
+    @JsonIgnore var security: List<List<SecurityRequirementObject>>? = null,
     var deprecated: Boolean? = null
 ) {
 
@@ -44,11 +30,11 @@ class Operation(
 
     @JsonGetter("security")
     fun toJsonSecurity(): List<Map<String, List<String>>>? {
-        return security?.map { s1 -> s1.map { s2 -> s2.scheme.name to s2.scopes }.toMap() }
+        return security?.map { s1 -> s1.associate { s2 -> s2.scheme.name to s2.scopes } }
     }
 
     @JsonGetter("parameters")
-    fun toJsonParameters(): List<Parameter> = parameters.sortedBy { (it.definition as ParameterDef).`in`.ordinal }
+    fun toJsonParameters(): List<Parameter> = parameters.sortedBy { (it.getDefinition() as ParameterObject).`in`.ordinal }
 
     @JsonGetter("responses")
     fun toJsonResponses(): Map<String, Response> = responses.toSortedMap(compareBy { it.toIntOrNull() ?: Int.MAX_VALUE })
@@ -56,7 +42,7 @@ class Operation(
     // use "oneOf" schema for varying responseBody formats of responseCode
     fun addSuccessResponses(vararg responses: Response) {
         responses.forEach {
-            val statusCode = (it.definition as ResponseDef).statusCode!!.value.toString()
+            val statusCode = (it.getDefinition() as ResponseObject).statusCode!!.value.toString()
             require(!this.responses.containsKey(statusCode))
             this.responses[statusCode] = it
         }
@@ -65,7 +51,10 @@ class Operation(
     fun addSuccessResponses(responseCodes: Set<ResponseCode>) {
         responses += responseCodes.toList().groupBy { it.httpStatusCode }
             .mapValues {
-                ResponseDef("${it.key.value}-Response", buildResponseCodesDescription(it.value), it.key, null)
+                ResponseObject(
+                    "${it.key.value}-Response",
+                    ResponseUtils.buildResponseCodesDescription(it.value), it.key, null
+                )
             }.mapKeys { it.key.toString() }
     }
 
@@ -94,7 +83,7 @@ class Operation(
 
     private fun setResponseHeader(response: Response, headers: List<Header>) {
         require(response !is ReferenceObject)
-        (response as ResponseDef).headers.plusAssign(headers.map { it.name to it })
+        (response as ResponseObject).headers.plusAssign(headers.map { it.name to it })
     }
 
     private fun getSuccessResponse(responseCode: ResponseCode): Response {

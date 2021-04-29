@@ -4,25 +4,27 @@
 
 package fanpoll.ops
 
-import fanpoll.infra.openapi.definition.Tag
-import fanpoll.infra.openapi.support.OpenApiRoute
-import fanpoll.infra.openapi.support.OpenApiRouteSupport
+import fanpoll.infra.openapi.OpenApiOperation
+import fanpoll.infra.openapi.schema.Tag
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.typeOf
 
-object OpsOpenApiRoutes {
+object OpsOpenApiOperations {
 
     private val MonitorTag = Tag("monitor")
     private val AppReleaseTag = Tag("appRelease", "App發佈")
 
-    val HealthCheck = OpenApiRoute("HealthCheck", listOf(MonitorTag))
+    val HealthCheck = OpenApiOperation("HealthCheck", listOf(MonitorTag))
 
-    val CreateAppRelease = OpenApiRoute("CreateAppRelease", listOf(AppReleaseTag))
-    val UpdateAppRelease = OpenApiRoute("UpdateAppRelease", listOf(AppReleaseTag))
-    val FindAppReleases = OpenApiRoute("FindAppReleases", listOf(AppReleaseTag))
-    val CheckAppRelease = OpenApiRoute("CheckAppRelease", listOf(AppReleaseTag))
+    val CreateAppRelease = OpenApiOperation("CreateAppRelease", listOf(AppReleaseTag))
+    val UpdateAppRelease = OpenApiOperation("UpdateAppRelease", listOf(AppReleaseTag))
+    val FindAppReleases = OpenApiOperation("FindAppReleases", listOf(AppReleaseTag))
+    val CheckAppRelease = OpenApiOperation("CheckAppRelease", listOf(AppReleaseTag))
 
-    fun all(): List<OpenApiRoute> = OpsOpenApiRoutes::class.memberProperties
-        .filter { it.returnType == OpenApiRouteSupport.routeType }
-        .map { it.getter.call(this) as OpenApiRoute }
+    private val routeType = typeOf<OpenApiOperation>()
+
+    fun all(): List<OpenApiOperation> = OpsOpenApiOperations::class.memberProperties
+        .filter { it.returnType == routeType }
+        .map { it.getter.call(this) as OpenApiOperation }
 }
 

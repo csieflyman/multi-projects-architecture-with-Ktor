@@ -5,7 +5,7 @@ package fanpoll.infra.auth
 
 import fanpoll.infra.RequestException
 import fanpoll.infra.ResponseCode
-import fanpoll.infra.openapi.definition.SecurityScheme
+import fanpoll.infra.openapi.schema.component.support.SecurityScheme
 import fanpoll.infra.utils.IdentifiableObject
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call

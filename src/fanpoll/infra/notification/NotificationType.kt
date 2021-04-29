@@ -7,7 +7,7 @@ package fanpoll.infra.notification
 import fanpoll.infra.RequestException
 import fanpoll.infra.ResponseCode
 import fanpoll.infra.notification.channel.NotificationChannel
-import fanpoll.infra.openapi.definition.OpenApiSchemaIgnore
+import fanpoll.infra.openapi.schema.operation.support.OpenApiIgnore
 import fanpoll.infra.utils.IdentifiableObject
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -30,7 +30,7 @@ class NotificationType(
     override val id: String = "${projectId}_${name}"
 
     @Transient
-    @OpenApiSchemaIgnore
+    @OpenApiIgnore
     private var buildChannelMessageBlock: (NotificationType.(Any?) -> NotificationChannelMessage)? = null
 
     fun configureBuildChannelMessage(block: NotificationType.(Any?) -> NotificationChannelMessage) {

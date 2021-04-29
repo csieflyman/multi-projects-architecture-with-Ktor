@@ -6,16 +6,16 @@ package fanpoll.ops
 
 import fanpoll.infra.ProjectAuthConfig
 import fanpoll.infra.auth.*
-import fanpoll.infra.openapi.support.OpenApi
+import fanpoll.infra.openapi.ProjectOpenApi
 import io.ktor.auth.Authentication
 
 object OpsAuth {
 
     const val serviceProviderName = "${OpsConst.projectId}-service"
 
-    private val serviceAuthSchemes = listOf(OpenApi.apiKeySecurityScheme)
+    private val serviceAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
 
-    val allAuthSchemes = listOf(OpenApi.apiKeySecurityScheme)
+    val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
 
     val Root = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.Root))
 

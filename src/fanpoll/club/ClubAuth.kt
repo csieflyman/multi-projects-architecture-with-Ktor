@@ -6,21 +6,21 @@ package fanpoll.club
 
 import fanpoll.infra.ProjectAuthConfig
 import fanpoll.infra.auth.*
-import fanpoll.infra.openapi.definition.SecurityScheme
-import fanpoll.infra.openapi.support.OpenApi
+import fanpoll.infra.openapi.ProjectOpenApi
+import fanpoll.infra.openapi.schema.component.support.SecurityScheme
 import io.ktor.auth.Authentication
 
 object ClubAuth {
 
     const val serviceProviderName = "${ClubConst.projectId}-service"
 
-    private val serviceAuthSchemes = listOf(OpenApi.apiKeySecurityScheme)
+    private val serviceAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
 
     private val sessionIdAuthScheme = SecurityScheme.apiKeyAuth("SessionIdAuth", SessionAuth.SESSION_ID_HEADER_NAME)
 
-    private val userAuthSchemes = listOf(OpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
+    private val userAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
 
-    val allAuthSchemes = listOf(OpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
+    val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
 
     val Public = PrincipalAuth.Service.public(serviceProviderName, serviceAuthSchemes, ClubPrincipalSources.App)
 

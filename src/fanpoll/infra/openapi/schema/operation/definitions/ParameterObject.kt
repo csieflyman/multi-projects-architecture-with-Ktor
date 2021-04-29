@@ -1,0 +1,66 @@
+/*
+ * Copyright (c) 2021. fanpoll All rights reserved.
+ */
+
+package fanpoll.infra.openapi.schema.operation.definitions
+
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import fanpoll.infra.openapi.schema.operation.support.Definition
+import fanpoll.infra.openapi.schema.operation.support.Header
+import fanpoll.infra.openapi.schema.operation.support.Parameter
+
+enum class ParameterInputType {
+    header,
+    path,
+    query,
+    cookie,
+    body, // Not supported in OpenAPI v3.
+}
+
+open class ParameterObject(
+    open val `in`: ParameterInputType,
+    val required: Boolean,
+    val schema: PropertyDef,
+    val description: String? = null,
+    val deprecated: Boolean? = null,
+    val allowEmptyValue: Boolean? = null,
+    val example: Any? = null,
+    val examples: Map<String, ExampleObject>? = null
+) : Definition("${schema.getDefinition().name}${if (required) "" else "-optional"}"), Parameter {
+
+    override fun componentsFieldName(): String = "parameters"
+
+    @JsonProperty("name")
+    open val parameterName: String = schema.getDefinition().name
+
+    override fun defPair(): Pair<String, ParameterObject> = name to this
+
+    override fun valuePair(): Pair<String, Parameter> = if (hasRef()) refPair() else defPair()
+}
+
+class HeaderObject(
+    required: Boolean,
+    schema: PropertyDef,
+    description: String? = null,
+    deprecated: Boolean? = null,
+    allowEmptyValue: Boolean? = null,
+    example: Any? = null,
+    examples: Map<String, ExampleObject>? = null
+) : ParameterObject(
+    ParameterInputType.header, required, schema, description,
+    deprecated, allowEmptyValue, example, examples
+), Header {
+
+    override fun componentsFieldName(): String = "headers"
+
+    @JsonIgnore
+    override val parameterName: String = super.parameterName
+
+    @JsonIgnore
+    override val `in`: ParameterInputType = super.`in`
+
+    override fun defPair(): Pair<String, HeaderObject> = name to this
+
+    override fun valuePair(): Pair<String, Header> = if (hasRef()) refPair() else defPair()
+}

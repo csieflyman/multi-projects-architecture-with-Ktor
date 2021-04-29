@@ -9,15 +9,15 @@ import fanpoll.infra.auth.PrincipalSource
 import fanpoll.infra.auth.PrincipalSourceAuthConfig
 import fanpoll.infra.auth.UserType
 import fanpoll.infra.notification.NotificationType
-import fanpoll.infra.openapi.OpenApiManager
-import fanpoll.infra.openapi.support.OpenApi
+import fanpoll.infra.openapi.ProjectOpenApi
+import fanpoll.infra.openapi.ProjectOpenApiManager
 import fanpoll.infra.utils.IdentifiableObject
 
 abstract class Project(
     override val id: String,
     val principalSources: Set<PrincipalSource>,
     val userTypes: Set<UserType>,
-    val openApi: OpenApi,
+    val projectOpenApi: ProjectOpenApi,
     val notificationTypes: List<NotificationType>? = null
 ) : IdentifiableObject<String>() {
 
@@ -58,7 +58,7 @@ object ProjectManager {
         if (project.notificationTypes != null)
             NotificationType.register(project.notificationTypes)
 
-        OpenApiManager.registerProject(project.openApi)
+        ProjectOpenApiManager.registerProject(project.projectOpenApi)
     }
 
     private fun registerPrincipalSources(project: Project) {
