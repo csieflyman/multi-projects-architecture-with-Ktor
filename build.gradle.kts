@@ -1,3 +1,10 @@
+import com.github.gradle.node.npm.proxy.ProxySettings
+import com.github.gradle.node.npm.task.NpmTask
+import com.github.gradle.node.task.NodeTask
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
+import org.unbrokendome.gradle.plugins.gitversion.core.RuleContext
+import org.unbrokendome.gradle.plugins.gitversion.version.SemVersion
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -40,7 +47,7 @@ val exposedVersion = "0.30.2"
 
 dependencies {
     // =============== kotlin, kotlinx ===============
-    implementation(kotlin("stdlib", org.jetbrains.kotlin.config.KotlinCompilerVersion.VERSION))
+    implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
@@ -55,7 +62,7 @@ dependencies {
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
 
-    // Don't need DI feature now
+    // Try to not use DI
     //implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:7.0.0")
 
     // =============== database ===============
@@ -177,7 +184,7 @@ tasks.withType<JavaCompile> {
     options.isFork = true
 }
 
-// =============================== Flyway ===============================
+// =============================== Flyway Plugin ===============================
 
 flyway {
     driver = "org.postgresql.Driver"
@@ -187,16 +194,21 @@ flyway {
     defaultSchema = "ktor-example"
 }
 
-// =============================== Git ===============================
+// =============================== Git Plugin ===============================
 // https://github.com/unbroken-dome/gradle-gitversion-plugin
 
 tasks.determineGitVersion {
     outputs.upToDateWhen { false }
 }
 
+// my git branch naming convention
+val devBranchName = "dev"
+val releaseBranchName = "main"
+val branchToEnvMap: Map<String, String> = mapOf(devBranchName to "dev", releaseBranchName to "prod")
+
 gitVersion {
     rules {
-        val branches = listOf("dev", "main")
+        val branches = branchToEnvMap.keys.toList()
         branches.forEach { branch ->
             onBranch(branch) {
                 setVersionByTag(this, branch)
@@ -205,8 +217,8 @@ gitVersion {
     }
 }
 
-fun setVersionByTag(ruleContext: org.unbrokendome.gradle.plugins.gitversion.core.RuleContext, branch: String) {
-    val tagPrefix = if (branch == "main") "" else "$branch-"
+fun setVersionByTag(ruleContext: RuleContext, branch: String) {
+    val tagPrefix = if (branch == releaseBranchName) "" else "$branch-" // my git tag naming convention
     val tag = ruleContext.findLatestTag("""${tagPrefix}(\d+)\.(\d+)\.(\d+)""".toPattern())
     if (tag != null) {
         with(ruleContext.version) {
@@ -223,7 +235,7 @@ fun setVersionByTag(ruleContext: org.unbrokendome.gradle.plugins.gitversion.core
 
 project.version = gitVersion.determineVersion()
 
-// =============================== Distribution & Shadow ===============================
+// =============================== Distribution & Shadow Plugin ===============================
 
 val shadowEnvDistZip by tasks.registering {
 
@@ -234,26 +246,29 @@ val shadowEnvDistZip by tasks.registering {
     doLast {
         delete("src/dist")
 
-        val semVersion = (project.version as org.unbrokendome.gradle.plugins.gitversion.version.SemVersion)
+        val semVersion = (project.version as SemVersion)
         val tagVersion = "${semVersion.major}.${semVersion.minor}.${semVersion.patch}"
         val branch = semVersion.prereleaseTag!!
+        val env = branchToEnvMap[branch]
         println("========================================")
-        println("version = $semVersion, env / branch = $branch")
+        println("semVersion = $semVersion")
+        println("env = $env")
         println("========================================")
 
         copy {
             from("resources/application.conf", "resources/logback.xml")
             into("src/dist")
-            filter<org.apache.tools.ant.filters.ReplaceTokens>(
+            filter<ReplaceTokens>(
                 "tokens" to mapOf(
                     "gitTagVersion" to tagVersion,
-                    "gitCommitVersion" to semVersion.toString(), "env" to branch,
+                    "gitCommitVersion" to semVersion.toString(),
+                    "env" to env,
                     "buildTime" to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())
                 )
             )
         }
         copy {
-            from("deploy/config/$branch")
+            from("deploy/config/$env")
             into("src/dist")
         }
         copy {
@@ -270,15 +285,20 @@ tasks.shadowDistZip {
     outputs.upToDateWhen { false }
 
     if (project.hasProperty("local.archive.destinationDirectory")) {
-        destinationDirectory.set(file(Paths.get(project.property("local.archive.destinationDirectory")!!.toString()).toUri().toURL()))
+        destinationDirectory.set(
+            file(
+                Paths.get(project.property("local.archive.destinationDirectory")!!.toString()).toUri().toURL()
+            )
+        )
     }
 
-    archiveBaseName.set("ktor-example")
+    val semVersion = (project.version as SemVersion)
+    val tagVersion = "${semVersion.major}.${semVersion.minor}.${semVersion.patch}"
+    val branch = semVersion.prereleaseTag!!
+    val env = branchToEnvMap[branch]
 
-    val semVersion = (project.version as org.unbrokendome.gradle.plugins.gitversion.version.SemVersion)
-    val branch = semVersion.prereleaseTag ?: throw RuntimeException("")
-    val version = if (branch == "release") semVersion.toString() else semVersion.toString().substringBeforeLast("+")
-    archiveVersion.set(version)
+    archiveBaseName.set("ktor-example")
+    archiveVersion.set("$tagVersion-$env") // my archiveVersion naming convention
 }
 
 tasks.shadowJar {
@@ -326,12 +346,12 @@ node {
     // Set the work directory where node_modules should be located
     nodeProjectDir.set(file("${project.projectDir}"))
 
-    nodeProxySettings.set(com.github.gradle.node.npm.proxy.ProxySettings.SMART)
+    nodeProxySettings.set(ProxySettings.SMART)
 
     npmInstallCommand.set("install")
 }
 
-val npmInstallPostman by tasks.register<com.github.gradle.node.npm.task.NpmTask>("npmInstallPostman") {
+val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
     group = "postman"
     args.set(
         listOf(
@@ -354,31 +374,31 @@ val postmanEnvironment = "localhost"
 
 val postmanApiKey: String = System.getenv("POSTMAN_API_KEY") ?: ""
 
-val downloadOpenApiJson by tasks.register<com.github.gradle.node.task.NodeTask>("downloadOpenApiJson") {
+val downloadOpenApiJson by tasks.register<NodeTask>("downloadOpenApiJson") {
     group = "postman"
     script.set(file("postman/scripts/openapi-json-provider.js"))
     args.set(listOf("downloadJson", openApiProjectName, openApiSchemaUrl))
 }
 
-val openApiToPostmanCollection by tasks.register<com.github.gradle.node.task.NodeTask>("openApiToPostmanCollection") {
+val openApiToPostmanCollection by tasks.register<NodeTask>("openApiToPostmanCollection") {
     group = "postman"
     script.set(file("postman/scripts/openapi-to-postman-collection.js"))
     args.set(listOf("convert", openApiProjectName))
 }
 
-val generatePostmanCollection by tasks.register<com.github.gradle.node.task.NodeTask>("generatePostmanCollection") {
+val generatePostmanCollection by tasks.register<NodeTask>("generatePostmanCollection") {
     group = "postman"
     script.set(file("postman/scripts/openapi-to-postman-collection.js"))
     args.set(listOf("downloadThenConvert", openApiProjectName))
 }
 
-val runPostmanTest by tasks.register<com.github.gradle.node.task.NodeTask>("runPostmanTest") {
+val runPostmanTest by tasks.register<NodeTask>("runPostmanTest") {
     group = "postman"
     script.set(file("postman/scripts/postman-test-runner.js"))
     args.set(listOf(openApiProjectName, postmanEnvironment)) // envName(required), folderName(optional)
 }
 
-val uploadToPostmanCloud by tasks.register<com.github.gradle.node.task.NodeTask>("uploadToPostmanCloud") {
+val uploadToPostmanCloud by tasks.register<NodeTask>("uploadToPostmanCloud") {
     group = "postman"
     environment.set(mapOf("X-Api-Key" to postmanApiKey))
     script.set(file("postman/scripts/postman-api.js"))
