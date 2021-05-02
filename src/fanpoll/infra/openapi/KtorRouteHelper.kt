@@ -5,19 +5,14 @@
 
 package fanpoll.infra.openapi
 
-import fanpoll.infra.auth.AuthorizationRouteSelector
-import fanpoll.infra.auth.PrincipalAuth
 import fanpoll.infra.controller.EntityDTO
 import fanpoll.infra.controller.Form
 import fanpoll.infra.controller.MyLocation
 import fanpoll.infra.controller.receiveAndValidateBody
-import fanpoll.infra.openapi.KtorRouteHelper.routeAuth
-import fanpoll.infra.openapi.KtorRouteHelper.routePath
 import fanpoll.infra.utils.DynamicQuery
 import fanpoll.infra.utils.DynamicQueryLocation
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.auth.AuthenticationRouteSelector
 import io.ktor.http.HttpMethod
 import io.ktor.locations.*
 import io.ktor.routing.*
@@ -32,7 +27,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Post,
+        this, null, HttpMethod.Post,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
     return post { body(this, call.receiveAndValidateBody()) }
@@ -45,7 +40,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Post,
+        this, path, HttpMethod.Post,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
     return post(path) { body(this, call.receiveAndValidateBody()) }
@@ -57,7 +52,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Put,
+        this, null, HttpMethod.Put,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
     return put { body(this, call.receiveAndValidateBody()) }
@@ -70,7 +65,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Put,
+        this, path, HttpMethod.Put,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
     return put(path) { body(this, call.receiveAndValidateBody()) }
@@ -82,7 +77,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Patch,
+        this, null, HttpMethod.Patch,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
     return patch { body(this, call.receiveAndValidateBody()) }
@@ -95,7 +90,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Patch,
+        this, path, HttpMethod.Patch,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
     return patch(path) { body(this, call.receiveAndValidateBody()) }
@@ -107,7 +102,7 @@ inline fun <reified RESPONSE : Any> Route.get(
     noinline body: PipelineInterceptor<Unit, ApplicationCall>
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Get,
+        this, null, HttpMethod.Get,
         typeOf<Unit>(), typeOf<RESPONSE>()
     )
     return get(body)
@@ -120,7 +115,7 @@ inline fun <reified RESPONSE : Any> Route.get(
     noinline body: PipelineInterceptor<Unit, ApplicationCall>
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Get,
+        this, path, HttpMethod.Get,
         typeOf<Unit>(), typeOf<RESPONSE>()
     )
     return get(path, body)
@@ -129,7 +124,7 @@ inline fun <reified RESPONSE : Any> Route.get(
 @ContextDsl
 fun Route.delete(operation: OpenApiOperation, body: PipelineInterceptor<Unit, ApplicationCall>): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Delete,
+        this, null, HttpMethod.Delete,
         typeOf<Unit>(), typeOf<Unit>()
     )
     return delete(body)
@@ -138,7 +133,7 @@ fun Route.delete(operation: OpenApiOperation, body: PipelineInterceptor<Unit, Ap
 @ContextDsl
 fun Route.delete(path: String, operation: OpenApiOperation, body: PipelineInterceptor<Unit, ApplicationCall>): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Delete,
+        this, path, HttpMethod.Delete,
         typeOf<Unit>(), typeOf<Unit>()
     )
     return delete(path, body)
@@ -150,7 +145,7 @@ fun Route.postEmptyBody(
     body: PipelineInterceptor<Unit, ApplicationCall>
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Post,
+        this, null, HttpMethod.Post,
         typeOf<Unit>(), typeOf<Unit>()
     )
     return post(body)
@@ -163,7 +158,7 @@ fun Route.postEmptyBody(
     body: PipelineInterceptor<Unit, ApplicationCall>
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Post,
+        this, path, HttpMethod.Post,
         typeOf<Unit>(), typeOf<Unit>()
     )
     return post(path, body)
@@ -175,7 +170,7 @@ inline fun <reified RESPONSE : Any> Route.getList(
     noinline body: PipelineInterceptor<Unit, ApplicationCall>
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Get,
+        this, null, HttpMethod.Get,
         typeOf<Unit>(), typeOf<List<RESPONSE>>()
     )
     return get(body)
@@ -188,7 +183,7 @@ inline fun <reified RESPONSE : Any> Route.getList(
     noinline body: PipelineInterceptor<Unit, ApplicationCall>
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Get,
+        this, path, HttpMethod.Get,
         typeOf<Unit>(), typeOf<List<RESPONSE>>()
     )
     return get(path, body)
@@ -200,7 +195,7 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Post,
+        this, null, HttpMethod.Post,
         typeOf<REQUEST>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return post<LOCATION> {
@@ -209,12 +204,12 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
 }
 
 @ContextDsl
-inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
+inline fun <reified LOCATION : MyLocation, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Put,
+        this, null, HttpMethod.Put,
         typeOf<REQUEST>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return put<LOCATION> {
@@ -223,12 +218,12 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
 }
 
 @ContextDsl
-inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
+inline fun <reified LOCATION : MyLocation, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, REQUEST) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Patch,
+        this, null, HttpMethod.Patch,
         typeOf<REQUEST>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return patch<LOCATION> {
@@ -238,24 +233,24 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
 
 @OptIn(KtorExperimentalLocationsAPI::class)
 @ContextDsl
-inline fun <reified LOCATION : Any, reified RESPONSE : Any> Route.getWithLocation(
+inline fun <reified LOCATION : MyLocation, reified RESPONSE : Any> Route.getWithLocation(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Get,
+        this, null, HttpMethod.Get,
         typeOf<Unit>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return get(body)
 }
 
 @ContextDsl
-inline fun <reified LOCATION : Any> Route.deleteWithLocation(
+inline fun <reified LOCATION : MyLocation> Route.deleteWithLocation(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Delete,
+        this, null, HttpMethod.Delete,
         typeOf<Unit>(), typeOf<Unit>(), LOCATION::class
     )
     return delete(body)
@@ -267,45 +262,11 @@ inline fun <reified RESPONSE : EntityDTO<*>> Route.dynamicQuery(
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(DynamicQuery) -> Unit
 ): Route {
     operation.bindRoute(
-        routeAuth(this), routePath(this), HttpMethod.Get,
+        this, null, HttpMethod.Get,
         typeOf<Unit>(), typeOf<RESPONSE>(), DynamicQueryLocation::class
     )
     return get<DynamicQueryLocation> {
         it.validate(null)
         body(this, DynamicQuery.from(it))
-    }
-}
-
-object KtorRouteHelper {
-
-    fun routeAuth(route: Route): List<PrincipalAuth>? {
-        var current: Route? = route
-        while (current != null) {
-            if (current.selector is AuthorizationRouteSelector) {
-                return (current.selector as AuthorizationRouteSelector).principalAuths
-            }
-            current = current.parent
-        }
-        return null
-    }
-
-    fun routePath(route: Route, path: String = ""): String {
-        var openApiPath = routeSelectorPath(route.selector) + path
-        var current = route
-        while (current.parent?.parent?.parent != null) {
-            val parent = current.parent!!
-            if (parent.selector !is AuthenticationRouteSelector || parent.selector !is AuthorizationRouteSelector) {
-                openApiPath = routeSelectorPath(parent.selector) + openApiPath
-            }
-            current = parent
-        }
-        return openApiPath
-    }
-
-    private fun routeSelectorPath(selector: RouteSelector): String {
-        return when (selector) {
-            is PathSegmentConstantRouteSelector, is PathSegmentParameterRouteSelector -> "/$selector"
-            else -> ""
-        }
     }
 }
