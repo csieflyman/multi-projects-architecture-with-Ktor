@@ -266,7 +266,7 @@ inline fun <reified RESPONSE : EntityDTO<*>> Route.dynamicQuery(
         typeOf<Unit>(), typeOf<RESPONSE>(), DynamicQueryLocation::class
     )
     return get<DynamicQueryLocation> {
-        it.validate(null)
+        it.validate()
         body(this, DynamicQuery.from(it))
     }
 }
