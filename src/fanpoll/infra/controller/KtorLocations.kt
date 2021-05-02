@@ -26,40 +26,43 @@ import java.util.*
 
 abstract class MyLocation {
 
-    open val entityId: Any? = null
+    protected open fun <L : MyLocation> validator(): Validation<L>? = null
 
-    protected open fun <T : MyLocation> validator(): Validation<T>? = null
-
-    open fun validate() {
+    open fun validate(form: Form<*>? = null) {
         val result = validator<MyLocation>()?.validate(this)
-        if (result is Invalid)
+        if (result is Invalid<MyLocation>)
             throw RequestException(result)
     }
+}
 
-    fun validate(dto: Form<*>) {
-        if (this is TenantIdLocation && dto is TenantForm && dto.tenantId != tenantId)
-            throw RequestException(ResponseCode.REQUEST_BAD_PATH, "mismatch tenantId between path and body")
-        if (entityId != null && dto is EntityForm<*, *, *> && dto.getEntityId() != entityId)
-            throw RequestException(ResponseCode.REQUEST_BAD_PATH, "invalid entity id in path")
-        validate()
+abstract class EntityIdLocation : MyLocation() {
+
+    abstract val entityId: Any
+
+    override fun validate(form: Form<*>?) {
+        if (form is EntityForm<*, *, *> && form.getEntityId() != entityId)
+            throw RequestException(ResponseCode.REQUEST_BAD_PATH, "mismatch entityId between path and body")
+        super.validate(form)
     }
 }
 
 @Location("/{entityId}")
-data class LongEntityIdLocation(override val entityId: Long) : MyLocation()
+data class LongEntityIdLocation(override val entityId: Long) : EntityIdLocation()
 
 @Location("/{entityId}")
-data class StringEntityIdLocation(override val entityId: String) : MyLocation()
+data class StringEntityIdLocation(override val entityId: String) : EntityIdLocation()
 
 @Location("/{entityId}")
-data class UUIDEntityIdLocation(override val entityId: UUID) : MyLocation()
+data class UUIDEntityIdLocation(override val entityId: UUID) : EntityIdLocation()
 
 @Location("/{tenantId}")
 data class TenantIdLocation(val tenantId: String) : MyLocation() {
 
-    override fun validate() {
+    override fun validate(form: Form<*>?) {
+        if (form is TenantForm<*> && form.tenantId != tenantId)
+            throw RequestException(ResponseCode.REQUEST_BAD_PATH, "mismatch tenantId between path and body")
         try {
-            super.validate()
+            super.validate(form)
         } catch (e: RequestException) {
             e.tenantId = tenantId
             throw e
@@ -79,19 +82,19 @@ val ApplicationCall.tenantId: TenantId?
         }
 
 @OptIn(InternalSerializationApi::class)
-suspend inline fun <reified T : Form<*>> ApplicationCall.receiveAndValidate(location: MyLocation? = null): T {
-    val dto = json.decodeFromString(T::class.serializer(), receiveUTF8Text())
-    dto.validate()
-    if (dto is TenantForm<*>) {
-        attributes.put(ATTRIBUTE_KEY_TENANT_ID, TenantId(dto.tenantId))
+suspend inline fun <reified T : Form<*>> ApplicationCall.receiveAndValidateBody(location: MyLocation? = null): T {
+    val form = json.decodeFromString(T::class.serializer(), receiveUTF8Text())
+    form.validate()
+    if (form is TenantForm<*>) {
+        attributes.put(ATTRIBUTE_KEY_TENANT_ID, TenantId(form.tenantId))
     }
     if (location != null) {
-        location.validate(dto)
+        location.validate(form)
         if (location is TenantIdLocation) {
             attributes.put(ATTRIBUTE_KEY_TENANT_ID, TenantId(location.tenantId))
         }
     }
-    return dto
+    return form
 }
 
 val LocationsDataConverter: DataConversion.Configuration.() -> Unit = {

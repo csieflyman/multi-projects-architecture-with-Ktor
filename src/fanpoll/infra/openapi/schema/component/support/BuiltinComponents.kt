@@ -8,14 +8,18 @@ import fanpoll.infra.*
 import fanpoll.infra.app.AppVersion
 import fanpoll.infra.auth.*
 import fanpoll.infra.openapi.OpenApiConfig
+import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.operation.definitions.*
 import fanpoll.infra.openapi.schema.operation.support.Example
+import fanpoll.infra.openapi.schema.operation.support.Response
 import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
+import fanpoll.infra.openapi.schema.operation.support.converters.SchemaObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
 import fanpoll.infra.utils.I18nUtils
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import kotlin.reflect.KType
 
 object BuiltinComponents : ComponentLoader {
 
@@ -44,7 +48,7 @@ object BuiltinComponents : ComponentLoader {
             ResponseCodeTypeSchema,
             ResponseMessageTypeSchema,
             PropertyDef("httpStatusCode", SchemaDataType.integer)
-        ).map { it.valuePair() }.toMap()
+        ).associate { it.valuePair() }
         return ModelDef(
             ResponseCode::class.simpleName!!, requiredProperties, properties,
             ResponseUtils.buildResponseCodesDescription(ResponseCode.values().toList())
@@ -62,7 +66,7 @@ object BuiltinComponents : ComponentLoader {
             ResponseCodeTypeSchema,
             PropertyDef("detail", SchemaDataType.string, "detail message for developer"),
             DictionaryPropertyDef("data", description = "JsonObject or JsonArray")
-        ).map { it.valuePair() }.toMap()
+        ).associate { it.valuePair() }
 
         val modelDef = ModelDef(
             ErrorResponseDetailError::class.simpleName!!, requiredProperties, properties,
@@ -91,7 +95,7 @@ object BuiltinComponents : ComponentLoader {
             PropertyDef("reqId", SchemaDataType.string, "request unique id"),
             DictionaryPropertyDef("data", description = "JsonObject or JsonArray"),
             ErrorResponseErrorsSchema
-        ).map { it.valuePair() }.toMap()
+        ).associate { it.valuePair() }
 
         return ModelDef(ErrorResponse::class.simpleName!!, requiredProperties, properties, kClass = ErrorResponse::class).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
@@ -101,7 +105,7 @@ object BuiltinComponents : ComponentLoader {
     private val DynamicQueryPagingResponseSchema =
         buildDynamicQueryPagingResponseSchema(DictionaryPropertyDef("default", description = "JsonObject of JsonArray"))
 
-    fun buildDynamicQueryPagingResponseSchema(itemSchema: Schema): ModelDef {
+    private fun buildDynamicQueryPagingResponseSchema(itemSchema: Schema): ModelDef {
         val requiredProperties = listOf("code", "data")
         val properties: Map<String, Schema> = listOf(
             ResponseCodeValueSchema,
@@ -113,11 +117,11 @@ object BuiltinComponents : ComponentLoader {
                     PropertyDef("itemsPerPage", SchemaDataType.integer),
                     PropertyDef("pageIndex", SchemaDataType.integer),
                     ArrayModelDef("items", itemSchema),
-                ).map { it.valuePair() }.toMap()
+                ).associate { it.valuePair() }
             ).also {
                 it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
             }
-        ).map { it.valuePair() }.toMap()
+        ).associate { it.valuePair() }
 
         return ModelDef("DynamicQueryPagingResponse-${itemSchema.name}", requiredProperties, properties).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
@@ -127,19 +131,19 @@ object BuiltinComponents : ComponentLoader {
     private val DynamicQueryItemsResponseSchema =
         buildDynamicQueryItemsResponseSchema(DictionaryPropertyDef("default", description = "JsonObject of JsonArray"))
 
-    fun buildDynamicQueryItemsResponseSchema(itemSchema: Schema): ModelDef {
+    private fun buildDynamicQueryItemsResponseSchema(itemSchema: Schema): ModelDef {
         val requiredProperties = listOf("code", "data")
         val properties: Map<String, Schema> = listOf(
             ResponseCodeValueSchema,
             ArrayModelDef("data", itemSchema),
-        ).map { it.valuePair() }.toMap()
+        ).associate { it.valuePair() }
 
         return ModelDef("DynamicQueryItemsResponse-${itemSchema.name}", requiredProperties, properties).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }
 
-    val DynamicQueryTotalResponseSchema = buildDynamicQueryTotalResponseSchema()
+    private val DynamicQueryTotalResponseSchema = buildDynamicQueryTotalResponseSchema()
 
     private fun buildDynamicQueryTotalResponseSchema(): ModelDef {
         val requiredProperties = listOf("code", "data")
@@ -149,7 +153,7 @@ object BuiltinComponents : ComponentLoader {
                 "data", listOf("total"),
                 mapOf(PropertyDef("total", SchemaDataType.integer).valuePair())
             ),
-        ).map { it.valuePair() }.toMap()
+        ).associate { it.valuePair() }
 
         return ModelDef("DynamicQueryTotalResponse", requiredProperties, properties).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
@@ -290,7 +294,26 @@ object BuiltinComponents : ComponentLoader {
         DictionaryPropertyDef("FreeForm", description = "JsonObject or JsonArray")
     ).createRef()
 
-    fun buildDynamicQueryResponse(oneOfSchema: OneOfSchema): ResponseObject {
+    fun buildDynamicQueryResponse(components: ComponentsObject, responseBodyType: KType): Response {
+        val dtoSchema = SchemaObjectConverter.toSchema(components, responseBodyType)
+        val dtoSchemaRef = components.add(dtoSchema.getDefinition())
+        val dynamicQuerySchemas = buildDynamicQueryResponseSchemas(components, dtoSchemaRef)
+        return buildDynamicQueryResponse(dynamicQuerySchemas)
+    }
+
+    private fun buildDynamicQueryResponseSchemas(components: ComponentsObject, itemSchema: Schema): OneOfSchema {
+        val pagingResponseSchema = buildDynamicQueryPagingResponseSchema(itemSchema)
+        val itemsResponseSchema = buildDynamicQueryItemsResponseSchema(itemSchema)
+        components.add(pagingResponseSchema)
+        components.add(itemsResponseSchema)
+        return OneOfSchema(itemSchema.name, listOf(
+            pagingResponseSchema,
+            itemsResponseSchema,
+            DynamicQueryTotalResponseSchema
+        ).map { it.createRef() })
+    }
+
+    private fun buildDynamicQueryResponse(oneOfSchema: OneOfSchema): ResponseObject {
         return ResponseObject(
             "DynamicQueryPagingResponse-${oneOfSchema.name}", "僅查詢筆數 / 查詢資料 / 分頁查詢", HttpStatusCode.OK,
             mapOf(ContentType.Application.Json to MediaTypeObject(oneOfSchema))

@@ -19,7 +19,7 @@ import fanpoll.infra.HttpStatusResponse
 import fanpoll.infra.app.AppReleaseService
 import fanpoll.infra.auth.*
 import fanpoll.infra.controller.UUIDEntityIdLocation
-import fanpoll.infra.database.dynamicDBQuery
+import fanpoll.infra.database.queryDB
 import fanpoll.infra.login.AppLoginForm
 import fanpoll.infra.login.LoginResponse
 import fanpoll.infra.notification.NotificationSender
@@ -57,8 +57,8 @@ fun Routing.club() {
                     call.respond(HttpStatusCode.OK)
                 }
 
-                dynamicQuery<UserDTO>(FindUsers) {
-                    call.respondMyResponse(call.request.dynamicDBQuery<UserDTO>())
+                dynamicQuery<UserDTO>(FindUsers) { dynamicQuery ->
+                    call.respondMyResponse(dynamicQuery.queryDB<UserDTO>())
                 }
             }
 

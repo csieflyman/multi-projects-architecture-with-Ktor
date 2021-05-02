@@ -78,7 +78,7 @@ abstract class BaseException(
 
 class RequestException : BaseException {
 
-    var errorLocation: Invalid<MyLocation>? = null
+    private var errorLocation: Invalid<MyLocation>? = null
 
     constructor(
         code: ResponseCode,

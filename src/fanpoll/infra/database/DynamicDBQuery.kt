@@ -11,8 +11,6 @@ import fanpoll.infra.*
 import fanpoll.infra.controller.EntityDTO
 import fanpoll.infra.utils.DateTimeUtils
 import fanpoll.infra.utils.DynamicQuery
-import fanpoll.infra.utils.parseQueryStringToDynamicQuery
-import io.ktor.request.ApplicationRequest
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import mu.KotlinLogging
@@ -26,10 +24,7 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
 
-inline fun <reified T : EntityDTO<*>> ApplicationRequest.dynamicDBQuery(): MyResponse =
-    parseQueryStringToDynamicQuery().dbToDataResponse<T>()
-
-inline fun <reified T : EntityDTO<*>> DynamicQuery.dbToDataResponse(): MyResponse {
+inline fun <reified T : EntityDTO<*>> DynamicQuery.queryDB(): MyResponse {
     return transaction {
         if (offsetLimit != null && offsetLimit.isPaging) {
             val dbCountQuery = toDBCountQuery<T>()

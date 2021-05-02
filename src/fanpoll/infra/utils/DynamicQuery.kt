@@ -2,11 +2,16 @@
  * Copyright (c) 2020. fanpoll All rights reserved.
  */
 
+@file:OptIn(KtorExperimentalLocationsAPI::class)
+
 package fanpoll.infra.utils
 
 import fanpoll.infra.RequestException
 import fanpoll.infra.ResponseCode
 import fanpoll.infra.controller.Form
+import fanpoll.infra.controller.MyLocation
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.Location
 import io.ktor.request.ApplicationRequest
 import io.ktor.util.toMap
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -20,10 +25,20 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import mu.KotlinLogging
 
-fun ApplicationRequest.parseQueryStringToDynamicQuery(): DynamicQuery = DynamicQuery.from(this)
+@Location("")
+data class DynamicQueryLocation(
+    val fields: String? = null,
+    val filter: String? = null,
+    val orderBy: String? = null,
+    val offset: Long? = null,
+    val limit: Int? = null,
+    val pageIndex: Long? = null,
+    val itemsPerPage: Int? = null,
+    val count: Boolean? = false
+) : MyLocation()
 
 @Serializable
-class DynamicQueryDTO(
+class DynamicQueryForm(
     val fields: List<String>? = null,
     val filter: String? = null,
     val orderBy: String? = null,
@@ -33,7 +48,7 @@ class DynamicQueryDTO(
     val itemsPerPage: Int? = null,
     val count: Boolean?,
     val paramMap: MutableMap<String, String>? = null
-) : Form<DynamicQueryDTO>()
+) : Form<DynamicQueryForm>()
 
 @Serializable
 class DynamicQuery(
@@ -72,7 +87,15 @@ class DynamicQuery(
 
         private val countQueryKeywords: Set<String> = setOf(QUERY_FILTER, QUERY_COUNT)
 
-        fun from(dto: DynamicQueryDTO): DynamicQuery = with(dto) {
+        fun from(location: DynamicQueryLocation): DynamicQuery = with(location) {
+            DynamicQuery(
+                fields?.split(","), filter?.let { parseFilter(it) }, orderBy?.let { parseOrderBy(it) },
+                parseOffsetLimit(offset, limit, pageIndex, itemsPerPage),
+                count, null
+            )
+        }
+
+        fun from(form: DynamicQueryForm): DynamicQuery = with(form) {
             DynamicQuery(
                 fields, filter?.let { parseFilter(it) }, orderBy?.let { parseOrderBy(it) },
                 parseOffsetLimit(offset, limit, pageIndex, itemsPerPage),

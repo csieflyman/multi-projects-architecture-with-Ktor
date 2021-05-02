@@ -7,17 +7,13 @@
 package fanpoll.infra.openapi
 
 import fanpoll.infra.auth.PrincipalAuth
-import fanpoll.infra.database.DynamicDBQuery
 import fanpoll.infra.openapi.schema.Tag
-import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
-import fanpoll.infra.openapi.schema.operation.definitions.OneOfSchema
 import fanpoll.infra.openapi.schema.operation.definitions.OperationObject
-import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.openapi.schema.operation.support.converters.ParameterObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.RequestBodyObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
-import fanpoll.infra.openapi.schema.operation.support.converters.SchemaObjectConverter
+import fanpoll.infra.utils.DynamicQueryLocation
 import fanpoll.infra.utils.IdentifiableObject
 import io.ktor.http.HttpMethod
 import io.ktor.locations.KtorExperimentalLocationsAPI
@@ -25,7 +21,6 @@ import io.ktor.locations.Location
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
 class OpenApiOperation(
@@ -42,8 +37,6 @@ class OpenApiOperation(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        val kType = typeOf<OpenApiOperation>()
-        private val dynamicDBQueryKType = typeOf<DynamicDBQuery<*>>()
     }
 
     fun init(projectOpenApi: ProjectOpenApi) {
@@ -130,33 +123,21 @@ class OpenApiOperation(
         responseBodyType: KType
     ) {
         val components = projectOpenApi.openAPIObject.components
+
         if (locationClass != null) {
-            operationObject.parameters += ParameterObjectConverter.toParameter(locationClass)
+            if (locationClass == DynamicQueryLocation::class)
+                operationObject.parameters += BuiltinComponents.DynamicQueryParameters
+            else
+                operationObject.parameters += ParameterObjectConverter.toParameter(locationClass)
         }
 
         if (requestBodyType != typeOf<Unit>()) {
             operationObject.requestBody = RequestBodyObjectConverter.toRequestBody(components, requestBodyType)
         }
 
-        if (responseBodyType.isSubtypeOf(dynamicDBQueryKType)) {
-            val dtoSchema = SchemaObjectConverter.toSchema(components, responseBodyType.arguments[0].type!!)
-            val dtoSchemaRef = components.add(dtoSchema.getDefinition())
-            val dynamicQuerySchemas = buildDynamicQueryResponseSchemas(dtoSchemaRef, components)
-            operationObject.addSuccessResponses(BuiltinComponents.buildDynamicQueryResponse(dynamicQuerySchemas))
-
-            operationObject.parameters += BuiltinComponents.DynamicQueryParameters
-        } else operationObject.addSuccessResponses(ResponseObjectConverter.toResponse(components, responseBodyType))
-    }
-
-    private fun buildDynamicQueryResponseSchemas(itemSchema: Schema, components: ComponentsObject): OneOfSchema {
-        val pagingResponseSchema = BuiltinComponents.buildDynamicQueryPagingResponseSchema(itemSchema)
-        val itemsResponseSchema = BuiltinComponents.buildDynamicQueryItemsResponseSchema(itemSchema)
-        components.add(pagingResponseSchema)
-        components.add(itemsResponseSchema)
-        return OneOfSchema(itemSchema.name, listOf(
-            pagingResponseSchema,
-            itemsResponseSchema,
-            BuiltinComponents.DynamicQueryTotalResponseSchema
-        ).map { it.createRef() })
+        if (locationClass == DynamicQueryLocation::class)
+            operationObject.addSuccessResponses(BuiltinComponents.buildDynamicQueryResponse(components, responseBodyType))
+        else
+            operationObject.addSuccessResponses(ResponseObjectConverter.toResponse(components, responseBodyType))
     }
 }

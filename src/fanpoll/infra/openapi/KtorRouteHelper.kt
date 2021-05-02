@@ -10,10 +10,11 @@ import fanpoll.infra.auth.PrincipalAuth
 import fanpoll.infra.controller.EntityDTO
 import fanpoll.infra.controller.Form
 import fanpoll.infra.controller.MyLocation
-import fanpoll.infra.controller.receiveAndValidate
-import fanpoll.infra.database.DynamicDBQuery
+import fanpoll.infra.controller.receiveAndValidateBody
 import fanpoll.infra.openapi.KtorRouteHelper.routeAuth
 import fanpoll.infra.openapi.KtorRouteHelper.routePath
+import fanpoll.infra.utils.DynamicQuery
+import fanpoll.infra.utils.DynamicQueryLocation
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.AuthenticationRouteSelector
@@ -34,7 +35,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
         routeAuth(this), routePath(this), HttpMethod.Post,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
-    return post { body(this, call.receiveAndValidate()) }
+    return post { body(this, call.receiveAndValidateBody()) }
 }
 
 @ContextDsl
@@ -47,7 +48,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
         routeAuth(this), routePath(this, path), HttpMethod.Post,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
-    return post(path) { body(this, call.receiveAndValidate()) }
+    return post(path) { body(this, call.receiveAndValidateBody()) }
 }
 
 @ContextDsl
@@ -59,7 +60,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
         routeAuth(this), routePath(this), HttpMethod.Put,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
-    return put { body(this, call.receiveAndValidate()) }
+    return put { body(this, call.receiveAndValidateBody()) }
 }
 
 @ContextDsl
@@ -72,7 +73,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
         routeAuth(this), routePath(this, path), HttpMethod.Put,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
-    return put(path) { body(this, call.receiveAndValidate()) }
+    return put(path) { body(this, call.receiveAndValidateBody()) }
 }
 
 @ContextDsl
@@ -84,7 +85,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
         routeAuth(this), routePath(this), HttpMethod.Patch,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
-    return patch { body(this, call.receiveAndValidate()) }
+    return patch { body(this, call.receiveAndValidateBody()) }
 }
 
 @ContextDsl
@@ -97,7 +98,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
         routeAuth(this), routePath(this, path), HttpMethod.Patch,
         typeOf<REQUEST>(), typeOf<RESPONSE>()
     )
-    return patch(path) { body(this, call.receiveAndValidate()) }
+    return patch(path) { body(this, call.receiveAndValidateBody()) }
 }
 
 @ContextDsl
@@ -203,7 +204,7 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
         typeOf<REQUEST>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return post<LOCATION> {
-        body(this, it, call.receiveAndValidate(it as? MyLocation))
+        body(this, it, call.receiveAndValidateBody(it as? MyLocation))
     }
 }
 
@@ -217,7 +218,7 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
         typeOf<REQUEST>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return put<LOCATION> {
-        body(this, it, call.receiveAndValidate(it as? MyLocation))
+        body(this, it, call.receiveAndValidateBody(it as? MyLocation))
     }
 }
 
@@ -231,10 +232,11 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
         typeOf<REQUEST>(), typeOf<RESPONSE>(), LOCATION::class
     )
     return patch<LOCATION> {
-        body(this, it, call.receiveAndValidate(it as? MyLocation))
+        body(this, it, call.receiveAndValidateBody(it as? MyLocation))
     }
 }
 
+@OptIn(KtorExperimentalLocationsAPI::class)
 @ContextDsl
 inline fun <reified LOCATION : Any, reified RESPONSE : Any> Route.getWithLocation(
     operation: OpenApiOperation,
@@ -262,26 +264,16 @@ inline fun <reified LOCATION : Any> Route.deleteWithLocation(
 @ContextDsl
 inline fun <reified RESPONSE : EntityDTO<*>> Route.dynamicQuery(
     operation: OpenApiOperation,
-    noinline body: PipelineInterceptor<Unit, ApplicationCall>
+    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(DynamicQuery) -> Unit
 ): Route {
     operation.bindRoute(
         routeAuth(this), routePath(this), HttpMethod.Get,
-        typeOf<Unit>(), typeOf<DynamicDBQuery<RESPONSE>>()
+        typeOf<Unit>(), typeOf<RESPONSE>(), DynamicQueryLocation::class
     )
-    return get(body)
-}
-
-@ContextDsl
-inline fun <reified RESPONSE : EntityDTO<*>> Route.dynamicQuery(
-    path: String,
-    operation: OpenApiOperation,
-    noinline body: PipelineInterceptor<Unit, ApplicationCall>
-): Route {
-    operation.bindRoute(
-        routeAuth(this), routePath(this, path), HttpMethod.Get,
-        typeOf<Unit>(), typeOf<DynamicDBQuery<RESPONSE>>()
-    )
-    return get(path, body)
+    return get<DynamicQueryLocation> {
+        it.validate(null)
+        body(this, DynamicQuery.from(it))
+    }
 }
 
 object KtorRouteHelper {

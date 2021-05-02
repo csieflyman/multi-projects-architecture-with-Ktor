@@ -7,7 +7,7 @@ package fanpoll.ops
 import fanpoll.infra.*
 import fanpoll.infra.app.*
 import fanpoll.infra.auth.authorize
-import fanpoll.infra.database.dynamicDBQuery
+import fanpoll.infra.database.queryDB
 import fanpoll.infra.openapi.dynamicQuery
 import fanpoll.infra.openapi.get
 import fanpoll.infra.openapi.post
@@ -57,8 +57,8 @@ fun Routing.operations() {
                     call.respond(HttpStatusResponse.OK)
                 }
 
-                dynamicQuery<AppReleaseDTO>(FindAppReleases) {
-                    call.respondMyResponse(call.request.dynamicDBQuery<AppReleaseDTO>())
+                dynamicQuery<AppReleaseDTO>(FindAppReleases) { dynamicQuery ->
+                    call.respondMyResponse(dynamicQuery.queryDB<AppReleaseDTO>())
                 }
 
                 get<Unit>("/check", CheckAppRelease) {
