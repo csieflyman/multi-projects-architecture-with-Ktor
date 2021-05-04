@@ -19,7 +19,6 @@ import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.Strin
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.UUIDIdKType
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.UnitKType
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils.buildResponseCodeDescription
-import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils.buildResponseCodesDescription
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import kotlin.reflect.KType
@@ -58,16 +57,8 @@ object ResponseObjectConverter {
         properties.forEach { (it.value.getDefinition() as SchemaObject).parent = modelDef }
 
         return ResponseObject(
-            dataSchema.name + "-Response", "Success data response", HttpStatusCode.OK,
+            dataSchema.name + "-Response", "Success", HttpStatusCode.OK,
             mapOf(ContentType.Application.Json to MediaTypeObject(modelDef))
-        )
-    }
-
-    fun toErrorResponseDef(responseCodes: Set<ResponseCode>, schema: ModelDef): ResponseObject {
-        val sortedCodes = responseCodes.sortedBy { it.value.toIntOrNull() ?: Int.MAX_VALUE }
-        return ResponseObject(
-            schema.name + "-Response", buildResponseCodesDescription(sortedCodes), null,
-            mapOf(ContentType.Application.Json to MediaTypeObject(schema))
         )
     }
 }

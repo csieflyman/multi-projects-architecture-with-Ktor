@@ -34,9 +34,9 @@ object ProjectOpenApiManager {
 
     fun getOpenApiJson(projectId: String): String {
         return openApiJsonMap.getOrPut(projectId) {
-            val openApiRoot = openApiMap[projectId]?.openAPIObject
+            val openAPIObject = openApiMap[projectId]?.openAPIObject
                 ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "$projectId openapi json is not exist")
-            Jackson.toJsonString(openApiRoot)
+            Jackson.toJsonString(openAPIObject)
         }
     }
 }

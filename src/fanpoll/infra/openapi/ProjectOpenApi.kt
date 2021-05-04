@@ -40,14 +40,14 @@ class ProjectOpenApi(
                 version = config.info.gitTagVersion
             ),
             servers = listOf(Server(url = urlRootPath)),
-            tags = operations.flatMap { it.tags }.toSet()
+            tags = operations.flatMap { it.tags }
         )
         configure?.invoke(openAPIObject)
 
         openAPIObject.initComponents(securitySchemes)
         loadReusableComponents()
 
-        operations.forEach { it.init(this) }
+        operations.forEach { it.init(openAPIObject) }
     }
 
     private fun buildInfoDescription(config: OpenApiConfig): String {

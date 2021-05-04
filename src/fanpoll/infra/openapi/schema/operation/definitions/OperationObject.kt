@@ -7,90 +7,67 @@ package fanpoll.infra.openapi.schema.operation.definitions
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import fanpoll.infra.ResponseCode
-import fanpoll.infra.openapi.schema.operation.support.Header
+import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
+import fanpoll.infra.openapi.schema.component.support.BuiltinComponents.ErrorResponseSchema
 import fanpoll.infra.openapi.schema.operation.support.Parameter
 import fanpoll.infra.openapi.schema.operation.support.RequestBody
 import fanpoll.infra.openapi.schema.operation.support.Response
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 
 class OperationObject(
-    var operationId: String? = null,
-    var tags: List<String>? = null,
-    var summary: String? = null,
+    val operationId: String,
+    val tags: List<String>,
+    var summary: String = operationId,
     var description: String? = null,
-    @JsonIgnore val parameters: MutableList<Parameter> = mutableListOf(),
-    var requestBody: RequestBody? = null,
-    // Multiple Authentication Types: listOf(listOf(A, B), listOf(C, D)) => (A AND B) OR (C AND D)
-    @JsonIgnore var security: List<List<SecurityRequirementObject>>? = null,
-    var deprecated: Boolean? = null
+    val deprecated: Boolean? = null
 ) {
 
+    // Multiple Authentication Types: listOf(listOf(A, B), listOf(C, D)) => (A AND B) OR (C AND D)
     @JsonIgnore
-    private val responses: MutableMap<String, Response> = mutableMapOf()
+    var security: List<List<SecurityRequirementObject>>? = null
 
     @JsonGetter("security")
     fun toJsonSecurity(): List<Map<String, List<String>>>? {
         return security?.map { s1 -> s1.associate { s2 -> s2.scheme.name to s2.scopes } }
     }
 
+    @JsonIgnore
+    val parameters: MutableList<Parameter> = mutableListOf()
+
     @JsonGetter("parameters")
     fun toJsonParameters(): List<Parameter> = parameters.sortedBy { (it.getDefinition() as ParameterObject).`in`.ordinal }
 
-    @JsonGetter("responses")
-    fun toJsonResponses(): Map<String, Response> = responses.toSortedMap(compareBy { it.toIntOrNull() ?: Int.MAX_VALUE })
+    @JsonIgnore
+    var requestBody: RequestBody? = null
 
-    // use "oneOf" schema for varying responseBody formats of responseCode
-    fun addSuccessResponses(vararg responses: Response) {
-        responses.forEach {
-            val statusCode = (it.getDefinition() as ResponseObject).statusCode!!.value.toString()
-            require(!this.responses.containsKey(statusCode))
-            this.responses[statusCode] = it
-        }
+    @JsonIgnore
+    private val responses: MutableMap<HttpStatusCode, Response> = mutableMapOf()
+
+    @JsonIgnore
+    var defaultResponse: Response = BuiltinComponents.DefaultErrorResponse
+
+    @JsonGetter("responses")
+    fun toJsonResponses(): Map<String, Response> {
+        val result = responses.toSortedMap(compareBy { it.value }).mapKeys { it.key.value.toString() }.toMutableMap()
+        result["default"] = defaultResponse
+        return result
     }
 
-    fun addSuccessResponses(responseCodes: Set<ResponseCode>) {
+    // use "oneOf" schema for varying responseBody formats of responseCode
+    fun addSuccessResponse(response: Response) {
+        responses[(response.getDefinition() as ResponseObject).statusCode!!] = response
+    }
+
+    fun addErrorResponses(vararg responseCodes: ResponseCode) {
         responses += responseCodes.toList().groupBy { it.httpStatusCode }
             .mapValues {
                 ResponseObject(
-                    "${it.key.value}-Response",
-                    ResponseUtils.buildResponseCodesDescription(it.value), it.key, null
+                    "${it.key.value}-ErrorResponse",
+                    ResponseUtils.buildResponseCodesDescription(it.value),
+                    it.key, mapOf(ContentType.Application.Json to MediaTypeObject(ErrorResponseSchema))
                 )
-            }.mapKeys { it.key.toString() }
-    }
-
-    fun setSuccessResponse(responseCode: ResponseCode, response: Response) {
-        responses[responseCode.httpStatusCode.value.toString()] = response
-    }
-
-    fun setErrorResponse(response: Response) {
-        require(!responses.containsKey("default"))
-        responses["default"] = response
-    }
-
-    fun setSuccessResponseHeader(headers: List<Header>, responseCode: ResponseCode? = null) {
-        if (responseCode == null) {
-            responses.filterKeys { it != "default" }.values.forEach {
-                setResponseHeader(it, headers)
             }
-        } else {
-            setResponseHeader(getSuccessResponse(responseCode), headers)
-        }
-    }
-
-    fun setErrorResponseHeader(headers: List<Header>) {
-        setResponseHeader(getErrorResponse(), headers)
-    }
-
-    private fun setResponseHeader(response: Response, headers: List<Header>) {
-        require(response !is ReferenceObject)
-        (response as ResponseObject).headers.plusAssign(headers.map { it.name to it })
-    }
-
-    private fun getSuccessResponse(responseCode: ResponseCode): Response {
-        return responses[responseCode.httpStatusCode.value.toString()]!!
-    }
-
-    private fun getErrorResponse(): Response {
-        return responses["default"]!!
     }
 }

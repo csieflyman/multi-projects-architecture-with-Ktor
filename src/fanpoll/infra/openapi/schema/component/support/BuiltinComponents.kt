@@ -28,7 +28,7 @@ object BuiltinComponents : ComponentLoader {
     val ResponseCodeValueSchema = PropertyDef("code", SchemaDataType.string, "4-digit number")
 
     private val ResponseCodeTypeSchema = PropertyDef(
-        "codeType", SchemaDataType.string,
+        "ResponseCodeType", SchemaDataType.string,
         ResponseCodeType.values().joinToString(" ; ") {
             "${it.name} => ${I18nUtils.getCodeTypeMessage(it, OpenApiConfig.langCode)}"
         },
@@ -36,7 +36,7 @@ object BuiltinComponents : ComponentLoader {
     )
 
     private val ResponseMessageTypeSchema = PropertyDef(
-        "messageType", SchemaDataType.string, enum = ResponseMessageType.values().toList()
+        "ResponseMessageType", SchemaDataType.string, enum = ResponseMessageType.values().toList()
     )
 
     private val ResponseCodeSchema = buildResponseCodeSchema()
@@ -186,7 +186,8 @@ object BuiltinComponents : ComponentLoader {
     )
 
     private val schemaList: List<ReferenceObject> = listOf(
-        ResponseCodeSchema, ErrorResponseSchema, ErrorResponseErrorsSchema,
+        ResponseCodeTypeSchema, ResponseMessageTypeSchema, ResponseCodeSchema,
+        ErrorResponseSchema, ErrorResponseErrorsSchema,
         DynamicQueryPagingResponseSchema, DynamicQueryItemsResponseSchema, DynamicQueryTotalResponseSchema,
         ClientVersionSchema, ClientVersionCheckResultSchema
     ).map { it.createRef() }
@@ -294,6 +295,11 @@ object BuiltinComponents : ComponentLoader {
         DictionaryPropertyDef("FreeForm", description = "JsonObject or JsonArray")
     ).createRef()
 
+    val DefaultErrorResponse = ResponseObject(
+        "DefaultErrorResponse", "Checkout ResponseCode in the Schemas section", null,
+        mapOf(ContentType.Application.Json to MediaTypeObject(ErrorResponseSchema))
+    ).createRef()
+
     fun buildDynamicQueryResponse(components: ComponentsObject, responseBodyType: KType): Response {
         val dtoSchema = SchemaObjectConverter.toSchema(components, responseBodyType)
         val dtoSchemaRef = components.add(dtoSchema.getDefinition())
@@ -340,6 +346,7 @@ object BuiltinComponents : ComponentLoader {
 
     private val responseList: List<ReferenceObject> = listOf(
         EmptyBodyResponse, StringIdResponse, LongIdResponse, UUIDResponse, FreeFormDataResponse,
+        DefaultErrorResponse,
         DynamicQueryResponse, DynamicQueryPagingResponse, DynamicQueryItemsResponse, DynamicQueryTotalResponse
     )
 

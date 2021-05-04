@@ -8,6 +8,7 @@ package fanpoll.infra.openapi
 
 import fanpoll.infra.auth.AuthorizationRouteSelector
 import fanpoll.infra.auth.PrincipalAuth
+import fanpoll.infra.openapi.schema.OpenAPIObject
 import fanpoll.infra.openapi.schema.Tag
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
 import fanpoll.infra.openapi.schema.operation.definitions.OperationObject
@@ -33,21 +34,19 @@ class OpenApiOperation(
     override val id: String,
     val tags: List<Tag>,
     private val notYetImplemented: Boolean = false,
+    deprecated: Boolean = false,
     private val configure: (OperationObject.() -> Unit)? = null
 ) : IdentifiableObject<String>() {
 
-    lateinit var projectOpenApi: ProjectOpenApi
-        private set
-    lateinit var operationObject: OperationObject
-        private set
+    private val operationObject = OperationObject(id, tags.map { it.name }, deprecated = deprecated)
+    private lateinit var openAPIObject: OpenAPIObject
 
     companion object {
         private val logger = KotlinLogging.logger {}
     }
 
-    fun init(projectOpenApi: ProjectOpenApi) {
-        this.projectOpenApi = projectOpenApi
-        operationObject = OperationObject(operationId = id, tags = tags.map { it.name }, summary = id)
+    fun init(openAPIObject: OpenAPIObject) {
+        this.openAPIObject = openAPIObject
     }
 
     fun bindRoute(
@@ -65,7 +64,7 @@ class OpenApiOperation(
         if (locationClass != null) {
             path += getKtorLocationPath(locationClass)
         }
-        projectOpenApi.openAPIObject.paths.addPath(path, method, operationObject)
+        openAPIObject.addPath(path, method, operationObject)
     }
 
     private fun getKtorLocationPath(locationClass: KClass<*>): String {
@@ -127,7 +126,7 @@ class OpenApiOperation(
         requestBodyType: KType,
         responseBodyType: KType
     ) {
-        val components = projectOpenApi.openAPIObject.components
+        val components = openAPIObject.components
 
         if (locationClass != null) {
             if (locationClass == DynamicQueryLocation::class)
@@ -141,9 +140,9 @@ class OpenApiOperation(
         }
 
         if (locationClass == DynamicQueryLocation::class)
-            operationObject.addSuccessResponses(BuiltinComponents.buildDynamicQueryResponse(components, responseBodyType))
+            operationObject.addSuccessResponse(BuiltinComponents.buildDynamicQueryResponse(components, responseBodyType))
         else
-            operationObject.addSuccessResponses(ResponseObjectConverter.toResponse(components, responseBodyType))
+            operationObject.addSuccessResponse(ResponseObjectConverter.toResponse(components, responseBodyType))
     }
 
     private fun routeAuth(route: Route): List<PrincipalAuth>? {

@@ -9,12 +9,10 @@ import fanpoll.infra.auth.UserType
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.openapi.OpenApiOperation
 import fanpoll.infra.openapi.schema.Tag
-import fanpoll.infra.openapi.schema.component.support.BuiltinComponents.ErrorResponseSchema
 import fanpoll.infra.openapi.schema.component.support.ComponentLoader
 import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
-import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter.toErrorResponseDef
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.typeOf
 
@@ -22,7 +20,6 @@ object ClubOpenApiOperations {
 
     private val AuthTag = Tag("auth", "登入、登出、變更密碼")
     private val UserTag = Tag("user", "使用者帳號")
-    private val ClubTag = Tag("club", "")
     private val NotificationTag = Tag("notification", "通知(推播)")
     private val DataTag = Tag("data")
 
@@ -32,14 +29,9 @@ object ClubOpenApiOperations {
     val UpdateMyPassword = OpenApiOperation("UpdateMyPassword", listOf(AuthTag))
 
     val Login = OpenApiOperation("Login", listOf(AuthTag)) {
-        setErrorResponse(
-            toErrorResponseDef(
-                setOf(
-                    ResponseCode.AUTH_PRINCIPAL_DISABLED,
-                    ResponseCode.AUTH_TENANT_DISABLED,
-                    ResponseCode.AUTH_LOGIN_UNAUTHENTICATED
-                ), ErrorResponseSchema
-            )
+        addErrorResponses(
+            ResponseCode.AUTH_PRINCIPAL_DISABLED,
+            ResponseCode.AUTH_LOGIN_UNAUTHENTICATED
         )
     }
     val Logout = OpenApiOperation("Logout", listOf(AuthTag))
