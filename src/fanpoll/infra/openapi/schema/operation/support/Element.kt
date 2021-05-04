@@ -16,6 +16,14 @@ interface Element : Identifiable<String> {
     fun getDefinition(): Definition
 
     fun getReference(): ReferenceObject
+
+    fun createRef(): ReferenceObject
+
+    fun refPair(): Pair<String, ReferenceObject> = name to getReference()
+
+    fun defPair(): Pair<String, Definition> = name to getDefinition()
+
+    fun valuePair(): Pair<String, Element>
 }
 
 interface Parameter : Element

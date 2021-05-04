@@ -32,12 +32,13 @@ object BuiltinComponents : ComponentLoader {
         ResponseCodeType.values().joinToString(" ; ") {
             "${it.name} => ${I18nUtils.getCodeTypeMessage(it, OpenApiConfig.langCode)}"
         },
-        enum = ResponseCodeType.values().toList(),
-    )
+        enum = ResponseCodeType.values().toList(), kClass = ResponseCodeType::class
+    ).createRef()
 
     private val ResponseMessageTypeSchema = PropertyDef(
-        "ResponseMessageType", SchemaDataType.string, enum = ResponseMessageType.values().toList()
-    )
+        "ResponseMessageType", SchemaDataType.string,
+        enum = ResponseMessageType.values().toList(), kClass = ResponseMessageType::class
+    ).createRef()
 
     private val ResponseCodeSchema = buildResponseCodeSchema()
 
@@ -48,7 +49,7 @@ object BuiltinComponents : ComponentLoader {
             ResponseCodeTypeSchema,
             ResponseMessageTypeSchema,
             PropertyDef("httpStatusCode", SchemaDataType.integer)
-        ).associate { it.valuePair() }
+        ).associate { it.valuePair() } as Map<String, Schema>
         return ModelDef(
             ResponseCode::class.simpleName!!, requiredProperties, properties,
             ResponseUtils.buildResponseCodesDescription(ResponseCode.values().toList())
@@ -66,7 +67,7 @@ object BuiltinComponents : ComponentLoader {
             ResponseCodeTypeSchema,
             PropertyDef("detail", SchemaDataType.string, "detail message for developer"),
             DictionaryPropertyDef("data", description = "JsonObject or JsonArray")
-        ).associate { it.valuePair() }
+        ).associate { it.valuePair() } as Map<String, Schema>
 
         val modelDef = ModelDef(
             ErrorResponseDetailError::class.simpleName!!, requiredProperties, properties,
@@ -95,7 +96,7 @@ object BuiltinComponents : ComponentLoader {
             PropertyDef("reqId", SchemaDataType.string, "request unique id"),
             DictionaryPropertyDef("data", description = "JsonObject or JsonArray"),
             ErrorResponseErrorsSchema
-        ).associate { it.valuePair() }
+        ).associate { it.valuePair() } as Map<String, Schema>
 
         return ModelDef(ErrorResponse::class.simpleName!!, requiredProperties, properties, kClass = ErrorResponse::class).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
@@ -121,7 +122,7 @@ object BuiltinComponents : ComponentLoader {
             ).also {
                 it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
             }
-        ).associate { it.valuePair() }
+        ).associate { it.valuePair() } as Map<String, Schema>
 
         return ModelDef("DynamicQueryPagingResponse-${itemSchema.name}", requiredProperties, properties).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
@@ -136,7 +137,7 @@ object BuiltinComponents : ComponentLoader {
         val properties: Map<String, Schema> = listOf(
             ResponseCodeValueSchema,
             ArrayModelDef("data", itemSchema),
-        ).associate { it.valuePair() }
+        ).associate { it.valuePair() } as Map<String, Schema>
 
         return ModelDef("DynamicQueryItemsResponse-${itemSchema.name}", requiredProperties, properties).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
@@ -153,7 +154,7 @@ object BuiltinComponents : ComponentLoader {
                 "data", listOf("total"),
                 mapOf(PropertyDef("total", SchemaDataType.integer).valuePair())
             ),
-        ).associate { it.valuePair() }
+        ).associate { it.valuePair() } as Map<String, Schema>
 
         return ModelDef("DynamicQueryTotalResponse", requiredProperties, properties).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }

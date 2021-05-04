@@ -20,6 +20,10 @@ class ReferenceObject(
 
     override fun getReference(): ReferenceObject = this
 
+    override fun createRef(): ReferenceObject = this
+
+    override fun valuePair(): Pair<String, Element> = name to this
+
     @JsonValue
     fun toJson(): JsonNode = Jackson.newObject().put("\$ref", `$ref`)
 }

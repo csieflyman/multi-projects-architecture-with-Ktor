@@ -32,13 +32,7 @@ abstract class Definition(
 
     fun hasRef(): Boolean = refObj.isInitialized()
 
-    fun createRef(): ReferenceObject = refObj.value
+    override fun createRef(): ReferenceObject = refObj.value
 
     fun createRef(refName: String): ReferenceObject = ReferenceObject(refName, this)
-
-    fun refPair(): Pair<String, ReferenceObject> = name to getReference()
-
-    abstract fun defPair(): Pair<String, Definition>
-
-    abstract fun valuePair(): Pair<String, Element>
 }

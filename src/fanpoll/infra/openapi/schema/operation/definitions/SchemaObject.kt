@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
 import fanpoll.infra.openapi.schema.operation.support.Definition
+import fanpoll.infra.openapi.schema.operation.support.Element
 import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.utils.Jackson
 import kotlin.reflect.KClass
@@ -113,6 +114,10 @@ abstract class ComplexSchema(@get:JsonIgnore override val name: String) : Schema
 
     @JsonIgnore
     override fun getReference(): ReferenceObject = error("complex schema can't be referenced")
+
+    override fun createRef(): ReferenceObject = error("complex schema can't be referenced")
+
+    override fun valuePair(): Pair<String, Element> = error("complex schema can't be referenced")
 }
 
 class OneOfSchema(name: String, val oneOf: List<ReferenceObject>) : ComplexSchema(name)
