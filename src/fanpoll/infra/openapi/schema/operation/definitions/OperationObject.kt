@@ -39,7 +39,6 @@ class OperationObject(
     @JsonGetter("parameters")
     fun toJsonParameters(): List<Parameter> = parameters.sortedBy { (it.getDefinition() as ParameterObject).`in`.ordinal }
 
-    @JsonIgnore
     var requestBody: RequestBody? = null
 
     @JsonIgnore
