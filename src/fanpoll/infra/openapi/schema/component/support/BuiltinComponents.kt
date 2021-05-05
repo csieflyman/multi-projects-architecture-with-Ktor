@@ -30,19 +30,19 @@ object BuiltinComponents : ComponentLoader {
         ResponseCodeType.values().joinToString(" ; ") {
             "${it.name} => ${I18nUtils.getCodeTypeMessage(it, OpenApiConfig.langCode)}"
         },
-        enum = ResponseCodeType.values().toList(), kClass = ResponseCodeType::class
-    ).createRef("codeType")
+        refName = "codeType", enum = ResponseCodeType.values().toList(), kClass = ResponseCodeType::class
+    ).createRef()
 
     private val ResponseMessageTypeSchema = PropertyDef(
         "ResponseMessageType", SchemaDataType.string,
-        enum = ResponseMessageType.values().toList(), kClass = ResponseMessageType::class
-    ).createRef("messageType")
+        refName = "messageType", enum = ResponseMessageType.values().toList(), kClass = ResponseMessageType::class
+    ).createRef()
 
     val ResponseCodeSchema = PropertyDef(
         "ResponseCode", SchemaDataType.string,
         "Checkout ResponseCodeValue",
-        kClass = ResponseCode::class
-    ).createRef("code")
+        refName = "code", kClass = ResponseCode::class
+    ).createRef()
 
     private val ResponseCodeValueSchema = PropertyDef(
         "ResponseCodeValue", SchemaDataType.string,
@@ -50,7 +50,7 @@ object BuiltinComponents : ComponentLoader {
         enum = ResponseCode.values().map { it.value }.toList()
     )
 
-    private val ErrorResponseErrorsSchema = buildErrorResponseErrorsSchema()
+    private val ErrorResponseErrorsSchema = buildErrorResponseErrorsSchema().createRef()
 
     private fun buildErrorResponseErrorsSchema(): ArrayModelDef {
         val requiredProperties = listOf("code", "codeType", "detail")
@@ -67,12 +67,10 @@ object BuiltinComponents : ComponentLoader {
         ).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
-        val arrayModelDef = ArrayModelDef(
+        return ArrayModelDef(
             "${ErrorResponseDetailError::class.simpleName!!}Array", modelDef,
-            "all detail errors", "errors"
+            "all detail errors", refName = "errors"
         )
-        arrayModelDef.createRef()
-        return arrayModelDef
     }
 
     val ErrorResponseSchema = buildErrorResponseSchema()
