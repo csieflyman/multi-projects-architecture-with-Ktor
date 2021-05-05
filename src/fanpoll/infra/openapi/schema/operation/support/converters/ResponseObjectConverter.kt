@@ -49,7 +49,7 @@ object ResponseObjectConverter {
     fun toDataResponse(dataSchema: Schema): ResponseObject {
         val requiredProperties = listOf("code", "data")
         val properties: Map<String, Schema> = listOf(
-            "code" to BuiltinComponents.ResponseCodeValueSchema,
+            "code" to BuiltinComponents.ResponseCodeSchema,
             "data" to dataSchema,
         ).toMap()
 
