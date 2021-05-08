@@ -36,14 +36,13 @@ application {
 
 repositories {
     mavenCentral()
-    maven("https://dl.bintray.com/kotlin/exposed")
-    maven("https://kotlin.bintray.com/kotlinx/")
 }
 
 val kotlinVersion = "1.4.32" // the same with plugin version above
-val flywayVersion = "7.7.2" // the same with plugin version above
-val ktorVersion = "1.5.3"
-val exposedVersion = "0.30.2"
+val flywayVersion = "7.8.2" // the same with plugin version above
+val ktorVersion = "1.5.4"
+val exposedVersion = "0.31.1"
+val jacksonVersion = "2.12.3"
 
 dependencies {
     // =============== kotlin, kotlinx ===============
@@ -74,7 +73,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
-    runtimeOnly("org.postgresql:postgresql:42.2.19")
+    runtimeOnly("org.postgresql:postgresql:42.2.20")
 
     // ===============  AWS Java SDK Version 2 ===============
     implementation(platform("software.amazon.awssdk:bom:2.16.34"))
@@ -91,7 +90,7 @@ dependencies {
     implementation("com.google.firebase:firebase-admin:7.1.1")
 
     // =============== utils - feature ===============
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
     implementation("org.freemarker:freemarker:2.3.31")
     implementation("org.mindrot:jbcrypt:0.4")
     implementation("io.konform:konform-jvm:0.2.0")
@@ -133,11 +132,11 @@ dependencies {
 
     // jackson only used for openapi
     // maybe need in the future https://github.com/FasterXML/jackson-modules-java8
-    implementation("com.fasterxml.jackson.core:jackson-core:2.12.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.2")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.12.2")
-    implementation("com.fasterxml.jackson.module:jackson-module-blackbird:2.12.2")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-blackbird:$jacksonVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
     // =============== test ===============
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
