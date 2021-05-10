@@ -27,14 +27,14 @@ import mu.KotlinLogging
 
 @Location("")
 data class DynamicQueryLocation(
-    val fields: String? = null,
-    val filter: String? = null,
-    val orderBy: String? = null,
-    val offset: Long? = null,
-    val limit: Int? = null,
-    val pageIndex: Long? = null,
-    val itemsPerPage: Int? = null,
-    val count: Boolean? = false
+    val q_fields: String? = null,
+    val q_filter: String? = null,
+    val q_orderBy: String? = null,
+    val q_offset: Long? = null,
+    val q_limit: Int? = null,
+    val q_pageIndex: Long? = null,
+    val q_itemsPerPage: Int? = null,
+    val q_count: Boolean? = null
 ) : MyLocation()
 
 @Serializable
@@ -59,6 +59,19 @@ class DynamicQuery(
     val count: Boolean? = false,
     private val paramMap: MutableMap<String, String>? = null // q_xxx (unused now)
 ) {
+
+    override fun toString(): String = listOfNotNull(
+        fields?.let { "$QUERY_FIELDS=$it" },
+        filter?.let {
+            var dsl = it.toString()
+            dsl = if (dsl.startsWith("(")) "[" + dsl.substring(1, dsl.length - 1) + "]" else dsl
+            "$QUERY_FILTER=$dsl"
+        },
+        orderByList?.joinToString("&"),
+        offsetLimit?.toString(),
+        count?.let { "$QUERY_COUNT=$it" },
+        paramMap?.let { map -> map.entries.joinToString("&") { param -> "${param.key}=${param.value}" } },
+    ).joinToString("&")
 
     companion object {
 
@@ -89,9 +102,9 @@ class DynamicQuery(
 
         fun from(location: DynamicQueryLocation): DynamicQuery = with(location) {
             DynamicQuery(
-                fields?.split(","), filter?.let { parseFilter(it) }, orderBy?.let { parseOrderBy(it) },
-                parseOffsetLimit(offset, limit, pageIndex, itemsPerPage),
-                count, null
+                q_fields?.split(","), q_filter?.let { parseFilter(it) }, q_orderBy?.let { parseOrderBy(it) },
+                parseOffsetLimit(q_offset, q_limit, q_pageIndex, q_itemsPerPage),
+                q_count, null
             )
         }
 
@@ -135,11 +148,11 @@ class DynamicQuery(
                 s1.compareTo(s2)
         }
 
-        private fun parseFields(text: String): List<String> = text.split(",").toMutableSet().sortedWith(fieldComparator)
+        private fun parseFields(text: String): List<String> = text.trim().split(",").toMutableSet().sortedWith(fieldComparator)
 
         // example: q=[a = 1 and b = 2 and (c = 3 or d = 4)]
         fun parseFilter(text: String): Predicate {
-            var dsl = text
+            var dsl = text.trim()
             logger.debug("query filter: $dsl")
             if (!dsl.startsWith("[") || !dsl.endsWith("]"))
                 throw RequestException(
@@ -148,11 +161,11 @@ class DynamicQuery(
                 )
             dsl = dsl.substring(1, dsl.length - 1)
             val predicate = Predicate.valueOf(dsl.trim())
-            logger.debug("filter parsed dsl = ${predicate.dsl()}")
+            logger.debug("query filter parsed = ${predicate}")
             return predicate
         }
 
-        private fun parseOrderBy(text: String): List<OrderBy> = text.split(",").map {
+        private fun parseOrderBy(text: String): List<OrderBy> = text.trim().split(",").map {
             val asc = if (it.endsWith('+') || it.endsWith('-')) it.last() == '+' else null
             val field = if (asc != null) it.substring(0, it.length - 1) else it
             OrderBy(field, asc)
@@ -218,12 +231,16 @@ class DynamicQuery(
 
     @Serializable
     data class OrderBy(val field: String, val asc: Boolean? = true) {
+
         override fun equals(other: Any?) = myEquals(other, { field })
         override fun hashCode() = myHashCode({ field })
+
+        override fun toString(): String = field + if (asc == true) "+" else "-"
     }
 
     @Serializable
-    data class OffsetLimit(val offset: Long, val limit: Int, val isPaging: Boolean) {
+    class OffsetLimit(val offset: Long, val limit: Int, val isPaging: Boolean) {
+
         init {
             require(offset >= 0)
             require(limit >= 1)
@@ -240,6 +257,10 @@ class DynamicQuery(
                 require(isPaging)
                 return limit
             }
+
+        override fun toString(): String = if (isPaging)
+            "$QUERY_ITEMS_PER_PAGE=$itemsPerPage&$QUERY_PAGE_INDEX=$pageIndex"
+        else "$QUERY_OFFSET=$offset&$QUERY_LIMIT=$limit"
     }
 
     enum class PredicateValueKind {
@@ -278,7 +299,7 @@ class DynamicQuery(
 
             private val NONE_VALUE_REGEX = """(\S+) (is_null|is_not_null)""".toRegex()
             private val SINGLE_VALUE_REGEX = """(\S+) ([=><]|!=|>=|<=|like) (\S+)""".toRegex()
-            private val MULTIPLE_VALUE_REGEX = """(\S+) (in|not_in) \((\S+)\)""".toRegex()
+            private val MULTIPLE_VALUE_REGEX = """(\S+) (in|not_in) \(([\S\s]+)\)""".toRegex()
 
             override val descriptor: SerialDescriptor =
                 PrimitiveSerialDescriptor("fanpoll.infra.utils.DynamicQuery.Predicate", PrimitiveKind.STRING)
@@ -374,21 +395,17 @@ class DynamicQuery(
                 }
 
                 predicate ?: MULTIPLE_VALUE_REGEX.find(dsl)?.let {
-                    val (field, operator, value) = it.destructured
+                    val (field, operator, values) = it.destructured
                     return Simple(
                         field,
                         PredicateOperator.queryStringValueOf(operator),
-                        value.split(",").toMutableSet()
+                        values.trim().split(",").map { value -> value.trim() }.toMutableSet()
                     )
                 }
 
                 throw RequestException(ResponseCode.REQUEST_BAD_QUERY, "invalid query filter: syntax error => $dsl")
             }
         }
-
-        abstract fun dsl(): String
-
-        override fun toString(): String = dsl()
 
         data class Simple(val field: String, val operator: PredicateOperator, val value: Any?) : Predicate() {
 
@@ -398,7 +415,8 @@ class DynamicQuery(
                 require(if (operator.valueKind == PredicateValueKind.MULTIPLE) value is Collection<*> else true)
             }
 
-            override fun dsl(): String = "$field ${operator.sqlExpr} ${value ?: ""}"
+            override fun toString(): String = "$field ${operator.sqlExpr} " +
+                    "${(value as? Iterable<*>)?.joinToString(separator = ",", prefix = "(", postfix = ")") ?: value ?: ""}"
 
             override fun add(predicate: Predicate): Predicate {
                 return Junction(true, mutableListOf(this, predicate))
@@ -408,15 +426,10 @@ class DynamicQuery(
             override fun hashCode() = myHashCode({ field }, { operator })
         }
 
-//        data class Literal(val value: String): Predicate() {
-//
-//            override fun dsl(): String = value
-//        }
-
         class Junction(val isConjunction: Boolean, val children: MutableList<Predicate>) : Predicate() {
 
-            override fun dsl(): String = children.joinToString(separator = if (isConjunction) " and " else " or ",
-                prefix = "(", postfix = ")", transform = { child -> child.dsl() })
+            override fun toString(): String = children.joinToString(separator = if (isConjunction) " and " else " or ",
+                prefix = "(", postfix = ")", transform = { child -> child.toString() })
 
             override fun add(predicate: Predicate): Predicate {
                 children.add(predicate)
