@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
 import fanpoll.infra.openapi.schema.operation.support.Definition
 import fanpoll.infra.openapi.schema.operation.support.Element
+import fanpoll.infra.openapi.schema.operation.support.Example
 import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.utils.Jackson
 import kotlin.reflect.KClass
@@ -23,7 +24,9 @@ abstract class SchemaObject(
     val description: String? = null,
     refName: String? = null,
     @JsonIgnore var parent: Schema?,
-    @get:JsonIgnore val kClass: KClass<*>? = null
+    @get:JsonIgnore val kClass: KClass<*>? = null,
+    @JsonIgnore val example: Any? = null,
+    @JsonIgnore val examples: Map<String, Example>? = null
 ) : Definition(name, refName), Schema {
 
     override fun componentsFieldName(): String = "schemas"
@@ -53,6 +56,8 @@ open class PropertyDef(
     refName: String? = null,
     parent: ModelDef? = null,
     kClass: KClass<*>? = null,
+    example: Any? = null,
+    examples: Map<String, Example>? = null,
     val format: String? = null,
     val pattern: String? = null,
     val minimum: Int? = null,
@@ -63,8 +68,7 @@ open class PropertyDef(
     val maxLength: Int? = null,
     var enum: List<Any>? = null,
     val default: Any? = null,
-    val example: Any? = null
-) : SchemaObject(name, dataType, description, refName, parent, kClass)
+) : SchemaObject(name, dataType, description, refName, parent, kClass, example, examples)
 
 class ModelDef(
     name: String,
@@ -74,8 +78,9 @@ class ModelDef(
     refName: String? = null,
     parent: ModelDef? = null,
     kClass: KClass<*>? = null,
-    val example: Any? = null
-) : SchemaObject(name, SchemaDataType.`object`, description, refName, parent, kClass)
+    example: Any? = null,
+    examples: Map<String, Example>? = null
+) : SchemaObject(name, SchemaDataType.`object`, description, refName, parent, kClass, example, examples)
 
 class ArrayPropertyDef(
     name: String,

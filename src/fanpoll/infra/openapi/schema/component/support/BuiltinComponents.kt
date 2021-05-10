@@ -163,27 +163,19 @@ object BuiltinComponents : ComponentLoader {
         description = RunAsAuthProviderConfig.tokenPatternDescription
     )
 
-    private val ClientVersionSchema = PropertyDef(
-        HEADER_CLIENT_VERSION, SchemaDataType.string,
-        pattern = AppVersion.NAME_PATTERN, example = "1.0.0",
-        description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => $HEADER_CLIENT_VERSION_CHECK_RESULT = ${
-            ClientVersionCheckResult.values().toList()
-        }"
-    )
-
-    private val ClientVersionCheckResultSchema = PropertyDef(
-        HEADER_CLIENT_VERSION_CHECK_RESULT, SchemaDataType.string,
-        enum = ClientVersionCheckResult.values().toList(), kClass = ClientVersionCheckResult::class
-    )
-
     private val schemaList: List<ReferenceObject> = listOf(
         ResponseCodeTypeSchema, ResponseMessageTypeSchema, ResponseCodeSchema, ResponseCodeValueSchema,
         ErrorResponseSchema, ErrorResponseErrorsSchema,
-        DynamicQueryPagingResponseSchema, DynamicQueryItemsResponseSchema, DynamicQueryTotalResponseSchema,
-        ClientVersionSchema, ClientVersionCheckResultSchema
+        DynamicQueryPagingResponseSchema, DynamicQueryItemsResponseSchema, DynamicQueryTotalResponseSchema
     ).map { it.createRef() }
 
     // ==================== Headers ====================
+
+    private val ClientVersionCheckResultSchema = PropertyDef(
+        HEADER_CLIENT_VERSION_CHECK_RESULT, SchemaDataType.string,
+        enum = ClientVersionCheckResult.values().toList(), kClass = ClientVersionCheckResult::class,
+        example = ClientVersionCheckResult.Latest
+    )
 
     private val ClientVersionCheckResultResponseHeader = HeaderObject(
         true, ClientVersionCheckResultSchema
@@ -198,6 +190,15 @@ object BuiltinComponents : ComponentLoader {
     // ===== Parameters(Header) ======
 
     private val RunAsOptionalHeader = ParameterObject(ParameterInputType.header, false, runAsTokenSchema).createRef()
+
+    private val ClientVersionSchema = PropertyDef(
+        HEADER_CLIENT_VERSION, SchemaDataType.string,
+        pattern = AppVersion.NAME_PATTERN,
+        description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => $HEADER_CLIENT_VERSION_CHECK_RESULT = ${
+            ClientVersionCheckResult.values().toList()
+        }",
+        example = "1.0.0"
+    )
 
     val ClientVersionOptionalHeader = ParameterObject(ParameterInputType.header, false, ClientVersionSchema).createRef()
 
@@ -218,7 +219,7 @@ object BuiltinComponents : ComponentLoader {
             "查詢條件 DSL => 以 '[' 字元開始， ']' 字元結束，" +
                     "每個運算式 expression 的格式是 field operator value ，中間以空白字元分隔，多個條件以 and 或 or 連接 (目前不支援巢狀條件)。" +
                     "operator 支援 = != > >= < <= like in not_in is_null is_not_null 。" +
-                    "範例: [name = fanpoll and price > 100 and type in (cpu,memory)] "
+                    "範例: [name = james and age >= 18 and enabled = true and role in (admin, member) and createTime >= 2021-01-01T00:00:00Z]"
         ).createRef(),
         ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_orderBy", SchemaDataType.string),

@@ -4,9 +4,11 @@
 
 package fanpoll.infra.openapi.schema.operation.definitions
 
+import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import fanpoll.infra.openapi.schema.operation.support.Definition
+import fanpoll.infra.openapi.schema.operation.support.Example
 import fanpoll.infra.openapi.schema.operation.support.Header
 import fanpoll.infra.openapi.schema.operation.support.Parameter
 
@@ -25,8 +27,8 @@ open class ParameterObject(
     val description: String? = null,
     val deprecated: Boolean? = null,
     val allowEmptyValue: Boolean? = null,
-    val example: Any? = null,
-    val examples: Map<String, ExampleObject>? = null
+    @JsonIgnore val example: Any? = null,
+    @JsonIgnore val examples: Map<String, Example>? = null
 ) : Definition("${schema.getDefinition().name}${if (required) "" else "-optional"}"), Parameter {
 
     override fun componentsFieldName(): String = "parameters"
@@ -37,6 +39,16 @@ open class ParameterObject(
     override fun defPair(): Pair<String, ParameterObject> = name to this
 
     override fun valuePair(): Pair<String, Parameter> = if (hasRef()) refPair() else defPair()
+
+    @JsonGetter("example")
+    fun getExampleValue(): Any? {
+        return example ?: schema.example
+    }
+
+    @JsonGetter("examples")
+    fun getExamplesValue(): Map<String, Example>? {
+        return examples ?: schema.examples
+    }
 }
 
 class HeaderObject(
@@ -46,7 +58,7 @@ class HeaderObject(
     deprecated: Boolean? = null,
     allowEmptyValue: Boolean? = null,
     example: Any? = null,
-    examples: Map<String, ExampleObject>? = null
+    examples: Map<String, Example>? = null
 ) : ParameterObject(
     ParameterInputType.header, required, schema, description,
     deprecated, allowEmptyValue, example, examples
