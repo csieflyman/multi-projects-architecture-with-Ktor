@@ -43,40 +43,6 @@ fun Routing.club() {
 
     route(ClubConst.urlRootPath) {
 
-        authorize(OpsAuth.OperationsTeam) {
-
-            route("/users") {
-
-                post<CreateUserForm, Long>(CreateUser) { dto ->
-                    val id = UserService.createUser(dto)
-                    call.respond(DataResponse.uuid(id))
-                }
-
-                put<UUIDEntityIdLocation, UpdateUserForm, Unit>(UpdateUser) { _, dto ->
-                    UserService.updateUser(dto)
-                    call.respond(HttpStatusCode.OK)
-                }
-
-                dynamicQuery<UserDTO>(FindUsers) { dynamicQuery ->
-                    call.respondMyResponse(dynamicQuery.queryDB<UserDTO>())
-                }
-            }
-
-            post<ClubSendPushNotificationForm, UUID>("/notification/push", PushNotification) { dto ->
-                val message = ClubNotificationTypes.BroadCast.buildChannelMessage(dto)
-                //val message = NotificationCmdMessage.create(ClubNotificationTypes.BroadCast, dto)
-                NotificationSender.sendAsync(message)
-                call.respond(DataResponse.uuid(message.id))
-            }
-
-            post<ClubDynamicReportForm, UUID>("/data/export", DynamicReport) { dto ->
-                val message = ClubNotificationTypes.DynamicReport.buildChannelMessage(dto)
-                //val message = NotificationCmdMessage.create(ClubNotificationTypes.DynamicReport, dto)
-                NotificationSender.sendAsync(message)
-                call.respond(DataResponse.uuid(message.id))
-            }
-        }
-
         authorize(ClubAuth.Public) {
 
             post<AppLoginForm, LoginResponse>("/login", Login) { dto ->
@@ -107,6 +73,43 @@ fun Routing.club() {
                 val userId = call.principal<UserPrincipal>()!!.userId
                 UserService.updatePassword(userId, dto)
                 call.respond(HttpStatusResponse.OK)
+            }
+        }
+
+        authorize(OpsAuth.OperationsTeam, ClubAuth.Admin) {
+
+            route("/users") {
+
+                post<CreateUserForm, Long>(CreateUser) { dto ->
+                    val id = UserService.createUser(dto)
+                    call.respond(DataResponse.uuid(id))
+                }
+
+                put<UUIDEntityIdLocation, UpdateUserForm, Unit>(UpdateUser) { _, dto ->
+                    UserService.updateUser(dto)
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                dynamicQuery<UserDTO>(FindUsers) { dynamicQuery ->
+                    call.respondMyResponse(dynamicQuery.queryDB<UserDTO>())
+                }
+            }
+        }
+
+        authorize(OpsAuth.OperationsTeam) {
+
+            post<ClubSendPushNotificationForm, UUID>("/notification/push", PushNotification) { dto ->
+                val message = ClubNotificationTypes.BroadCast.buildChannelMessage(dto)
+                //val message = NotificationCmdMessage.create(ClubNotificationTypes.BroadCast, dto)
+                NotificationSender.sendAsync(message)
+                call.respond(DataResponse.uuid(message.id))
+            }
+
+            post<ClubDynamicReportForm, UUID>("/data/export", DynamicReport) { dto ->
+                val message = ClubNotificationTypes.DynamicReport.buildChannelMessage(dto)
+                //val message = NotificationCmdMessage.create(ClubNotificationTypes.DynamicReport, dto)
+                NotificationSender.sendAsync(message)
+                call.respond(DataResponse.uuid(message.id))
             }
         }
     }

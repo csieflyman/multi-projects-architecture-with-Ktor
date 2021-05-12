@@ -29,6 +29,16 @@ object ClubAuth {
         mapOf(ClubUserType.User.value to ClubUserType.User.value.roles), ClubPrincipalSources.App
     )
 
+    val Admin = PrincipalAuth.User(
+        SessionAuthConfig.providerName, userAuthSchemes,
+        mapOf(ClubUserType.User.value to setOf(ClubUserRole.Admin.value)), ClubPrincipalSources.App
+    )
+
+    val Member = PrincipalAuth.User(
+        SessionAuthConfig.providerName, userAuthSchemes,
+        mapOf(ClubUserType.User.value to setOf(ClubUserRole.Member.value)), ClubPrincipalSources.App
+    )
+
 }
 
 data class ClubAuthConfig(
