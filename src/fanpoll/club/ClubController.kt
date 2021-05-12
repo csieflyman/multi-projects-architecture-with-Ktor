@@ -14,8 +14,8 @@ import fanpoll.club.ClubOpenApiOperations.PushNotification
 import fanpoll.club.ClubOpenApiOperations.UpdateMyPassword
 import fanpoll.club.ClubOpenApiOperations.UpdateUser
 import fanpoll.club.features.*
-import fanpoll.infra.DataResponse
-import fanpoll.infra.HttpStatusResponse
+import fanpoll.infra.CodeResponseDTO
+import fanpoll.infra.DataResponseDTO
 import fanpoll.infra.app.AppReleaseService
 import fanpoll.infra.auth.*
 import fanpoll.infra.controller.UUIDEntityIdLocation
@@ -27,7 +27,7 @@ import fanpoll.infra.openapi.dynamicQuery
 import fanpoll.infra.openapi.post
 import fanpoll.infra.openapi.postEmptyBody
 import fanpoll.infra.openapi.put
-import fanpoll.infra.respondMyResponse
+import fanpoll.infra.respond
 import fanpoll.ops.OpsAuth
 import io.ktor.application.call
 import io.ktor.auth.principal
@@ -57,7 +57,7 @@ fun Routing.club() {
                     val sid = UserService.login(dto)
                     LoginResponse(sid, clientVersionCheckResult)
                 }
-                call.respond(DataResponse(loginResponse))
+                call.respond(DataResponseDTO(loginResponse))
             }
         }
 
@@ -66,13 +66,13 @@ fun Routing.club() {
             postEmptyBody("/logout", Logout) {
                 val userPrincipal = call.principal<UserPrincipal>()!!
                 UserService.logout(userPrincipal)
-                call.respond(HttpStatusResponse.OK)
+                call.respond(CodeResponseDTO.OK)
             }
 
             put<UpdateUserPasswordForm, Unit>("/myPassword", UpdateMyPassword) { dto ->
                 val userId = call.principal<UserPrincipal>()!!.userId
                 UserService.updatePassword(userId, dto)
-                call.respond(HttpStatusResponse.OK)
+                call.respond(CodeResponseDTO.OK)
             }
         }
 
@@ -82,7 +82,7 @@ fun Routing.club() {
 
                 post<CreateUserForm, Long>(CreateUser) { dto ->
                     val id = UserService.createUser(dto)
-                    call.respond(DataResponse.uuid(id))
+                    call.respond(DataResponseDTO.uuid(id))
                 }
 
                 put<UUIDEntityIdLocation, UpdateUserForm, Unit>(UpdateUser) { _, dto ->
@@ -91,7 +91,7 @@ fun Routing.club() {
                 }
 
                 dynamicQuery<UserDTO>(FindUsers) { dynamicQuery ->
-                    call.respondMyResponse(dynamicQuery.queryDB<UserDTO>())
+                    call.respond(dynamicQuery.queryDB<UserDTO>())
                 }
             }
         }
@@ -102,14 +102,14 @@ fun Routing.club() {
                 val message = ClubNotificationTypes.BroadCast.buildChannelMessage(dto)
                 //val message = NotificationCmdMessage.create(ClubNotificationTypes.BroadCast, dto)
                 NotificationSender.sendAsync(message)
-                call.respond(DataResponse.uuid(message.id))
+                call.respond(DataResponseDTO.uuid(message.id))
             }
 
             post<ClubDynamicReportForm, UUID>("/data/export", DynamicReport) { dto ->
                 val message = ClubNotificationTypes.DynamicReport.buildChannelMessage(dto)
                 //val message = NotificationCmdMessage.create(ClubNotificationTypes.DynamicReport, dto)
                 NotificationSender.sendAsync(message)
-                call.respond(DataResponse.uuid(message.id))
+                call.respond(DataResponseDTO.uuid(message.id))
             }
         }
     }

@@ -4,7 +4,10 @@
 
 package fanpoll.ops
 
-import fanpoll.infra.*
+import fanpoll.infra.CodeResponseDTO
+import fanpoll.infra.DataResponseDTO
+import fanpoll.infra.RequestException
+import fanpoll.infra.ResponseCode
 import fanpoll.infra.app.*
 import fanpoll.infra.auth.authorize
 import fanpoll.infra.database.queryDB
@@ -39,7 +42,7 @@ fun Routing.ops() {
             route("/sysstat") {
 
                 get<Unit>("/healthCheck", HealthCheck) {
-                    call.respond(HttpStatusResponse.OK)
+                    call.respond(CodeResponseDTO.OK)
                 }
             }
         }
@@ -49,16 +52,16 @@ fun Routing.ops() {
             route("/app/releases") {
                 post<CreateAppReleaseForm, Unit>(CreateAppRelease) { dto ->
                     AppReleaseService.create(dto)
-                    call.respond(HttpStatusResponse.OK)
+                    call.respond(CodeResponseDTO.OK)
                 }
 
                 put<UpdateAppReleaseForm, Unit>(UpdateAppRelease) { dto ->
                     AppReleaseService.update(dto)
-                    call.respond(HttpStatusResponse.OK)
+                    call.respond(CodeResponseDTO.OK)
                 }
 
                 dynamicQuery<AppReleaseDTO>(FindAppReleases) { dynamicQuery ->
-                    call.respondMyResponse(dynamicQuery.queryDB<AppReleaseDTO>())
+                    call.respond(dynamicQuery.queryDB<AppReleaseDTO>())
                 }
 
                 get<Unit>("/check", CheckAppRelease) {
@@ -69,7 +72,7 @@ fun Routing.ops() {
                         ResponseCode.REQUEST_BAD_QUERY, "parameter verName is missing"
                     )
                     call.respond(
-                        DataResponse(
+                        DataResponseDTO(
                             JsonObject(
                                 mapOf(
                                     "result" to JsonPrimitive(AppReleaseService.check(AppVersion(appId, verName)).name)

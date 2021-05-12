@@ -6,7 +6,7 @@ package fanpoll
 
 import fanpoll.club.ClubProject
 import fanpoll.club.club
-import fanpoll.infra.ErrorResponse
+import fanpoll.infra.ErrorResponseDTO
 import fanpoll.infra.ExceptionUtils
 import fanpoll.infra.ProjectManager
 import fanpoll.infra.app.AppReleaseService
@@ -87,7 +87,7 @@ fun Application.module() {
                     LogManager.write(LogMessage(LogType.SERVER_ERROR, dto))
                 }
             }
-            call.respond(e.code.httpStatusCode, ErrorResponse(e, call))
+            call.respond(e.code.httpStatusCode, ErrorResponseDTO(e, call))
         }
     }
 

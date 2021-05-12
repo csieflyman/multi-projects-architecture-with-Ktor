@@ -88,7 +88,7 @@ object BuiltinComponents : ComponentLoader {
             ErrorResponseErrorsSchema
         ).associate { it.valuePair() } as Map<String, Schema>
 
-        return ModelDef(ErrorResponse::class.simpleName!!, requiredProperties, properties, kClass = ErrorResponse::class).also {
+        return ModelDef(ErrorResponseDTO::class.simpleName!!, requiredProperties, properties, kClass = ErrorResponseDTO::class).also {
             it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
         }
     }

@@ -4,7 +4,7 @@
 
 package fanpoll.infra.report
 
-import fanpoll.infra.DataResponse
+import fanpoll.infra.DataResponseDTO
 import fanpoll.infra.database.myTransaction
 import fanpoll.infra.report.utils.ReportQueryParameters
 import fanpoll.infra.utils.DateTimeUtils
@@ -18,7 +18,7 @@ object ReportService {
 
     private val logger = KotlinLogging.logger {}
 
-    fun queryToJson(parameters: ReportQueryParameters): DataResponse {
+    fun queryToJson(parameters: ReportQueryParameters): DataResponseDTO {
         logger.debug { "parameters = $parameters" }
 
         parameters.reports.forEach { report ->
@@ -52,6 +52,6 @@ object ReportService {
                 JsonPrimitive(DateTimeUtils.LOCAL_DATE_FORMATTER.format(parameters.compareRange.endInclusive))
             map
         } else resultMap
-        return DataResponse(JsonObject(dataMap))
+        return DataResponseDTO(JsonObject(dataMap))
     }
 }

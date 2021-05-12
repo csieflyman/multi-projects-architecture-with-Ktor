@@ -57,12 +57,12 @@ object SessionAuthConfig {
             challenge {
                 val errorCode = call.attributes.getOrNull(ATTRIBUTE_KEY_USER_SESSION_AUTH_ERROR_CODE)
                 if (errorCode != null) {
-                    call.respondMyResponse(HttpStatusResponse(errorCode))
+                    call.respond(CodeResponseDTO(errorCode))
                 } else {
                     if (call.request.path().endsWith("/logout"))
-                        call.respondMyResponse(HttpStatusResponse.OK)
+                        call.respond(CodeResponseDTO.OK)
                     else
-                        call.respondMyResponse(ErrorResponse(RequestException(ResponseCode.AUTH_SESSION_NOT_FOUND), call))
+                        call.respond(ErrorResponseDTO(RequestException(ResponseCode.AUTH_SESSION_NOT_FOUND), call))
                 }
             }
         }

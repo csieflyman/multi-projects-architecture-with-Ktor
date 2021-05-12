@@ -24,7 +24,7 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
 
-inline fun <reified T : EntityDTO<*>> DynamicQuery.queryDB(): MyResponse {
+inline fun <reified T : EntityDTO<*>> DynamicQuery.queryDB(): ResponseDTO {
     return transaction {
         if (offsetLimit != null && offsetLimit.isPaging) {
             val dbCountQuery = toDBCountQuery<T>()
@@ -33,15 +33,15 @@ inline fun <reified T : EntityDTO<*>> DynamicQuery.queryDB(): MyResponse {
                 val dbQuery = toDBQuery<T>()
                 dbQuery.toList<T>()
             } else listOf()
-            PagingDataResponse.dtoList(offsetLimit, total, items)
+            PagingDataResponseDTO.dtoList(offsetLimit, total, items)
         } else {
             if (count == true) {
                 val dbCountQuery = toDBCountQuery<T>()
                 val total = dbCountQuery.count()
-                DataResponse(JsonObject(mapOf("total" to JsonPrimitive(total))))
+                DataResponseDTO(JsonObject(mapOf("total" to JsonPrimitive(total))))
             } else {
                 val dbQuery = toDBQuery<T>()
-                DataResponse(dbQuery.toList<T>())
+                DataResponseDTO(dbQuery.toList<T>())
             }
         }
     }

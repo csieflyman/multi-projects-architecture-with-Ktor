@@ -39,12 +39,12 @@ enum class ResponseCodeType {
     }
 }
 
-suspend fun ApplicationCall.respondMyResponse(myResponse: MyResponse) {
-    respond(myResponse.code.httpStatusCode, myResponse)
+suspend fun ApplicationCall.respond(responseDTO: ResponseDTO) {
+    respond(responseDTO.code.httpStatusCode, responseDTO)
 }
 
 @Serializable
-sealed class MyResponse {
+sealed class ResponseDTO {
 
     abstract val code: ResponseCode
 
@@ -53,10 +53,10 @@ sealed class MyResponse {
 
 @Serializable
 @SerialName("code")
-class HttpStatusResponse(override val code: ResponseCode) : MyResponse() {
+class CodeResponseDTO(override val code: ResponseCode) : ResponseDTO() {
 
     companion object {
-        val OK = HttpStatusResponse(ResponseCode.OK)
+        val OK = CodeResponseDTO(ResponseCode.OK)
     }
 
     override val data: JsonElement? = null
@@ -65,30 +65,30 @@ class HttpStatusResponse(override val code: ResponseCode) : MyResponse() {
 @OptIn(InternalSerializationApi::class)
 @Serializable
 @SerialName("data")
-class DataResponse(override val code: ResponseCode, override val data: JsonElement) : MyResponse() {
+class DataResponseDTO(override val code: ResponseCode, override val data: JsonElement) : ResponseDTO() {
 
     constructor(data: JsonElement) : this(ResponseCode.OK, data)
 
     companion object {
 
-        inline operator fun <reified T : Any> invoke(data: T): DataResponse {
-            return DataResponse(json.encodeToJsonElement(T::class.serializer(), data))
+        inline operator fun <reified T : Any> invoke(data: T): DataResponseDTO {
+            return DataResponseDTO(json.encodeToJsonElement(T::class.serializer(), data))
         }
 
-        inline operator fun <reified T : Any> invoke(data: List<T>): DataResponse {
-            return DataResponse(JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
+        inline operator fun <reified T : Any> invoke(data: List<T>): DataResponseDTO {
+            return DataResponseDTO(JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
         }
 
-        fun longId(id: Long): DataResponse {
-            return DataResponse(JsonObject(mapOf("id" to JsonPrimitive(id))))
+        fun longId(id: Long): DataResponseDTO {
+            return DataResponseDTO(JsonObject(mapOf("id" to JsonPrimitive(id))))
         }
 
-        fun stringId(id: String): DataResponse {
-            return DataResponse(JsonObject(mapOf("id" to JsonPrimitive(id))))
+        fun stringId(id: String): DataResponseDTO {
+            return DataResponseDTO(JsonObject(mapOf("id" to JsonPrimitive(id))))
         }
 
-        fun uuid(id: UUID): DataResponse {
-            return DataResponse(JsonObject(mapOf("id" to JsonPrimitive(id.toString()))))
+        fun uuid(id: UUID): DataResponseDTO {
+            return DataResponseDTO(JsonObject(mapOf("id" to JsonPrimitive(id.toString()))))
         }
     }
 }
@@ -96,19 +96,19 @@ class DataResponse(override val code: ResponseCode, override val data: JsonEleme
 @OptIn(InternalSerializationApi::class)
 @Serializable
 @SerialName("paging")
-class PagingDataResponse(override val code: ResponseCode, override val data: JsonElement) : MyResponse() {
+class PagingDataResponseDTO(override val code: ResponseCode, override val data: JsonElement) : ResponseDTO() {
 
     constructor(data: JsonElement) : this(ResponseCode.OK, data)
 
     companion object {
 
-        inline fun <reified T : Any> dtoList(offsetLimit: DynamicQuery.OffsetLimit, total: Long, items: List<T>): PagingDataResponse {
+        inline fun <reified T : Any> dtoList(offsetLimit: DynamicQuery.OffsetLimit, total: Long, items: List<T>): PagingDataResponseDTO {
             return jsonArray(
                 offsetLimit, total, JsonArray(items.map { json.encodeToJsonElement(T::class.serializer(), it) })
             )
         }
 
-        fun jsonArray(offsetLimit: DynamicQuery.OffsetLimit, total: Long, items: JsonArray): PagingDataResponse {
+        fun jsonArray(offsetLimit: DynamicQuery.OffsetLimit, total: Long, items: JsonArray): PagingDataResponseDTO {
             val totalPages = (total / offsetLimit.itemsPerPage) + (if (total % offsetLimit.itemsPerPage == 0L) 0 else 1)
             val finalItems = if (total != items.size.toLong()) items else {
                 val startIndex: Int = (offsetLimit.itemsPerPage * (offsetLimit.pageIndex - 1)).toInt()
@@ -122,7 +122,7 @@ class PagingDataResponse(override val code: ResponseCode, override val data: Jso
                     JsonArray(items.subList(startIndex, endIndex))
                 }
             }
-            return PagingDataResponse(
+            return PagingDataResponseDTO(
                 json.encodeToJsonElement(
                     PagingData.serializer(),
                     PagingData(total, totalPages, offsetLimit.itemsPerPage, offsetLimit.pageIndex, finalItems)
@@ -141,7 +141,7 @@ class PagingDataResponse(override val code: ResponseCode, override val data: Jso
 
 @Serializable
 @SerialName("error")
-class ErrorResponse(
+class ErrorResponseDTO(
     override val code: ResponseCode,
     val message: String,
     val messageType: ResponseMessageType,
@@ -149,20 +149,20 @@ class ErrorResponse(
     val reqId: String,
     override val data: JsonObject? = null,
     val errors: MutableList<ErrorResponseDetailError>? = null
-) : MyResponse() {
+) : ResponseDTO() {
 
-    @Serializer(forClass = ErrorResponse::class)
-    companion object : KSerializer<ErrorResponse> {
+    @Serializer(forClass = ErrorResponseDTO::class)
+    companion object : KSerializer<ErrorResponseDTO> {
 
-        operator fun invoke(ex: BaseException, call: ApplicationCall): ErrorResponse {
-            return ErrorResponse(
+        operator fun invoke(ex: BaseException, call: ApplicationCall): ErrorResponseDTO {
+            return ErrorResponseDTO(
                 ex.code, ResponseUtils.buildUserMessage(ex, call),
                 ex.code.messageType, ResponseUtils.buildClientErrorDetailMessage(ex), call.callId!!,
                 ex.dataMap?.toJsonObject(), null
             )
         }
 
-        override fun serialize(encoder: Encoder, value: ErrorResponse) {
+        override fun serialize(encoder: Encoder, value: ErrorResponseDTO) {
             val jsonOutput =
                 encoder as? JsonEncoder ?: throw SerializationException("This class can be saved only by Json")
 
@@ -184,7 +184,7 @@ class ErrorResponse(
             jsonOutput.encodeJsonElement(JsonObject(mapOf("error" to contentMap.toJsonObject())))
         }
 
-        override fun deserialize(decoder: Decoder): ErrorResponse {
+        override fun deserialize(decoder: Decoder): ErrorResponseDTO {
             throw InternalServerErrorException(ResponseCode.UNSUPPORTED_OPERATION_ERROR, "serialize response only")
         }
     }
@@ -206,12 +206,12 @@ class ErrorResponseDetailError(
 @OptIn(InternalSerializationApi::class)
 @Serializable
 @SerialName("dataMessage")
-class DataMessageResponse(
+class DataMessageResponseDTO(
     override val code: ResponseCode,
     val message: String,
     val messageType: ResponseMessageType,
     override val data: JsonElement
-) : MyResponse() {
+) : ResponseDTO() {
 
     constructor(
         code: ResponseCode, args: Map<String, Any>? = null,
@@ -224,15 +224,15 @@ class DataMessageResponse(
         inline operator fun <reified T : Form<*>> invoke(
             code: ResponseCode, args: Map<String, Any>? = null,
             call: ApplicationCall, data: T
-        ): DataMessageResponse {
-            return DataMessageResponse(code, args, call, json.encodeToJsonElement(T::class.serializer(), data))
+        ): DataMessageResponseDTO {
+            return DataMessageResponseDTO(code, args, call, json.encodeToJsonElement(T::class.serializer(), data))
         }
 
         inline operator fun <reified T : Form<*>> invoke(
             code: ResponseCode, args: Map<String, Any>? = null,
             call: ApplicationCall, data: List<T>
-        ): DataMessageResponse {
-            return DataMessageResponse(
+        ): DataMessageResponseDTO {
+            return DataMessageResponseDTO(
                 code,
                 args,
                 call,
@@ -244,15 +244,15 @@ class DataMessageResponse(
 
 @Serializable
 @SerialName("batch")
-class BatchResponse(
+class BatchResponseDTO(
     override val code: ResponseCode,
     val message: String,
     val messageType: ResponseMessageType,
     override val data: JsonObject
-) : MyResponse() {
+) : ResponseDTO() {
     companion object {
 
-        operator fun invoke(code: ResponseCode, args: Map<String, Any>? = null, call: ApplicationCall): BatchResponse {
+        operator fun invoke(code: ResponseCode, args: Map<String, Any>? = null, call: ApplicationCall): BatchResponseDTO {
             // ENHANCEMENT
             throw InternalServerErrorException(ResponseCode.NOT_IMPLEMENTED_ERROR)
         }

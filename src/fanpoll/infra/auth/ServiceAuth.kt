@@ -97,7 +97,7 @@ fun Authentication.Configuration.serviceApiKey(
             else AuthenticationFailedCause.InvalidCredentials
 
             context.challenge(providerName, cause) {
-                call.respondMyResponse(HttpStatusResponse(ResponseCode.AUTH_BAD_KEY))
+                call.respond(CodeResponseDTO(ResponseCode.AUTH_BAD_KEY))
                 it.complete()
             }
         }
@@ -122,7 +122,7 @@ fun Authentication.Configuration.serviceAllowHosts(providerName: String, authCon
             context.principal(principal)
         } else {
             context.challenge(providerName, AuthenticationFailedCause.InvalidCredentials) {
-                call.respondMyResponse(ErrorResponse(RequestException(ResponseCode.AUTH_BAD_HOST, "host = $host"), call))
+                call.respond(ErrorResponseDTO(RequestException(ResponseCode.AUTH_BAD_HOST, "host = $host"), call))
                 it.complete()
             }
         }
