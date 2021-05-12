@@ -39,8 +39,8 @@ data class OpsConfig(
 object OpsPrincipalSources {
 
     val Root = PrincipalSource(OpsConst.projectId, "root", false)
-    val OperationsTeam = PrincipalSource(OpsConst.projectId, "operationsTeam", false)
+    val OpsTeam = PrincipalSource(OpsConst.projectId, "opsTeam", false)
     val AppTeam = PrincipalSource(OpsConst.projectId, "appTeam", false)
 
-    val All: Set<PrincipalSource> = setOf(Root, OperationsTeam, AppTeam)
+    val All: Set<PrincipalSource> = setOf(Root, OpsTeam, AppTeam)
 }

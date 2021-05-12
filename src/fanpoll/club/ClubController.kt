@@ -76,7 +76,7 @@ fun Routing.club() {
             }
         }
 
-        authorize(OpsAuth.OperationsTeam, ClubAuth.Admin) {
+        authorize(OpsAuth.OpsTeam, ClubAuth.Admin) {
 
             route("/users") {
 
@@ -96,7 +96,7 @@ fun Routing.club() {
             }
         }
 
-        authorize(OpsAuth.OperationsTeam) {
+        authorize(OpsAuth.OpsTeam) {
 
             post<ClubSendPushNotificationForm, UUID>("/notification/push", PushNotification) { dto ->
                 val message = ClubNotificationTypes.BroadCast.buildChannelMessage(dto)

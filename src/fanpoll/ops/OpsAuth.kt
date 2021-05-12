@@ -19,24 +19,24 @@ object OpsAuth {
 
     val Root = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.Root))
 
-    val OperationsTeam = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.OperationsTeam))
+    val OpsTeam = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.OpsTeam))
 
     val AppTeam = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.AppTeam))
 
     val Dev = PrincipalAuth.Service.private(
         serviceProviderName, serviceAuthSchemes,
-        setOf(OpsPrincipalSources.Root, OpsPrincipalSources.OperationsTeam, OpsPrincipalSources.AppTeam)
+        setOf(OpsPrincipalSources.Root, OpsPrincipalSources.OpsTeam, OpsPrincipalSources.AppTeam)
     )
 }
 
 data class OpsAuthConfig(
     private val root: ServiceAuthConfig,
-    private val operationsTeam: ServiceAuthConfig,
+    private val opsTeam: ServiceAuthConfig,
     private val appTeam: ServiceAuthConfig
 ) : ProjectAuthConfig {
 
     override fun getPrincipalSourceAuthConfigs(): List<PrincipalSourceAuthConfig<ServiceAuthApiKeyCredential>> =
-        listOf(root, operationsTeam, appTeam)
+        listOf(root, opsTeam, appTeam)
 }
 
 fun Authentication.Configuration.ops(authConfig: OpsAuthConfig) {

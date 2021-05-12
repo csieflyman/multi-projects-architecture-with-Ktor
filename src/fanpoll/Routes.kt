@@ -5,7 +5,7 @@
 package fanpoll
 
 import fanpoll.club.club
-import fanpoll.ops.operations
+import fanpoll.ops.ops
 import io.ktor.application.Application
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
@@ -15,7 +15,7 @@ fun Application.routing(appConfig: MyApplicationConfig) {
 
     routing {
 
-        operations()
+        ops()
 
         club()
 

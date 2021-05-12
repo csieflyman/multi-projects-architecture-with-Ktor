@@ -26,7 +26,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 @OptIn(KtorExperimentalLocationsAPI::class)
-fun Routing.operations() {
+fun Routing.ops() {
 
     route(OpsConst.urlRootPath) {
 
@@ -34,7 +34,7 @@ fun Routing.operations() {
 
         }
 
-        authorize(OpsAuth.OperationsTeam) {
+        authorize(OpsAuth.OpsTeam) {
 
             route("/sysstat") {
 
