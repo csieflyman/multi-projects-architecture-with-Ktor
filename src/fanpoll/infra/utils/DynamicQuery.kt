@@ -64,8 +64,9 @@ class DynamicQuery(
         fields?.let { "$QUERY_FIELDS=$it" },
         filter?.let {
             var dsl = it.toString()
-            dsl = if (dsl.startsWith("(")) "[" + dsl.substring(1, dsl.length - 1) + "]" else dsl
-            "$QUERY_FILTER=$dsl"
+            if (dsl.startsWith("("))
+                dsl = dsl.substring(1, dsl.length - 1)
+            "$QUERY_FILTER=[$dsl]"
         },
         orderByList?.joinToString("&"),
         offsetLimit?.toString(),
