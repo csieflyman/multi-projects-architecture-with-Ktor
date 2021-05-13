@@ -9,6 +9,6 @@ import fanpoll.infra.openapi.schema.operation.support.Schema
 
 class MediaTypeObject(
     val schema: Schema,
-    val example: Any? = null,
-    val examples: Map<String, Example>? = null
+    var example: Any? = null,
+    var examples: MutableMap<String, Example>? = null
 )

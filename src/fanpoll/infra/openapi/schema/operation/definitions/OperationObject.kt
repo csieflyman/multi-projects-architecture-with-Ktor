@@ -13,8 +13,13 @@ import fanpoll.infra.openapi.schema.operation.support.Parameter
 import fanpoll.infra.openapi.schema.operation.support.RequestBody
 import fanpoll.infra.openapi.schema.operation.support.Response
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
+import fanpoll.infra.utils.Jackson
+import fanpoll.infra.utils.json
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.serializer
 
 class OperationObject(
     val operationId: String,
@@ -42,7 +47,7 @@ class OperationObject(
     var requestBody: RequestBody? = null
 
     @JsonIgnore
-    private val responses: MutableMap<HttpStatusCode, Response> = mutableMapOf()
+    val responses: MutableMap<HttpStatusCode, Response> = mutableMapOf()
 
     @JsonIgnore
     var defaultResponse: Response = BuiltinComponents.DefaultErrorResponse
@@ -68,5 +73,41 @@ class OperationObject(
                     it.key, mapOf(ContentType.Application.Json to MediaTypeObject(ErrorResponseSchema))
                 )
             }
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    inline fun <reified T : Any> addRequestExample(obj: T) {
+        val jsonObject = json.encodeToJsonElement(T::class.serializer(), obj)
+        (requestBody!!.getDefinition() as RequestBodyObject).addJsonExample(Jackson.parse(jsonObject.toString()))
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    inline fun <reified T : Any> addRequestExample(objs: List<T>) {
+        val jsonArray = JsonArray(objs.map { json.encodeToJsonElement(T::class.serializer(), it) })
+        (requestBody!!.getDefinition() as RequestBodyObject).addJsonExample(Jackson.parse(jsonArray.toString()))
+    }
+
+    fun addRequestExample(vararg examples: ExampleObject) {
+        val requestBodyObject = (requestBody!!.getDefinition() as RequestBodyObject)
+        examples.forEach { requestBodyObject.addJsonExample(it) }
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    inline fun <reified T : Any> addResponseExample(responseCode: ResponseCode, obj: T) {
+        val jsonObject = json.encodeToJsonElement(T::class.serializer(), obj)
+        (responses[responseCode.httpStatusCode]!!.getDefinition() as ResponseObject)
+            .addJsonExample(Jackson.parse(jsonObject.toString()))
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    inline fun <reified T : Any> addResponseExample(responseCode: ResponseCode, objs: List<T>) {
+        val jsonArray = JsonArray(objs.map { json.encodeToJsonElement(T::class.serializer(), it) })
+        (responses[responseCode.httpStatusCode]!!.getDefinition() as ResponseObject)
+            .addJsonExample(Jackson.parse(jsonArray.toString()))
+    }
+
+    fun addResponseExample(responseCode: ResponseCode, vararg examples: ExampleObject) {
+        val responseObject = (responses[responseCode.httpStatusCode]!!.getDefinition() as ResponseObject)
+        examples.forEach { responseObject.addJsonExample(it) }
     }
 }

@@ -4,12 +4,17 @@
 
 package fanpoll.club
 
+import fanpoll.infra.DataResponseDTO
 import fanpoll.infra.ResponseCode
+import fanpoll.infra.auth.ClientVersionCheckResult
 import fanpoll.infra.auth.UserType
+import fanpoll.infra.login.AppLoginForm
+import fanpoll.infra.login.LoginResponse
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.openapi.OpenApiOperation
 import fanpoll.infra.openapi.schema.Tag
 import fanpoll.infra.openapi.schema.component.support.ComponentLoader
+import fanpoll.infra.openapi.schema.operation.definitions.ExampleObject
 import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
@@ -29,9 +34,34 @@ object ClubOpenApiOperations {
     val UpdateMyPassword = OpenApiOperation("UpdateMyPassword", listOf(AuthTag))
 
     val Login = OpenApiOperation("Login", listOf(AuthTag)) {
+
         addErrorResponses(
             ResponseCode.AUTH_PRINCIPAL_DISABLED,
             ResponseCode.AUTH_LOGIN_UNAUTHENTICATED
+        )
+
+        addRequestExample(AppLoginForm("tester@test.com", "test123"))
+
+        addResponseExample(
+            ResponseCode.OK,
+            ExampleObject(
+                ClientVersionCheckResult.Latest.name, ClientVersionCheckResult.Latest.name, "已是最新版本",
+                DataResponseDTO(
+                    LoginResponse(
+                        "club:android:user:421feef3-c1b4-4525-a416-6a11cf6ed9ca:2d7674bb47ec1c58681ce56c49ba9e4d",
+                        ClientVersionCheckResult.Latest
+                    )
+                )
+            ),
+            ExampleObject(
+                ClientVersionCheckResult.ForceUpdate.name, ClientVersionCheckResult.ForceUpdate.name, "必須先更新版本才能繼續使用",
+                DataResponseDTO(
+                    LoginResponse(
+                        "club:android:user:421feef3-c1b4-4525-a416-6a11cf6ed9ca:2d7674bb47ec1c58681ce56c49ba9e4d",
+                        ClientVersionCheckResult.ForceUpdate
+                    )
+                )
+            )
         )
     }
     val Logout = OpenApiOperation("Logout", listOf(AuthTag))
