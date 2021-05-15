@@ -10,6 +10,7 @@ import fanpoll.infra.RequestException
 import fanpoll.infra.ResponseCode
 import fanpoll.infra.auth.UserPrincipal
 import fanpoll.infra.model.TenantId
+import fanpoll.infra.utils.DateTimeUtils
 import fanpoll.infra.utils.json
 import io.konform.validation.Invalid
 import io.konform.validation.Validation
@@ -22,6 +23,7 @@ import io.ktor.locations.locationOrNull
 import io.ktor.util.AttributeKey
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
+import java.time.*
 import java.util.*
 
 abstract class MyLocation {
@@ -104,6 +106,54 @@ val LocationsDataConverter: DataConversion.Configuration.() -> Unit = {
         }
         encode { value ->
             listOf(value.toString())
+        }
+    }
+    convert<ZoneId> {
+        decode { values, _ ->
+            values.singleOrNull()?.let { ZoneId.of(it) }
+        }
+        encode { value ->
+            listOf((value as ZoneId).id)
+        }
+    }
+    convert<Instant> {
+        decode { values, _ ->
+            values.singleOrNull()?.let { ZonedDateTime.parse(it, DateTimeUtils.UTC_DATE_TIME_FORMATTER).toInstant() }
+        }
+        encode { value ->
+            listOf(DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(value as Instant))
+        }
+    }
+    convert<ZonedDateTime> {
+        decode { values, _ ->
+            values.singleOrNull()?.let { ZonedDateTime.parse(it, DateTimeUtils.UTC_DATE_TIME_FORMATTER) }
+        }
+        encode { value ->
+            listOf(DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(value as ZonedDateTime))
+        }
+    }
+    convert<LocalDateTime> {
+        decode { values, _ ->
+            values.singleOrNull()?.let { LocalDateTime.parse(it, DateTimeUtils.LOCAL_DATE_TIME_FORMATTER) }
+        }
+        encode { value ->
+            listOf(DateTimeUtils.LOCAL_DATE_TIME_FORMATTER.format(value as LocalDateTime))
+        }
+    }
+    convert<LocalDate> {
+        decode { values, _ ->
+            values.singleOrNull()?.let { LocalDate.parse(it, DateTimeUtils.LOCAL_DATE_FORMATTER) }
+        }
+        encode { value ->
+            listOf(DateTimeUtils.LOCAL_DATE_FORMATTER.format(value as LocalDate))
+        }
+    }
+    convert<LocalTime> {
+        decode { values, _ ->
+            values.singleOrNull()?.let { LocalTime.parse(it, DateTimeUtils.LOCAL_TIME_FORMATTER) }
+        }
+        encode { value ->
+            listOf(DateTimeUtils.LOCAL_TIME_FORMATTER.format(value as LocalTime))
         }
     }
 }
