@@ -24,7 +24,7 @@ open class ParameterObject(
     open val `in`: ParameterInputType,
     val required: Boolean,
     val schema: PropertyDef,
-    val description: String? = null,
+    @JsonIgnore val description: String? = null,
     val deprecated: Boolean? = null,
     val allowEmptyValue: Boolean? = null,
     @JsonIgnore val example: Any? = null,
@@ -39,6 +39,11 @@ open class ParameterObject(
     override fun defPair(): Pair<String, ParameterObject> = name to this
 
     override fun valuePair(): Pair<String, Parameter> = if (hasRef()) refPair() else defPair()
+
+    @JsonGetter("description")
+    fun getDescriptionValue(): String? {
+        return description ?: schema.description?.let { "[schema => $it]" }
+    }
 
     @JsonGetter("example")
     fun getExampleValue(): Any? {
