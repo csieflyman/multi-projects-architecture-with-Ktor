@@ -137,35 +137,35 @@ object SchemaObjectConverter {
                     kClass = ZoneId::class
                 )
                 Instant::class -> PropertyDef(
-                    name, SchemaDataType.string, format = "date-time", pattern = DateTimeUtils.UTC_DATE_TIME_PATTERN,
+                    name, SchemaDataType.string, format = "date-time", description = DateTimeUtils.UTC_DATE_TIME_PATTERN,
                     kClass = Instant::class
                 )
                 Date::class -> PropertyDef(
-                    name, SchemaDataType.string, format = "date-time", pattern = DateTimeUtils.UTC_DATE_TIME_PATTERN,
+                    name, SchemaDataType.string, format = "date-time", description = DateTimeUtils.UTC_DATE_TIME_PATTERN,
                     kClass = Date::class
                 )
                 ZonedDateTime::class -> PropertyDef(
-                    name, SchemaDataType.string, format = "date-time", pattern = DateTimeUtils.UTC_DATE_TIME_PATTERN,
+                    name, SchemaDataType.string, format = "date-time", description = DateTimeUtils.UTC_DATE_TIME_PATTERN,
                     kClass = ZonedDateTime::class
                 )
                 LocalDateTime::class -> PropertyDef(
-                    name, SchemaDataType.string, format = "date-time", pattern = DateTimeUtils.LOCAL_DATE_TIME_PATTERN,
+                    name, SchemaDataType.string, format = "date-time", description = DateTimeUtils.LOCAL_DATE_TIME_PATTERN,
                     kClass = LocalDateTime::class
                 )
                 LocalDate::class -> PropertyDef(
-                    name, SchemaDataType.string, format = "date", pattern = DateTimeUtils.LOCAL_DATE_PATTERN,
+                    name, SchemaDataType.string, format = "date", description = DateTimeUtils.LOCAL_DATE_PATTERN,
                     kClass = LocalDate::class
                 )
                 LocalTime::class -> PropertyDef(
-                    name, SchemaDataType.string, pattern = DateTimeUtils.LOCAL_TIME_PATTERN,
+                    name, SchemaDataType.string, description = DateTimeUtils.LOCAL_TIME_PATTERN,
                     kClass = LocalTime::class
                 )
                 YearMonth::class -> PropertyDef(
-                    name, SchemaDataType.string, pattern = DateTimeUtils.YEAR_MONTH_PATTERN,
+                    name, SchemaDataType.string, description = DateTimeUtils.YEAR_MONTH_PATTERN,
                     kClass = YearMonth::class
                 )
                 Year::class -> PropertyDef(
-                    name, SchemaDataType.string, pattern = DateTimeUtils.YEAR_PATTERN,
+                    name, SchemaDataType.string, description = DateTimeUtils.YEAR_PATTERN,
                     kClass = Year::class
                 )
 
