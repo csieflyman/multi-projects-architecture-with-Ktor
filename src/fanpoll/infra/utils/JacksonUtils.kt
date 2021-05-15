@@ -16,10 +16,7 @@ import fanpoll.infra.ResponseCode
 import java.io.InputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZonedDateTime
+import java.time.*
 import java.util.*
 
 object Jackson {
@@ -35,6 +32,8 @@ object Jackson {
             SimpleModule()
                 .addSerializer(UUID::class.java, UUIDSerializer)
                 .addDeserializer(UUID::class.java, UUIDDeSerializer)
+                .addSerializer(ZoneId::class.java, ZoneIdSerializer)
+                .addDeserializer(ZoneId::class.java, ZoneIdDeSerializer)
                 .addSerializer(Instant::class.java, InstantSerializer)
                 .addDeserializer(Instant::class.java, InstantDeSerializer)
                 .addSerializer(ZonedDateTime::class.java, ZonedDateTimeSerializer)
@@ -43,6 +42,8 @@ object Jackson {
                 .addDeserializer(LocalDateTime::class.java, LocalDateTimeDeSerializer)
                 .addSerializer(LocalDate::class.java, LocalDateSerializer)
                 .addDeserializer(LocalDate::class.java, LocalDateDeSerializer)
+                .addSerializer(LocalTime::class.java, LocalTimeSerializer)
+                .addDeserializer(LocalTime::class.java, LocalTimeDeSerializer)
                 .addSerializer(BigDecimal::class.java, BigDecimalSerializer)
                 .addDeserializer(BigDecimal::class.java, BigDecimalDeSerializer)
         )
@@ -109,6 +110,20 @@ object Jackson {
         }
     }
 
+    private object ZoneIdSerializer : JsonSerializer<ZoneId>() {
+
+        override fun serialize(value: ZoneId?, gen: JsonGenerator, serializers: SerializerProvider?) {
+            value?.let { gen.writeString(value.id) }
+        }
+    }
+
+    private object ZoneIdDeSerializer : JsonDeserializer<ZoneId>() {
+
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): ZoneId {
+            return ZoneId.of(p.text)
+        }
+    }
+
     private object InstantSerializer : JsonSerializer<Instant>() {
 
         override fun serialize(value: Instant?, gen: JsonGenerator, serializers: SerializerProvider?) {
@@ -162,6 +177,20 @@ object Jackson {
 
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): LocalDate {
             return LocalDate.parse(p.text, DateTimeUtils.LOCAL_DATE_FORMATTER)
+        }
+    }
+
+    private object LocalTimeSerializer : JsonSerializer<LocalTime>() {
+
+        override fun serialize(value: LocalTime?, gen: JsonGenerator, serializers: SerializerProvider?) {
+            value?.let { gen.writeString(DateTimeUtils.LOCAL_TIME_FORMATTER.format(value)) }
+        }
+    }
+
+    private object LocalTimeDeSerializer : JsonDeserializer<LocalTime>() {
+
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): LocalTime {
+            return LocalTime.parse(p.text, DateTimeUtils.LOCAL_TIME_FORMATTER)
         }
     }
 
