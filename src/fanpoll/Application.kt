@@ -34,6 +34,7 @@ import io.ktor.auth.principal
 import io.ktor.features.*
 import io.ktor.locations.Locations
 import io.ktor.serialization.json
+import io.ktor.server.engine.ShutDownUrl
 import io.ktor.sessions.SessionSerializer
 import io.ktor.sessions.SessionStorage
 import io.ktor.sessions.Sessions
@@ -127,6 +128,10 @@ fun Application.main() {
     install(Locations)
 
     install(DataConversion, DataConverter)
+
+    install(ShutDownUrl.ApplicationCallFeature) {
+        shutDownUrl = appConfig.server.shutDownUrl
+    }
 
     routing()
 

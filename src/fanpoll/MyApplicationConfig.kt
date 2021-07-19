@@ -24,7 +24,8 @@ data class MyApplicationConfig(
 data class ServerConfig(
     val project: String,
     val env: EnvMode,
-    val instance: String
+    val instance: String,
+    val shutDownUrl: String
 )
 
 enum class EnvMode {
