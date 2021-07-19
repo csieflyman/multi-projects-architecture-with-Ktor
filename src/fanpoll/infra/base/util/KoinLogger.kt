@@ -2,7 +2,7 @@
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-package fanpoll.infra.logging
+package fanpoll.infra.base.util
 
 import mu.KotlinLogging
 import org.koin.core.logger.Level

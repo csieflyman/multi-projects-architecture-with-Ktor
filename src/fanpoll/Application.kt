@@ -17,9 +17,9 @@ import fanpoll.infra.base.koinBaseModule
 import fanpoll.infra.base.location.LocationUtils.DataConverter
 import fanpoll.infra.base.response.I18nResponseCreator
 import fanpoll.infra.base.response.respond
+import fanpoll.infra.base.util.KoinLogger
 import fanpoll.infra.cache.CacheFeature
 import fanpoll.infra.database.DatabaseFeature
-import fanpoll.infra.logging.KoinLogger
 import fanpoll.infra.logging.LoggingConfig
 import fanpoll.infra.logging.LoggingFeature
 import fanpoll.infra.logging.error.ErrorLog
