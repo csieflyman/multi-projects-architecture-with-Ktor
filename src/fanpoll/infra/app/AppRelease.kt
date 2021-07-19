@@ -6,13 +6,21 @@
 
 package fanpoll.infra.app
 
-import fanpoll.infra.RequestBodyException
 import fanpoll.infra.auth.*
-import fanpoll.infra.controller.EntityDTO
-import fanpoll.infra.controller.EntityForm
-import fanpoll.infra.database.*
-import fanpoll.infra.utils.DateTimeUtils.TAIWAN_DATE_TIME_FORMATTER
-import fanpoll.infra.utils.TaiwanInstantSerializer
+import fanpoll.infra.auth.principal.MyPrincipal
+import fanpoll.infra.auth.principal.PrincipalSource
+import fanpoll.infra.base.entity.EntityDTO
+import fanpoll.infra.base.entity.EntityForm
+import fanpoll.infra.base.exception.RequestException
+import fanpoll.infra.base.json.TaiwanInstantSerializer
+import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.util.DateTimeUtils.TAIWAN_DATE_TIME_FORMATTER
+import fanpoll.infra.database.sql.LongIdTable
+import fanpoll.infra.database.sql.insert
+import fanpoll.infra.database.sql.transaction
+import fanpoll.infra.database.sql.update
+import fanpoll.infra.database.util.ResultRowDTOMapper
+import fanpoll.infra.database.util.toDTO
 import io.konform.validation.Validation
 import io.ktor.application.ApplicationCall
 import io.ktor.response.header
@@ -21,39 +29,35 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Op
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.`java-time`.timestamp
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.select
 import java.time.Instant
 
-object AppReleaseService {
+class AppReleaseService {
 
     private val logger = KotlinLogging.logger {}
 
-    fun init() {
+    init {
         Authorization.addValidateBlock { principal, call ->
             check(principal, call)
         }
     }
 
     fun create(form: CreateAppReleaseForm) {
-        if (form.releaseTime == null)
-            form.releaseTime = Instant.now()
-        else if (form.releaseTime!! < Instant.now())
-            throw RequestBodyException("appVersion ${form.appVersion} releaseTime can't be past time")
+        if (form.releasedAt == null)
+            form.releasedAt = Instant.now()
+        else if (form.releasedAt!! < Instant.now())
+            throw RequestException(ResponseCode.ENTITY_PROP_VALUE_INVALID, "appVersion ${form.appVersion} releasedAt can't be past time")
 
         val appOs = try {
-            PrincipalSource.lookup(form.appId).userDeviceType?.let { AppOs.from(it) }
+            PrincipalSource.lookup(form.appId).type.let { AppOs.from(it) }
         } catch (e: NoSuchElementException) {
-            throw RequestBodyException("appId ${form.appId} is not exist")
-        } ?: throw RequestBodyException("appId ${form.appId} is not app service")
+            throw RequestException(ResponseCode.ENTITY_NOT_EXIST, "appId ${form.appId} does not exist")
+        }
 
-        myTransaction {
+        transaction {
             if (AppReleaseTable.select { toSQLCondition(form.appVersion) }.count() > 0)
-                throw RequestBodyException("appVersion ${form.appVersion} is already exist")
+                throw RequestException(ResponseCode.ENTITY_ALREADY_EXISTS, "appVersion ${form.appVersion} already exists")
             AppReleaseTable.insert(form) { table ->
                 table[os] = appOs
             }
@@ -61,17 +65,16 @@ object AppReleaseService {
     }
 
     fun update(form: UpdateAppReleaseForm) {
-        if (form.releaseTime != null && form.releaseTime < Instant.now())
-            throw RequestBodyException("appVersion ${form.appVersion} releaseTime can't be past time")
+        if (form.releasedAt != null && form.releasedAt < Instant.now())
+            throw RequestException(ResponseCode.ENTITY_PROP_VALUE_INVALID, "appVersion ${form.appVersion} releasedAt can't be past time")
 
-        myTransaction {
-            val dbDto = AppReleaseTable.select { toSQLCondition(form.appVersion) }
-                .singleOrNull()?.toDTO(AppReleaseDTO::class)
-                ?: throw RequestBodyException("appVersion ${form.appVersion} is not exist")
-            if (form.releaseTime != null && dbDto.releaseTime != null && dbDto.releaseTime!! < Instant.now() && dbDto.enabled!!)
-                throw RequestBodyException(
-                    "cannot update releaseTime because appVersion ${form.appVersion} had been released at " +
-                            TAIWAN_DATE_TIME_FORMATTER.format(dbDto.releaseTime!!)
+        transaction {
+            val dbDto = get(form.appVersion)
+            if (form.releasedAt != null && dbDto.releasedAt != null && dbDto.releasedAt!! < Instant.now() && dbDto.enabled!!)
+                throw RequestException(
+                    ResponseCode.ENTITY_STATUS_CONFLICT,
+                    "cannot update releasedAt because appVersion ${form.appVersion} had been released at " +
+                            TAIWAN_DATE_TIME_FORMATTER.format(dbDto.releasedAt!!)
                 )
 
             AppReleaseTable.update(form)
@@ -79,13 +82,12 @@ object AppReleaseService {
     }
 
     fun get(appVersion: AppVersion): AppReleaseDTO {
-        return AppReleaseTable.select { toSQLCondition(appVersion) }.singleOrNull()
-            ?.toDTO(AppReleaseDTO::class)
-            ?: throw RequestBodyException("appVersion $appVersion is not exist")
+        return AppReleaseTable.select { toSQLCondition(appVersion) }.singleOrNull()?.toDTO(AppReleaseDTO::class)
+            ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "appVersion $appVersion does not exist")
     }
 
     fun check(principal: MyPrincipal, call: ApplicationCall): ClientVersionCheckResult? {
-        return if (principal.source.checkClientVersion && call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)) {
+        return if (principal.source.checkClientVersion() && call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)) {
             val clientVersion = call.attributes[ATTRIBUTE_KEY_CLIENT_VERSION]
             val appVersion = AppVersion(principal.source.id, clientVersion)
             logger.debug("client appVersion = $appVersion")
@@ -99,11 +101,11 @@ object AppReleaseService {
 
     fun check(appVersion: AppVersion): ClientVersionCheckResult {
         val clientAppVersionNumber = appVersion.number
-        val forceUpdateList = myTransaction {
+        val forceUpdateList = transaction {
             AppReleaseTable.slice(AppReleaseTable.forceUpdate).select {
                 (AppReleaseTable.appId eq appVersion.appId) and
                         (AppReleaseTable.enabled eq true) and
-                        (AppReleaseTable.releaseTime lessEq Instant.now()) and
+                        (AppReleaseTable.releasedAt lessEq Instant.now()) and
                         (AppReleaseTable.verNum greater clientAppVersionNumber)
             }.withDistinct(true).toList().map { it[AppReleaseTable.forceUpdate] }
         }
@@ -117,7 +119,7 @@ object AppReleaseService {
         return result
     }
 
-    private fun toSQLCondition(appVersion: AppVersion): Op<Boolean> {
+    private fun SqlExpressionBuilder.toSQLCondition(appVersion: AppVersion): Op<Boolean> {
         return (AppReleaseTable.appId eq appVersion.appId) and
                 (AppReleaseTable.verName eq appVersion.name)
     }
@@ -128,7 +130,7 @@ data class CreateAppReleaseForm(
     val appId: String,
     val verName: String,
     val enabled: Boolean,
-    @Serializable(with = TaiwanInstantSerializer::class) var releaseTime: Instant? = null,
+    @Serializable(with = TaiwanInstantSerializer::class) var releasedAt: Instant? = null,
     val forceUpdate: Boolean,
 ) : EntityForm<CreateAppReleaseForm, List<String>, Long>() {
 
@@ -154,7 +156,7 @@ data class UpdateAppReleaseForm(
     val appId: String,
     val verName: String,
     val enabled: Boolean? = null,
-    @Serializable(with = TaiwanInstantSerializer::class) val releaseTime: Instant? = null,
+    @Serializable(with = TaiwanInstantSerializer::class) val releasedAt: Instant? = null,
     val forceUpdate: Boolean? = null,
 ) : EntityForm<UpdateAppReleaseForm, List<String>, Long>() {
 
@@ -183,7 +185,7 @@ data class AppReleaseDTO(val id: Long) : EntityDTO<Long> {
     var enabled: Boolean? = null
 
     @Serializable(with = TaiwanInstantSerializer::class)
-    var releaseTime: Instant? = null
+    var releasedAt: Instant? = null
     var forceUpdate: Boolean? = null
 
     override fun getId(): Long = id
@@ -193,19 +195,19 @@ data class AppReleaseDTO(val id: Long) : EntityDTO<Long> {
     }
 }
 
-object AppReleaseTable : LongIdDTOTable(name = "infra_app_release") {
+object AppReleaseTable : LongIdTable(name = "infra_app_release") {
 
     val appId = varchar("app_id", 30)
     val os = enumeration("os", AppOs::class)
     val verName = varchar("ver_name", 6)
     val verNum = integer("ver_num")
     val enabled = bool("enabled")
-    val releaseTime = timestamp("release_time")
+    val releasedAt = timestamp("released_at")
     val forceUpdate = bool("force_update")
 
-    val createTime = timestamp("create_time")
+    val createdAt = timestamp("created_at")
         .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
-    val updateTime = timestamp("update_time")
+    val updatedAt = timestamp("updated_at")
         .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
 
     override val naturalKeys: List<Column<out Any>> = listOf(appId, verName)

@@ -1,95 +1,59 @@
 /*
- * Copyright (c) 2020. fanpoll All rights reserved.
+ * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
 package fanpoll.club
 
 import fanpoll.MyApplicationConfig
-import fanpoll.club.features.ClubUserTable
+import fanpoll.club.user.ClubLoginService
+import fanpoll.club.user.ClubUserService
 import fanpoll.infra.Project
-import fanpoll.infra.ProjectConfig
-import fanpoll.infra.auth.*
-import fanpoll.infra.controller.receiveUTF8Text
-import fanpoll.infra.database.myTransaction
-import fanpoll.infra.openapi.ProjectOpenApi
-import io.ktor.request.path
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.select
-import java.util.*
+import fanpoll.infra.ProjectManager
+import fanpoll.infra.auth.provider.UserSessionAuthValidator
+import fanpoll.infra.auth.provider.runAs
+import fanpoll.infra.auth.provider.service
+import io.ktor.application.Application
+import io.ktor.auth.authentication
+import io.ktor.auth.session
+import io.ktor.routing.routing
+import org.koin.dsl.module
+import org.koin.ktor.ext.get
+import org.koin.ktor.ext.koin
 
-object ClubConst {
+fun Application.clubMain() {
 
-    const val projectId = "club"
+    val appConfig = get<MyApplicationConfig>()
+    val projectManager = get<ProjectManager>()
 
-    const val urlRootPath = "/club"
-}
-
-private val openApi = ProjectOpenApi(
-    ClubConst.projectId,
-    ClubConst.urlRootPath,
-    ClubAuth.allAuthSchemes,
-    ClubOpenApiOperations.all(),
-    ClubComponents
-)
-
-val ClubProject = object : Project(
-    ClubConst.projectId,
-    ClubPrincipalSources.All, ClubUserType.values().map { it.value }.toSet(),
-    openApi,
-    ClubNotificationTypes.all()
-) {
-
-    override fun configure(appConfig: MyApplicationConfig) {
-        config = appConfig.club
-
-        filterRequestBodySensitiveData(appConfig)
-    }
-
-    private fun filterRequestBodySensitiveData(appConfig: MyApplicationConfig) {
-        val requestPaths = mutableListOf("/login", "/myPassword")
-            .map { ClubConst.urlRootPath + it }
-        appConfig.logging.requestBodySensitiveDataFilter = { call ->
-            if (requestPaths.contains(call.request.path())) null
-            else runBlocking { call.receiveUTF8Text() }
-        }
-    }
-}
-
-data class ClubConfig(
-    override val auth: ClubAuthConfig
-) : ProjectConfig
-
-object ClubPrincipalSources {
-
-    private val Android: PrincipalSource = PrincipalSource(
-        ClubConst.projectId, "android", true, UserDeviceType.Android
-    )
-    private val iOS: PrincipalSource = PrincipalSource(
-        ClubConst.projectId, "iOS", true, UserDeviceType.iOS
+    projectManager.register(
+        Project(
+            ClubConst.projectId,
+            appConfig.club.auth.principalSourceAuthConfigs,
+            ClubUserType.values().map { it.value },
+            ClubOpenApi.Instance,
+            ClubNotification.AllTypes
+        )
     )
 
-    val App: Set<PrincipalSource> = setOf(Android, iOS)
+    authentication {
+        service(ClubAuth.serviceAuthProviderName, appConfig.club.auth.getServiceAuthConfigs())
+        session(
+            ClubAuth.userAuthProviderName,
+            UserSessionAuthValidator(appConfig.club.auth.getUserAuthConfigs(), get()).configureFunction
+        )
+        runAs(ClubAuth.userRunAsAuthProviderName, appConfig.club.auth.getRunAsConfigs())
+    }
 
-    val All: Set<PrincipalSource> = setOf(Android, iOS)
-}
-
-enum class ClubUserType(val value: UserType) {
-
-    User(object : UserType(ClubConst.projectId, "user") {
-
-        override val roles: Set<UserRole> = setOf(UserRole(id, "admin"), UserRole(id, "member"))
-
-        override fun findRunAsUserById(userId: UUID): fanpoll.infra.auth.User {
-            val row = myTransaction {
-                ClubUserTable.select { ClubUserTable.id eq userId }.single()
+    koin {
+        modules(
+            module(createdAtStart = true) {
+                single { ClubUserService() }
+                single { ClubLoginService(get()) }
             }
-            return User(this, userId, setOf(row[ClubUserTable.role].value))
-        }
-    })
-}
+        )
+    }
 
-enum class ClubUserRole(val value: UserRole) {
-
-    Admin(ClubUserType.User.value.roles!!.first { it.name == "admin" }),
-    Member(ClubUserType.User.value.roles!!.first { it.name == "member" })
+    routing {
+        club()
+    }
 }

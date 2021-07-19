@@ -4,10 +4,10 @@
 
 package fanpoll.infra.report
 
-import fanpoll.infra.DataResponseDTO
-import fanpoll.infra.database.myTransaction
-import fanpoll.infra.report.utils.ReportQueryParameters
-import fanpoll.infra.utils.DateTimeUtils
+import fanpoll.infra.base.response.DataResponseDTO
+import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.database.sql.transaction
+import fanpoll.infra.report.util.ReportQueryParameters
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -25,7 +25,7 @@ object ReportService {
             report.reporter.validate(parameters, parameters.getReportParameters(report))
         }
 
-        val resultMap = myTransaction {
+        val resultMap = transaction {
             if (parameters.reports.count() == 1 && parameters.reports.first().reporter is CompositeReporter) {
                 // flatten
                 val report = parameters.reports.first()

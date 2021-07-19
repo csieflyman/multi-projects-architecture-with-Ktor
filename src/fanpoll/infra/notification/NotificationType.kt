@@ -4,46 +4,56 @@
 
 package fanpoll.infra.notification
 
-import fanpoll.infra.RequestException
-import fanpoll.infra.ResponseCode
+import fanpoll.infra.auth.principal.UserType
+import fanpoll.infra.base.exception.RequestException
+import fanpoll.infra.base.i18n.Lang
+import fanpoll.infra.base.json.json
+import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.notification.channel.NotificationChannel
 import fanpoll.infra.openapi.schema.operation.support.OpenApiIgnore
-import fanpoll.infra.utils.IdentifiableObject
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.plus
 
 @Serializable
-class NotificationType(
+open class NotificationType(
     val projectId: String,
     val name: String,
     val channels: Set<NotificationChannel>,
-    val broadcast: Boolean,
-    val purpose: NotificationPurpose,
-    val sendMeToo: Boolean = false,
+    val category: NotificationCategory,
+    // val priority: NotificationPriority TODO => priority queues
     val version: String? = null,
+    val lang: Lang? = null,
+    @Transient @OpenApiIgnore private val lazyLoadBlock: (NotificationType.(Notification) -> Unit)? = null
 ) : IdentifiableObject<String>() {
 
     override val id: String = "${projectId}_${name}"
 
-    @Transient
-    @OpenApiIgnore
-    private var buildChannelMessageBlock: (NotificationType.(Any?) -> NotificationChannelMessage)? = null
+    fun isLazy(): Boolean = lazyLoadBlock != null
 
-    fun configureBuildChannelMessage(block: NotificationType.(Any?) -> NotificationChannelMessage) {
-        buildChannelMessageBlock = block
+    fun lazyLoad(notification: Notification) {
+        requireNotNull(lazyLoadBlock)
+        lazyLoadBlock.invoke(this, notification)
     }
 
-    fun buildChannelMessage(dto: Any?): NotificationChannelMessage {
-        return buildChannelMessageBlock!!.invoke(this, dto)
-    }
+    open fun findRecipients(userFilters: Map<UserType, String>?): Set<Recipient> =
+        error("NotificationType $id findRecipients is not yet implemented")
 
     @OptIn(ExperimentalSerializationApi::class)
     @Serializer(forClass = NotificationType::class)
     companion object : KSerializer<NotificationType> {
+
+        init {
+            json.serializersModule.plus(SerializersModule {
+                polymorphicDefault(NotificationType::class) { serializer() }
+            })
+        }
 
         private val registeredTypes = mutableMapOf<String, NotificationType>()
 
@@ -59,7 +69,7 @@ class NotificationType(
         private fun lookup(projectId: String, name: String): NotificationType {
             val typeId = buildTypeId(projectId, name)
             return registeredTypes[typeId]
-                ?: throw RequestException(ResponseCode.REQUEST_BAD_BODY, "invalid NotificationType: $typeId")
+                ?: throw RequestException(ResponseCode.BAD_REQUEST_BODY, "invalid NotificationType: $typeId")
         }
 
         private fun buildTypeId(projectId: String, name: String): String = "${projectId}_${name}"
@@ -78,6 +88,10 @@ class NotificationType(
     }
 }
 
-enum class NotificationPurpose {
+enum class NotificationCategory {
     System, Marketing
+}
+
+enum class NotificationPriority {
+    URGENT, HIGH, LOW
 }

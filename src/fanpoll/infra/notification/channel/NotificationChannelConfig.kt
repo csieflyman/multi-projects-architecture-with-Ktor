@@ -4,21 +4,43 @@
 
 package fanpoll.infra.notification.channel
 
-import fanpoll.infra.utils.ConfigUtils
-import fanpoll.infra.utils.CoroutineConfig
-import fanpoll.infra.utils.MyConfig
+import fanpoll.infra.base.config.ValidateableConfig
+import fanpoll.infra.notification.channel.email.EmailConfig
+import fanpoll.infra.notification.channel.push.PushConfig
+import fanpoll.infra.notification.channel.sms.SMSConfig
 
-// may be above two implementations of the same channel type in the future
 data class NotificationChannelConfig(
     val email: EmailConfig? = null,
-    val sms: SMSConfig? = null,
-    val push: PushMessageConfig? = null,
-    val coroutine: CoroutineConfig
-) : MyConfig {
+    val push: PushConfig? = null,
+    val sms: SMSConfig? = null
+) : ValidateableConfig {
 
     override fun validate() {
-        ConfigUtils.require(email == null || sms == null || push == null) {
+        require(email != null || sms != null || push != null) {
             "at least one notification channel should be configured"
+        }
+    }
+
+    class Builder {
+
+        private var email: EmailConfig? = null
+        private var push: PushConfig? = null
+        private var sms: SMSConfig? = null
+
+        fun email(block: EmailConfig.Builder.() -> Unit) {
+            email = EmailConfig.Builder().apply(block).build()
+        }
+
+        fun push(block: PushConfig.Builder.() -> Unit) {
+            push = PushConfig.Builder().apply(block).build()
+        }
+
+        fun sms(block: SMSConfig.Builder.() -> Unit) {
+            sms = SMSConfig.Builder().apply(block).build()
+        }
+
+        fun build(): NotificationChannelConfig {
+            return NotificationChannelConfig(email, push, sms).apply { validate() }
         }
     }
 }

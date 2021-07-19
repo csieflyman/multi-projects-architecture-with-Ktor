@@ -4,21 +4,14 @@
 
 package fanpoll
 
-import fanpoll.club.club
-import fanpoll.ops.ops
 import io.ktor.application.Application
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.routing.routing
 
-fun Application.routing(appConfig: MyApplicationConfig) {
+fun Application.routing() {
 
     routing {
-
-        ops()
-
-        club()
-
         static("public") {
             resources("public")
         }

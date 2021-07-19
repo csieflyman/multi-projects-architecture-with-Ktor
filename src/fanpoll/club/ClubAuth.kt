@@ -4,58 +4,75 @@
 
 package fanpoll.club
 
-import fanpoll.infra.ProjectAuthConfig
-import fanpoll.infra.auth.*
+import fanpoll.infra.auth.AuthConst
+import fanpoll.infra.auth.PrincipalAuth
+import fanpoll.infra.auth.principal.PrincipalSource
+import fanpoll.infra.auth.principal.PrincipalSourceType
+import fanpoll.infra.auth.provider.*
 import fanpoll.infra.openapi.ProjectOpenApi
 import fanpoll.infra.openapi.schema.component.support.SecurityScheme
-import io.ktor.auth.Authentication
 
 object ClubAuth {
 
-    const val serviceProviderName = "${ClubConst.projectId}-service"
+    const val serviceAuthProviderName = "${ClubConst.projectId}-service"
+    const val userAuthProviderName = "${ClubConst.projectId}-user"
+    const val userRunAsAuthProviderName = "${ClubConst.projectId}-runAs"
 
     private val serviceAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
-
-    private val sessionIdAuthScheme = SecurityScheme.apiKeyAuth("SessionIdAuth", SessionAuth.SESSION_ID_HEADER_NAME)
-
+    private val sessionIdAuthScheme = SecurityScheme.apiKeyAuth("SessionIdAuth", AuthConst.SESSION_ID_HEADER_NAME)
     private val userAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
-
     val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
 
-    val Public = PrincipalAuth.Service.public(serviceProviderName, serviceAuthSchemes, ClubPrincipalSources.App)
+    val Android: PrincipalSource = PrincipalSource(
+        ClubConst.projectId, "android", PrincipalSourceType.Android, true
+    )
+    val iOS: PrincipalSource = PrincipalSource(
+        ClubConst.projectId, "iOS", PrincipalSourceType.iOS, true
+    )
+    private val App: Set<PrincipalSource> = setOf(Android, iOS)
+
+    val Public = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, App)
 
     val User = PrincipalAuth.User(
-        SessionAuthConfig.providerName, userAuthSchemes,
-        mapOf(ClubUserType.User.value to ClubUserType.User.value.roles), ClubPrincipalSources.App
+        userAuthProviderName, userAuthSchemes, App,
+        mapOf(ClubUserType.User.value to ClubUserType.User.value.roles),
+        runAsAuthProviderName = userRunAsAuthProviderName
     )
-
     val Admin = PrincipalAuth.User(
-        SessionAuthConfig.providerName, userAuthSchemes,
-        mapOf(ClubUserType.User.value to setOf(ClubUserRole.Admin.value)), ClubPrincipalSources.App
+        userAuthProviderName, userAuthSchemes, App,
+        mapOf(ClubUserType.User.value to setOf(ClubUserRole.Admin.value)),
+        runAsAuthProviderName = userRunAsAuthProviderName
     )
-
     val Member = PrincipalAuth.User(
-        SessionAuthConfig.providerName, userAuthSchemes,
-        mapOf(ClubUserType.User.value to setOf(ClubUserRole.Member.value)), ClubPrincipalSources.App
+        userAuthProviderName, userAuthSchemes, App,
+        mapOf(ClubUserType.User.value to setOf(ClubUserRole.Member.value)),
+        runAsAuthProviderName = userRunAsAuthProviderName
     )
-
 }
 
 data class ClubAuthConfig(
-    val session: SessionConfig,
-    val android: UserAuthConfig,
-    val iOS: UserAuthConfig
-) : ProjectAuthConfig {
+    private val android: UserAuthExternalConfig,
+    private val iOS: UserAuthExternalConfig
+) {
 
-    init {
-        android.session = session
-        iOS.session = session
-    }
+    val principalSourceAuthConfigs = listOf(
+        PrincipalSourceAuthConfig(
+            ClubAuth.Android,
+            android.toServiceAuthConfig(ClubAuth.Android),
+            android.toUserAuthConfig(ClubAuth.Android),
+            android.runAsKey?.let { android.toRunAsConfig(ClubAuth.Android) }
+        ),
+        PrincipalSourceAuthConfig(
+            ClubAuth.iOS,
+            iOS.toServiceAuthConfig(ClubAuth.iOS),
+            iOS.toUserAuthConfig(ClubAuth.iOS),
+            iOS.runAsKey?.let { iOS.toRunAsConfig(ClubAuth.iOS) }
+        )
+    )
 
-    override fun getPrincipalSourceAuthConfigs(): List<PrincipalSourceAuthConfig<ServiceAuthApiKeyCredential>> = listOf(android, iOS)
-}
+    fun getServiceAuthConfigs(): List<ServiceAuthConfig> = principalSourceAuthConfigs.mapNotNull { it.service }
 
-fun Authentication.Configuration.club(authConfig: ClubAuthConfig) {
+    fun getUserAuthConfigs(): List<UserSessionAuthConfig> = principalSourceAuthConfigs.mapNotNull { it.user }
 
-    serviceApiKey(ClubAuth.serviceProviderName, authConfig.getPrincipalSourceAuthConfigs())
+    fun getRunAsConfigs(): List<UserRunAsAuthConfig> = principalSourceAuthConfigs.mapNotNull { it.runAs }
 }

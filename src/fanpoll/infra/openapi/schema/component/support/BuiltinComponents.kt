@@ -4,10 +4,15 @@
 
 package fanpoll.infra.openapi.schema.component.support
 
-import fanpoll.infra.*
 import fanpoll.infra.app.AppVersion
-import fanpoll.infra.auth.*
-import fanpoll.infra.openapi.OpenApiConfig
+import fanpoll.infra.auth.ClientVersionCheckResult
+import fanpoll.infra.auth.HEADER_CLIENT_VERSION
+import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
+import fanpoll.infra.auth.provider.UserRunAsAuthProvider
+import fanpoll.infra.base.response.ErrorResponseDTO
+import fanpoll.infra.base.response.ErrorResponseDetailError
+import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.ResponseCodeType
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.operation.definitions.*
 import fanpoll.infra.openapi.schema.operation.support.Example
@@ -16,7 +21,6 @@ import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.SchemaObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
-import fanpoll.infra.utils.I18nUtils
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import kotlin.reflect.KType
@@ -27,15 +31,8 @@ object BuiltinComponents : ComponentLoader {
 
     private val ResponseCodeTypeSchema = PropertyDef(
         "ResponseCodeType", SchemaDataType.string,
-        ResponseCodeType.values().joinToString(" ; ") {
-            "${it.name} => ${I18nUtils.getCodeTypeMessage(it, OpenApiConfig.langCode)}"
-        },
-        refName = "codeType", enum = ResponseCodeType.values().toList(), kClass = ResponseCodeType::class
-    ).createRef()
-
-    private val ResponseMessageTypeSchema = PropertyDef(
-        "ResponseMessageType", SchemaDataType.string,
-        refName = "messageType", enum = ResponseMessageType.values().toList(), kClass = ResponseMessageType::class
+        ResponseCodeType.values().joinToString(" ; ") { it.name },
+        refName = "codeType", enum = ResponseCodeType.values().map { it.name }.toList(), kClass = ResponseCodeType::class
     ).createRef()
 
     val ResponseCodeSchema = PropertyDef(
@@ -76,11 +73,10 @@ object BuiltinComponents : ComponentLoader {
     val ErrorResponseSchema = buildErrorResponseSchema()
 
     private fun buildErrorResponseSchema(): ModelDef {
-        val requiredProperties = listOf("code", "codeType", "messageType", "message", "detail", "reqId")
+        val requiredProperties = listOf("code", "codeType", "message", "detail", "reqId")
         val properties: Map<String, Schema> = listOf(
             ResponseCodeSchema,
             ResponseCodeTypeSchema,
-            ResponseMessageTypeSchema,
             PropertyDef("message", SchemaDataType.string, "message for user"),
             PropertyDef("detail", SchemaDataType.string, "detail message for developer"),
             PropertyDef("reqId", SchemaDataType.string, "request unique id"),
@@ -159,12 +155,12 @@ object BuiltinComponents : ComponentLoader {
     // ==================== Parameter Schema ====================
 
     private val runAsTokenSchema = PropertyDef(
-        RunAsAuth.RUN_AS_TOKEN_HEADER_NAME, SchemaDataType.string,
-        description = RunAsAuthProviderConfig.tokenPatternDescription
+        UserRunAsAuthProvider.RUN_AS_TOKEN_HEADER_NAME, SchemaDataType.string,
+        description = UserRunAsAuthProvider.tokenPatternDescription
     )
 
     private val schemaList: List<ReferenceObject> = listOf(
-        ResponseCodeTypeSchema, ResponseMessageTypeSchema, ResponseCodeSchema, ResponseCodeValueSchema,
+        ResponseCodeTypeSchema, ResponseCodeSchema, ResponseCodeValueSchema,
         ErrorResponseSchema, ErrorResponseErrorsSchema,
         DynamicQueryPagingResponseSchema, DynamicQueryItemsResponseSchema, DynamicQueryTotalResponseSchema
     ).map { it.createRef() }
@@ -219,7 +215,7 @@ object BuiltinComponents : ComponentLoader {
             "查詢條件 DSL => 以 '[' 字元開始， ']' 字元結束，" +
                     "每個運算式 expression 的格式是 field operator value ，中間以空白字元分隔，多個條件以 and 或 or 連接 (目前不支援巢狀條件)。" +
                     "operator 支援 = != > >= < <= like in not_in is_null is_not_null 。" +
-                    "範例: [name = james and age >= 18 and enabled = true and role in (admin, member) and createTime >= 2021-01-01T00:00:00Z]"
+                    "範例: [name = james and age >= 18 and enabled = true and role in (admin, member) and createdAt >= 2021-01-01T00:00:00Z]"
         ).createRef(),
         ParameterObject(
             ParameterInputType.query, false, PropertyDef("q_orderBy", SchemaDataType.string),

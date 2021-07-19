@@ -6,8 +6,8 @@ package fanpoll.infra.openapi.schema.operation.definitions
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
+import fanpoll.infra.base.json.Jackson
 import fanpoll.infra.openapi.schema.operation.support.*
-import fanpoll.infra.utils.Jackson
 
 class ReferenceObject(
     override val name: String,
@@ -26,4 +26,7 @@ class ReferenceObject(
 
     @JsonValue
     fun toJson(): JsonNode = Jackson.newObject().put("\$ref", `$ref`)
+
+    override fun equals(other: Any?): Boolean = idEquals(other)
+    override fun hashCode(): Int = idHashCode()
 }

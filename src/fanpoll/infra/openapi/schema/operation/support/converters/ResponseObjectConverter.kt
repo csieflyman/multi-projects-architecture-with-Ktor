@@ -4,7 +4,7 @@
 
 package fanpoll.infra.openapi.schema.operation.support.converters
 
-import fanpoll.infra.ResponseCode
+import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
 import fanpoll.infra.openapi.schema.operation.definitions.MediaTypeObject

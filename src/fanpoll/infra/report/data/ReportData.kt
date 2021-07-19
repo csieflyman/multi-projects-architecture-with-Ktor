@@ -4,11 +4,12 @@
 
 package fanpoll.infra.report.data
 
-import fanpoll.infra.InternalServerErrorException
-import fanpoll.infra.ResponseCode
-import fanpoll.infra.utils.DateTimeUtils
-import fanpoll.infra.utils.myEquals
-import fanpoll.infra.utils.myHashCode
+import fanpoll.infra.base.exception.InternalServerException
+import fanpoll.infra.base.extension.myEquals
+import fanpoll.infra.base.extension.myHashCode
+import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.base.util.IdentifiableObject
 import kotlinx.serialization.json.JsonElement
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -29,7 +30,11 @@ import java.time.ZonedDateTime
 import java.util.*
 import java.util.stream.Collectors
 
-class ReportData(val id: String, var name: String, val tables: MutableList<Table> = mutableListOf()) {
+class ReportData(
+    override val id: String,
+    var name: String,
+    val tables: MutableList<Table> = mutableListOf()
+) : IdentifiableObject<String>() {
 
     fun toExcel(): ByteArray {
 
@@ -130,7 +135,7 @@ class ReportData(val id: String, var name: String, val tables: MutableList<Table
                 outputStream.close()
                 bytes
             } catch (e: IOException) {
-                throw InternalServerErrorException(ResponseCode.IO_ERROR, "fail to write excel report $id", e)
+                throw InternalServerException(ResponseCode.IO_ERROR, "fail to write excel report $id", e)
             }
         }
 
@@ -151,15 +156,11 @@ class ReportData(val id: String, var name: String, val tables: MutableList<Table
             }
             printer.out.toString().toByteArray(StandardCharsets.UTF_8)
         } catch (e: IOException) {
-            throw InternalServerErrorException(ResponseCode.IO_ERROR, "fail to write csv report $id", e)
+            throw InternalServerException(ResponseCode.IO_ERROR, "fail to write csv report $id", e)
         }
     }
 
     fun toJson(): JsonElement = TODO()
-
-    override fun equals(other: Any?): Boolean = myEquals(other, { id })
-
-    override fun hashCode(): Int = myHashCode({ id })
 
     override fun toString(): String = "$name($id)"
 }

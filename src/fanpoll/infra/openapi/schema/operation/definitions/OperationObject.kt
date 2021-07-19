@@ -6,15 +6,15 @@ package fanpoll.infra.openapi.schema.operation.definitions
 
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
-import fanpoll.infra.ResponseCode
+import fanpoll.infra.base.json.Jackson
+import fanpoll.infra.base.json.json
+import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents.ErrorResponseSchema
 import fanpoll.infra.openapi.schema.operation.support.Parameter
 import fanpoll.infra.openapi.schema.operation.support.RequestBody
 import fanpoll.infra.openapi.schema.operation.support.Response
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
-import fanpoll.infra.utils.Jackson
-import fanpoll.infra.utils.json
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.InternalSerializationApi

@@ -10,12 +10,12 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 plugins {
-    kotlin("jvm") version "1.4.32"
-    kotlin("kapt") version "1.4.32"
-    kotlin("plugin.serialization") version "1.4.32"
+    kotlin("jvm") version "1.5.21"
+    kotlin("kapt") version "1.5.21"
+    kotlin("plugin.serialization") version "1.5.21"
     application
-    id("com.github.johnrengelman.shadow") version "6.1.0"
-    id("org.flywaydb.flyway") version "7.7.2"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("org.flywaydb.flyway") version "7.11.2"
     id("org.unbroken-dome.gitversion") version "0.10.0"
     //id("io.gitlab.arturbosch.detekt") version "1.15.0-RC1"
     // https://github.com/node-gradle/gradle-node-plugin
@@ -38,18 +38,19 @@ repositories {
     mavenCentral()
 }
 
-val kotlinVersion = "1.4.32" // the same with plugin version above
-val flywayVersion = "7.8.2" // the same with plugin version above
-val ktorVersion = "1.5.4"
-val exposedVersion = "0.31.1"
-val jacksonVersion = "2.12.3"
+val kotlinVersion = "1.5.21" // the same with plugin version above
+val flywayVersion = "7.11.2" // the same with plugin version above
+val ktorVersion = "1.6.1"
+val koinVersion = "3.1.2"
+val exposedVersion = "0.32.1"
+val jacksonVersion = "2.12.4"
 
 dependencies {
     // =============== kotlin, kotlinx ===============
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
 
     // ===============  ktor ===============
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -61,8 +62,12 @@ dependencies {
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
 
-    // Try to not use DI
-    //implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:7.0.0")
+    // ===============  koin (DI) ===============
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-ktor:$koinVersion")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+    //implementation("io.insert-koin:koin-core-ext:$koinVersion")
+    //implementation("io.insert-koin:koin-test-junit5:$koinVersion")
 
     // =============== database ===============
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -73,7 +78,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
-    runtimeOnly("org.postgresql:postgresql:42.2.20")
+    runtimeOnly("org.postgresql:postgresql:42.2.23")
 
     // ===============  AWS Java SDK Version 2 ===============
     implementation(platform("software.amazon.awssdk:bom:2.16.34"))
@@ -92,41 +97,36 @@ dependencies {
     // =============== utils - feature ===============
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
     implementation("org.freemarker:freemarker:2.3.31")
-    implementation("org.mindrot:jbcrypt:0.4")
-    implementation("io.konform:konform-jvm:0.2.0")
+    implementation("io.konform:konform-jvm:0.3.0")
+    implementation("at.favre.lib:bcrypt:0.9.0")
+
+    // =============== utils - config file parser ===============
+    implementation("com.ufoscout.properlty:properlty-kotlin:1.9.0")
+    implementation("io.github.config4k:config4k:0.4.2")
+    //implementation("com.charleskorn.kaml:kaml:0.19.0")
 
     implementation("org.apache.poi:poi:5.0.0")
     implementation("org.apache.poi:poi-ooxml:5.0.0")
     implementation("org.apache.commons:commons-csv:1.8")
 
-    implementation("at.favre.lib:bcrypt:0.9.0")
-
-    // =============== utils - i18n ===============
-    implementation("com.neovisionaries:nv-i18n:1.28")
-    implementation("com.ufoscout.properlty:properlty-kotlin:1.9.0")
-
     // =============== utils - bean ===============
+    implementation("com.github.rocketraman:kpropmap:0.0.2")
+
     //implementation("org.mapstruct:mapstruct:1.4.2.Final")
     //kapt("org.mapstruct:mapstruct-processor:1.4.2.Final")
-
-    implementation("com.github.rocketraman:kpropmap:0.0.2")
 
     // Kotlin DataClass DeepCopy
     //implementation("com.bennyhuo.kotlin:deepcopy-reflect:1.1.0")
     //kapt ("com.bennyhuo.kotlin:deepcopy-compiler:1.3.72")
     //implementation("com.bennyhuo.kotlin:deepcopy-runtime:1.3.72")
 
-    // =============== utils - config file parser ===============
-    implementation("io.github.config4k:config4k:0.4.2")
-    //implementation("com.charleskorn.kaml:kaml:0.19.0")
-
     // =============== utils - logging ===============
-    implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
+    implementation("io.github.microutils:kotlin-logging-jvm:2.0.10")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
     // =============== utils - general ===============
-    implementation("com.github.kittinunf.result:result:4.0.0")
-    implementation("com.github.kittinunf.result:result-coroutines:4.0.0")
+    implementation("com.github.kittinunf.result:result:5.0.0")
+    implementation("com.github.kittinunf.result:result-coroutines:5.0.0")
     implementation("org.apache.commons:commons-text:1.9")
     implementation("com.google.guava:guava:30.1.1-jre")
 
@@ -154,7 +154,7 @@ sourceSets["test"].resources.srcDirs("testresources")
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "11"
-        kotlinOptions.languageVersion = "1.4"
+        kotlinOptions.languageVersion = "1.5"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
@@ -163,22 +163,11 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "11"
-        kotlinOptions.languageVersion = "1.4"
+        kotlinOptions.languageVersion = "1.5"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
     }
 }
-
-// kapt 1.4.10
-// warning: Supported source version 'RELEASE_8' from annotation processor 'org.jetbrains.kotlin.kapt3.base.ProcessorWrapper'
-// less than -source '11
-//kapt {
-//    javacOptions {
-//        option("-source", "11") not work
-//        option("-target", "11") not work
-//        option("-verbose", "") // for debug
-//    }
-//}
 
 tasks.withType<JavaCompile> {
     options.isFork = true
@@ -302,6 +291,7 @@ tasks.shadowDistZip {
 }
 
 tasks.shadowJar {
+    dependsOn(tasks.distTar, tasks.distZip)
     archiveClassifier.set("")
     mergeServiceFiles()
 }

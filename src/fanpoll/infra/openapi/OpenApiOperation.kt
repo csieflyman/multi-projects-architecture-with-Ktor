@@ -8,6 +8,8 @@ package fanpoll.infra.openapi
 
 import fanpoll.infra.auth.AuthorizationRouteSelector
 import fanpoll.infra.auth.PrincipalAuth
+import fanpoll.infra.base.query.DynamicQueryLocation
+import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.openapi.schema.OpenAPIObject
 import fanpoll.infra.openapi.schema.Tag
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
@@ -15,8 +17,6 @@ import fanpoll.infra.openapi.schema.operation.definitions.OperationObject
 import fanpoll.infra.openapi.schema.operation.support.converters.ParameterObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.RequestBodyObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
-import fanpoll.infra.utils.DynamicQueryLocation
-import fanpoll.infra.utils.IdentifiableObject
 import io.ktor.auth.AuthenticationRouteSelector
 import io.ktor.http.HttpMethod
 import io.ktor.locations.KtorExperimentalLocationsAPI
@@ -75,7 +75,7 @@ class OpenApiOperation(
 
     private fun bindAuth(routeAuths: List<PrincipalAuth>?) {
         logger.debug { "OpenAPI $id bindAuth => $routeAuths" }
-        operationObject.summary += "　=>　Auth = [${routeAuths?.joinToString(" || ") ?: "Public"}]"
+        operationObject.summary += "　=>　Auth = [${routeAuths?.joinToString(" or ") ?: "Public"}]"
         if (routeAuths != null) {
             setOperationSecurities(routeAuths)
             setClientVersionHeader(routeAuths)
@@ -92,12 +92,7 @@ class OpenApiOperation(
     }
 
     private fun setClientVersionHeader(routeAuths: List<PrincipalAuth>) {
-        if (routeAuths.flatMap { auth ->
-                when (auth) {
-                    is PrincipalAuth.Service -> auth.sourceRoleMap.keys
-                    is PrincipalAuth.User -> auth.allowSources
-                }
-            }.any { it.login && it.userDeviceType?.isApp() == true }) {
+        if (routeAuths.flatMap { it.allowSources }.any { it.login && it.type.isApp() }) {
             operationObject.parameters += BuiltinComponents.ClientVersionOptionalHeader
         }
     }

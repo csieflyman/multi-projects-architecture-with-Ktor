@@ -4,23 +4,17 @@
 
 package fanpoll.infra.openapi
 
-import fanpoll.infra.RequestException
-import fanpoll.infra.ResponseCode
-import fanpoll.infra.utils.Jackson
+import fanpoll.infra.base.exception.RequestException
+import fanpoll.infra.base.json.Jackson
+import fanpoll.infra.base.response.ResponseCode
 import kotlin.collections.set
 
-object ProjectOpenApiManager {
-
-    private lateinit var config: OpenApiConfig
+class ProjectOpenApiManager(val config: OpenApiConfig) {
 
     private val openApiMap: MutableMap<String, ProjectOpenApi> = mutableMapOf()
     private val openApiJsonMap: MutableMap<String, String> = mutableMapOf()
 
-    fun init(config: OpenApiConfig) {
-        this.config = config
-    }
-
-    fun registerProject(projectOpenApi: ProjectOpenApi) {
+    fun register(projectOpenApi: ProjectOpenApi) {
         val projectId = projectOpenApi.projectId
         require(!openApiMap.containsKey(projectId))
         openApiMap[projectId] = projectOpenApi
@@ -28,14 +22,10 @@ object ProjectOpenApiManager {
         projectOpenApi.init(config)
     }
 
-    fun getProjectIds(): Set<String> {
-        return openApiMap.keys.toSet()
-    }
-
     fun getOpenApiJson(projectId: String): String {
         return openApiJsonMap.getOrPut(projectId) {
             val openAPIObject = openApiMap[projectId]?.openAPIObject
-                ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "$projectId openapi json is not exist")
+                ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "$projectId openapi json not found")
             Jackson.toJsonString(openAPIObject)
         }
     }

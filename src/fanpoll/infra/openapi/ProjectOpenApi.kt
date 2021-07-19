@@ -4,7 +4,8 @@
 
 package fanpoll.infra.openapi
 
-import fanpoll.infra.auth.ServiceAuth
+import fanpoll.infra.auth.AuthConst
+import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.openapi.schema.Info
 import fanpoll.infra.openapi.schema.OpenAPIObject
 import fanpoll.infra.openapi.schema.Server
@@ -13,7 +14,6 @@ import fanpoll.infra.openapi.schema.component.support.ComponentLoader
 import fanpoll.infra.openapi.schema.component.support.DefaultSecurityScheme
 import fanpoll.infra.openapi.schema.component.support.SecurityScheme
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
-import fanpoll.infra.utils.DateTimeUtils
 import kotlinx.html.div
 import kotlinx.html.li
 import kotlinx.html.p
@@ -80,7 +80,7 @@ class ProjectOpenApi(
 
         val apiKeySecurityScheme = SecurityScheme.apiKeyAuth(
             DefaultSecurityScheme.ApiKeyAuth.name,
-            ServiceAuth.API_KEY_HEADER_NAME
+            AuthConst.API_KEY_HEADER_NAME
         )
     }
 }

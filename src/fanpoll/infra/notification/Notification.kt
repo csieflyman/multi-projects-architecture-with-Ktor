@@ -4,94 +4,71 @@
 
 package fanpoll.infra.notification
 
-import fanpoll.infra.auth.UserType
-import fanpoll.infra.notification.channel.MultiChannelsMessageContent
-import fanpoll.infra.notification.utils.SendNotificationDTO
-import fanpoll.infra.utils.IdentifiableObject
-import fanpoll.infra.utils.InstantSerializer
-import fanpoll.infra.utils.UUIDSerializer
+import fanpoll.infra.auth.principal.UserType
+import fanpoll.infra.base.i18n.Lang
+import fanpoll.infra.base.json.InstantSerializer
+import fanpoll.infra.base.json.UUIDSerializer
+import fanpoll.infra.base.util.IdentifiableObject
+import fanpoll.infra.notification.channel.email.EmailContent
+import fanpoll.infra.notification.channel.push.PushContent
+import fanpoll.infra.notification.channel.sms.SMSContent
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
 import java.time.Instant
 import java.util.*
 
-typealias NotificationChannelMessage = Notification.ChannelMessage
-typealias NotificationCmdMessage = Notification.CommandMessage
-typealias NotificationRemoteCmdMessage = Notification.RemoteCommandMessage
-
 @Serializable
-sealed class Notification : IdentifiableObject<UUID>() {
-
-    abstract val type: NotificationType
-    abstract val recipients: Set<Recipient>?
-    abstract val entityType: String?
-    abstract val entityId: String?
-    abstract val version: String?
-
-    @Serializable(with = UUIDSerializer::class)
-    override val id: UUID = UUID.randomUUID()
+data class Notification(
+    val type: NotificationType,
+    val recipients: MutableSet<Recipient> = mutableSetOf(),
+    val content: NotificationContent = NotificationContent(),
+    val contentArgs: MutableMap<String, String> = mutableMapOf(),
+    @Transient val templateArgs: MutableMap<String, Any> = mutableMapOf(), // templateArgs doesn't support i18n now
+    @Transient val lazyLoadArg: Any? = null,
+    val remote: Boolean = false,
+    val remoteArg: JsonObject? = null,
+    @Serializable(with = UUIDSerializer::class) override val id: UUID = UUID.randomUUID(),
+    @Serializable(with = UUIDSerializer::class) val eventId: UUID = UUID.randomUUID(),
+    @Serializable(with = InstantSerializer::class) val createAt: Instant = Instant.now(),
+    var version: String? = null
+) : IdentifiableObject<UUID>() {
 
     @Serializable(with = InstantSerializer::class)
-    val createTime: Instant = Instant.now()
+    var sendAt: Instant? = null
 
-    @Serializable(with = InstantSerializer::class)
-    var sendTime: Instant? = null
-
-    abstract class ChannelMessage : Notification() {
-
-        var args: Any? = null
-
-        abstract val content: Any
+    init {
+        if (version == null)
+            version = type.version
+        if (version != null)
+            contentArgs["version"] = version!!
     }
 
-    class CommandMessage(
-        override val type: NotificationType,
-        override val recipients: Set<Recipient>? = null,
-        override val entityType: String? = null,
-        override val entityId: String? = null,
-        var args: Any? = null,
-        val dto: Any? = null
-    ) : Notification() {
+    fun debugString(): String =
+        "$id - $eventId - [${type.id} ${version?.let { "($it)" } ?: ""}] => $recipients"
 
-        override val version: String? = type.version
+    @Transient
+    val lazyLoad = type.isLazy()
 
-        companion object {
-
-            fun create(dto: SendNotificationDTO): NotificationCmdMessage =
-                CommandMessage(dto.type, dto.recipients, dto.entityType, dto.entityId, args = dto.args, dto = dto)
-
-            fun create(type: NotificationType, dto: Any): NotificationCmdMessage =
-                CommandMessage(type, dto = dto)
-        }
-
-        fun buildChannelMessages(): ChannelMessage = type.buildChannelMessage(dto)
-    }
-
-    @Serializable
-    class RemoteCommandMessage(
-        override val type: NotificationType,
-        override val recipients: Set<Recipient>? = null,
-        override val entityType: String? = null,
-        override val entityId: String? = null,
-        val args: JsonObject? = null,
-        val content: MultiChannelsMessageContent? = null
-    ) : Notification() {
-
-        override val version: String? = type.version
-
-        fun buildChannelMessages(): ChannelMessage = type.buildChannelMessage(this)
-    }
+    fun load() = type.lazyLoad(this)
 }
 
 @Serializable
 data class Recipient(
-    val userType: UserType,
-    @Serializable(with = UUIDSerializer::class) val userId: UUID,
+    override val id: String,
+    val userType: UserType? = null,
+    @Serializable(with = UUIDSerializer::class) val userId: UUID? = null,
+    // val channels: Set<NotificationChannel>? = null, TODO => user notification preferences
     val name: String? = null,
-    var email: String? = null,
-    var phone: String? = null,
-    var pushTokens: Set<String>? = null
-) : IdentifiableObject<String>() {
+    var lang: Lang? = null,
+    val email: String? = null,
+    val mobile: String? = null,
+    val pushTokens: Set<String>? = null
+) : IdentifiableObject<String>()
 
-    override val id: String = userId.toString()
-}
+@Serializable
+data class NotificationContent(
+    val email: MutableMap<Lang, EmailContent> = mutableMapOf(),
+    val push: MutableMap<Lang, PushContent> = mutableMapOf(),
+    val sms: MutableMap<Lang, SMSContent> = mutableMapOf()
+)

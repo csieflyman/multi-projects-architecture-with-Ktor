@@ -4,43 +4,50 @@
 
 package fanpoll
 
-import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import fanpoll.club.ClubConfig
-import fanpoll.infra.ServerConfig
-import fanpoll.infra.database.DatabaseConfig
-import fanpoll.infra.logging.LoggingConfig
-import fanpoll.infra.notification.NotificationConfig
-import fanpoll.infra.openapi.OpenApiConfig
-import fanpoll.infra.redis.RedisConfig
-import fanpoll.infra.utils.myExtract
+import fanpoll.infra.InfraConfig
+import fanpoll.infra.base.config.Config4kExt
 import fanpoll.ops.OpsConfig
+import io.github.config4k.extract
+import io.ktor.application.ApplicationEnvironment
 import mu.KotlinLogging
+import java.io.File
 
 data class MyApplicationConfig(
     val server: ServerConfig,
-    val logging: LoggingConfig,
-    val database: DatabaseConfig,
-    val redis: RedisConfig,
-    val notification: NotificationConfig,
-    val openApi: OpenApiConfig,
+    val infra: InfraConfig,
     val ops: OpsConfig,
     val club: ClubConfig
-) {
+)
 
-    companion object {
+data class ServerConfig(
+    val project: String,
+    val env: EnvMode,
+    val instance: String
+)
 
-        private val logger = KotlinLogging.logger {}
+enum class EnvMode {
+    dev, stage, prod
+}
 
-        fun loadHOCONFile(): MyApplicationConfig {
-            try {
-                val appConfig: Config = ConfigFactory.load()
-                //logger.debug(appConfig.getConfig("ktor.myapp").entrySet().toString())
-                return appConfig.myExtract("ktor.myapp")
-            } catch (e: Throwable) {
-                logger.error("fail to load application config file", e)
-                throw e
-            }
+// com.typesafe.config.Config is private val in ktor HoconApplicationConfig
+object MyApplicationConfigLoader {
+
+    private val logger = KotlinLogging.logger {}
+
+    fun load(environment: ApplicationEnvironment): MyApplicationConfig {
+        val myConfigFilePath = environment.config.propertyOrNull("ktor.application.myConfigFile")?.getString()
+        logger.info { "ktor.application.myConfigFile = $myConfigFilePath" }
+        try {
+            logger.info { "load my application config file..." }
+            val myConfig = myConfigFilePath?.let { ConfigFactory.parseFile(File(it)) } ?: ConfigFactory.load()
+            //logger.debug(myConfig.getConfig("myapp").entrySet().toString())
+            Config4kExt.registerCustomType()
+            return myConfig.extract("myapp")
+        } catch (e: Throwable) {
+            logger.error("fail to load my application config file", e)
+            throw e
         }
     }
 }

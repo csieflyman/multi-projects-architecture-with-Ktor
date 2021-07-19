@@ -2,6 +2,7 @@
 
 package fanpoll.infra.redis.ktorio.commands
 
+import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.redis.ktorio.Redis
 import fanpoll.infra.redis.ktorio.RedisInternalChannel
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +20,12 @@ interface RedisPubSub {
 
     data class Subscription(val channel: String, val subscriptions: Long, val subscribe: Boolean, val isPattern: Boolean = false) : Packet
 
-    data class KeyspaceNotification(val channel: String, val isKeyEvent: Boolean, val event: String, val key: String) : Packet
+    data class KeyspaceNotification(val channel: String, val isKeyEvent: Boolean, val event: String, val key: String) :
+        IdentifiableObject<String>(), Packet {
+
+        override val id: String
+            get() = "$event-$key"
+    }
 
     //data class Packet(val channel: String, val content: String, val isPattern: Boolean, val isMessage: Boolean)
 }

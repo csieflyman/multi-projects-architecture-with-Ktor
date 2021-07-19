@@ -4,42 +4,75 @@
 
 package fanpoll.ops
 
-import fanpoll.infra.ProjectAuthConfig
-import fanpoll.infra.auth.*
+import fanpoll.infra.auth.AuthConst
+import fanpoll.infra.auth.PrincipalAuth
+import fanpoll.infra.auth.principal.PrincipalSource
+import fanpoll.infra.auth.principal.PrincipalSourceType
+import fanpoll.infra.auth.provider.*
 import fanpoll.infra.openapi.ProjectOpenApi
-import io.ktor.auth.Authentication
+import fanpoll.infra.openapi.schema.component.support.SecurityScheme
+import fanpoll.ops.OpsAuth.MonitorSource
+import fanpoll.ops.OpsAuth.RootSource
+import fanpoll.ops.OpsAuth.UserSource
 
 object OpsAuth {
 
-    const val serviceProviderName = "${OpsConst.projectId}-service"
+    const val serviceAuthProviderName = "${OpsConst.projectId}-service"
+    const val userAuthProviderName = "${OpsConst.projectId}-user"
 
     private val serviceAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
+    private val sessionIdAuthScheme = SecurityScheme.apiKeyAuth("SessionIdAuth", AuthConst.SESSION_ID_HEADER_NAME)
+    private val userAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
 
-    val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
+    val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
 
-    val Root = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.Root))
+    val RootSource = PrincipalSource(OpsConst.projectId, "root", PrincipalSourceType.Postman, false)
+    val MonitorSource = PrincipalSource(OpsConst.projectId, "monitor", PrincipalSourceType.Ops, false)
+    val UserSource = PrincipalSource(OpsConst.projectId, "user", PrincipalSourceType.Postman, true)
 
-    val OpsTeam = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.OpsTeam))
+    val Root = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, setOf(RootSource))
+    val Monitor = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, setOf(MonitorSource))
+    val Public = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, setOf(UserSource))
 
-    val AppTeam = PrincipalAuth.Service.private(serviceProviderName, serviceAuthSchemes, setOf(OpsPrincipalSources.AppTeam))
+    val User = PrincipalAuth.User(
+        userAuthProviderName, userAuthSchemes, setOf(UserSource),
+        mapOf(OpsUserType.User.value to OpsUserType.User.value.roles)
+    )
 
-    val Dev = PrincipalAuth.Service.private(
-        serviceProviderName, serviceAuthSchemes,
-        setOf(OpsPrincipalSources.Root, OpsPrincipalSources.OpsTeam, OpsPrincipalSources.AppTeam)
+    val OpsTeam = PrincipalAuth.User(
+        userAuthProviderName, userAuthSchemes, setOf(UserSource),
+        mapOf(OpsUserType.User.value to setOf(OpsUserRole.OpsTeam.value))
+    )
+
+    val AppTeam = PrincipalAuth.User(
+        userAuthProviderName, userAuthSchemes, setOf(UserSource),
+        mapOf(OpsUserType.User.value to setOf(OpsUserRole.OpsTeam.value, OpsUserRole.AppTeam.value))
     )
 }
 
 data class OpsAuthConfig(
-    private val root: ServiceAuthConfig,
-    private val opsTeam: ServiceAuthConfig,
-    private val appTeam: ServiceAuthConfig
-) : ProjectAuthConfig {
+    private val root: ServiceAuthExternalConfig,
+    private val monitor: ServiceAuthExternalConfig,
+    private val user: UserAuthExternalConfig
+) {
 
-    override fun getPrincipalSourceAuthConfigs(): List<PrincipalSourceAuthConfig<ServiceAuthApiKeyCredential>> =
-        listOf(root, opsTeam, appTeam)
-}
+    val principalSourceAuthConfigs = listOf(
+        PrincipalSourceAuthConfig(
+            RootSource,
+            root.toServiceAuthConfig(RootSource)
+        ),
+        PrincipalSourceAuthConfig(
+            MonitorSource,
+            monitor.toServiceAuthConfig(MonitorSource)
+        ),
+        PrincipalSourceAuthConfig(
+            UserSource,
+            user.toServiceAuthConfig(UserSource),
+            user.toUserAuthConfig(UserSource)
+        ),
+    )
 
-fun Authentication.Configuration.ops(authConfig: OpsAuthConfig) {
+    fun getServiceAuthConfigs(): List<ServiceAuthConfig> = principalSourceAuthConfigs.mapNotNull { it.service }
 
-    serviceApiKey(OpsAuth.serviceProviderName, authConfig.getPrincipalSourceAuthConfigs())
+    fun getUserAuthConfigs(): List<UserSessionAuthConfig> = principalSourceAuthConfigs.mapNotNull { it.user }
 }

@@ -4,8 +4,8 @@
 
 package fanpoll.infra.openapi.schema.operation.support
 
+import fanpoll.infra.base.util.Identifiable
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
-import fanpoll.infra.utils.Identifiable
 
 interface Element : Identifiable<String> {
 

@@ -4,28 +4,20 @@
 
 package fanpoll.infra.logging
 
-import fanpoll.infra.notification.channel.NotificationChannelLog
-import fanpoll.infra.utils.json
+import fanpoll.infra.base.json.json
+import fanpoll.infra.base.util.IdentifiableObject
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import java.time.Instant
+import java.util.*
 
-enum class LogType {
+abstract class LogMessage : IdentifiableObject<UUID>() {
 
-    REQUEST, SERVER_ERROR, LOGIN, NOTIFICATION, NOTIFICATION_ERROR;
+    abstract val occurAt: Instant
 
-    fun isError(): Boolean {
-        return this == SERVER_ERROR || this == NOTIFICATION_ERROR
-    }
-}
+    abstract val logType: String
 
-data class LogMessage(val type: LogType, val dto: Any) {
+    abstract val logLevel: LogLevel
 
-    fun content(): JsonElement {
-        return when (type) {
-            LogType.REQUEST -> json.encodeToJsonElement(RequestLogDTO.serializer(), dto as RequestLogDTO)
-            LogType.SERVER_ERROR -> json.encodeToJsonElement(ErrorLogDTO.serializer(), dto as ErrorLogDTO)
-            LogType.LOGIN -> json.encodeToJsonElement(LoginLogDTO.serializer(), dto as LoginLogDTO)
-            LogType.NOTIFICATION, LogType.NOTIFICATION_ERROR ->
-                json.encodeToJsonElement(NotificationChannelLog.serializer(), dto as NotificationChannelLog)
-        }
-    }
+    fun toJson(): JsonElement = json.encodeToJsonElement(this)
 }

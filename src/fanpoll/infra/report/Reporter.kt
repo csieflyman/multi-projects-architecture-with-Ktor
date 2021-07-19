@@ -4,9 +4,9 @@
 
 package fanpoll.infra.report
 
-import fanpoll.infra.report.utils.ReportQueryParameters
-import fanpoll.infra.utils.LocalDateRange
-import fanpoll.infra.utils.json
+import fanpoll.infra.base.extension.LocalDateRange
+import fanpoll.infra.base.json.json
+import fanpoll.infra.report.util.ReportQueryParameters
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonElement

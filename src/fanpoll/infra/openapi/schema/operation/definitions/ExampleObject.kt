@@ -4,10 +4,10 @@
 
 package fanpoll.infra.openapi.schema.operation.definitions
 
+import fanpoll.infra.base.json.Jackson
+import fanpoll.infra.base.json.json
 import fanpoll.infra.openapi.schema.operation.support.Definition
 import fanpoll.infra.openapi.schema.operation.support.Example
-import fanpoll.infra.utils.Jackson
-import fanpoll.infra.utils.json
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.serializer

@@ -4,7 +4,7 @@
 
 package fanpoll.infra.app
 
-import fanpoll.infra.auth.UserDeviceType
+import fanpoll.infra.auth.principal.PrincipalSourceType
 
 enum class AppOs {
 
@@ -12,16 +12,16 @@ enum class AppOs {
 
     companion object {
 
-        fun from(userDeviceType: UserDeviceType): AppOs = when (userDeviceType) {
-            UserDeviceType.Android -> Android
-            UserDeviceType.iOS -> iOS
-            else -> error("invalid AppOs from UserDeviceType: $userDeviceType")
+        fun from(principalSourceType: PrincipalSourceType): AppOs = when (principalSourceType) {
+            PrincipalSourceType.Android -> Android
+            PrincipalSourceType.iOS -> iOS
+            else -> error("invalid AppOs from principalSourceType: $principalSourceType")
         }
 
     }
 
-    fun toUserDeviceType(): UserDeviceType = when (this) {
-        Android -> UserDeviceType.Android
-        iOS -> UserDeviceType.iOS
+    fun principalType(): PrincipalSourceType = when (this) {
+        Android -> PrincipalSourceType.Android
+        iOS -> PrincipalSourceType.iOS
     }
 }

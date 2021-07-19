@@ -7,11 +7,11 @@ package fanpoll.infra.openapi.schema.operation.definitions
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
+import fanpoll.infra.base.json.Jackson
 import fanpoll.infra.openapi.schema.operation.support.Definition
 import fanpoll.infra.openapi.schema.operation.support.Element
 import fanpoll.infra.openapi.schema.operation.support.Example
 import fanpoll.infra.openapi.schema.operation.support.Schema
-import fanpoll.infra.utils.Jackson
 import kotlin.reflect.KClass
 
 enum class SchemaDataType {

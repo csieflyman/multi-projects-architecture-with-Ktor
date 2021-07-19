@@ -35,4 +35,7 @@ abstract class Definition(
     override fun createRef(): ReferenceObject = refObj.value
 
     fun createRef(refName: String): ReferenceObject = ReferenceObject(refName, this)
+
+    override fun equals(other: Any?): Boolean = idEquals(other)
+    override fun hashCode(): Int = idHashCode()
 }

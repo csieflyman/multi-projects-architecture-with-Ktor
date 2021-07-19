@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.operation.definitions.*
 import fanpoll.infra.openapi.schema.operation.support.OpenApiIgnore
@@ -18,7 +19,6 @@ import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.Colle
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.JacksonJsonArrayKType
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.KotlinxJsonArrayKType
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.getSchemaName
-import fanpoll.infra.utils.DateTimeUtils
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
