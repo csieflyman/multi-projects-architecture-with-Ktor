@@ -19,6 +19,7 @@ import fanpoll.infra.base.response.I18nResponseCreator
 import fanpoll.infra.base.response.respond
 import fanpoll.infra.cache.CacheFeature
 import fanpoll.infra.database.DatabaseFeature
+import fanpoll.infra.logging.KoinLogger
 import fanpoll.infra.logging.LoggingConfig
 import fanpoll.infra.logging.LoggingFeature
 import fanpoll.infra.logging.error.ErrorLog
@@ -40,11 +41,11 @@ import io.ktor.sessions.SessionStorage
 import io.ktor.sessions.Sessions
 import io.ktor.sessions.header
 import mu.KotlinLogging
+import org.koin.core.logger.Level
 import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.get
 import org.koin.ktor.ext.koin
-import org.koin.logger.SLF4JLogger
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -55,7 +56,7 @@ fun Application.main() {
     val appConfig = MyApplicationConfigLoader.load(environment)
 
     install(Koin) {
-        SLF4JLogger()
+        logger(KoinLogger(Level.INFO))
 
         modules(
             module(createdAtStart = true) {

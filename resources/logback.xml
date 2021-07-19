@@ -43,7 +43,9 @@
     <logger name="Exposed" level="INFO"/>
 
     <logger name="fanpoll" level="INFO"/>
+
     <!--
         <logger name="fanpoll.infra.database.Profiling" level="DEBUG"/>
+        <logger name="[Koin]" level="INFO"/>
     -->
 </configuration>
