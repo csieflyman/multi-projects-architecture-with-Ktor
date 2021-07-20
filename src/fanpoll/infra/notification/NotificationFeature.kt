@@ -10,6 +10,7 @@ import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.i18n.AvailableLangs
 import fanpoll.infra.base.i18n.PropertiesMessagesProvider
+import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.logging.LogDestination
 import fanpoll.infra.logging.writers.AwsKinesisLogWriter
@@ -29,7 +30,6 @@ import fanpoll.infra.notification.senders.NotificationCoroutineActor
 import fanpoll.infra.notification.senders.NotificationDispatcher
 import io.ktor.application.Application
 import io.ktor.application.ApplicationFeature
-import io.ktor.application.ApplicationStopped
 import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import org.koin.dsl.module
@@ -152,7 +152,7 @@ class NotificationFeature(configuration: Configuration) {
 
                         single { notificationSender }
 
-                        pipeline.environment.monitor.subscribe(ApplicationStopped) { notificationSender.shutdown() }
+                        KoinApplicationShutdownManager.register { notificationSender.shutdown() }
                     }
                 )
             }

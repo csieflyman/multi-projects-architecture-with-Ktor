@@ -10,6 +10,7 @@ import fanpoll.infra.base.async.CoroutineUtils
 import fanpoll.infra.base.async.ThreadPoolConfig
 import fanpoll.infra.base.config.ValidateableConfig
 import fanpoll.infra.base.exception.InternalServerException
+import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.redis.ktorio.RedisClient
@@ -19,7 +20,6 @@ import fanpoll.infra.redis.ktorio.commands.quit
 import fanpoll.infra.redis.ktorio.commands.subscribe
 import io.ktor.application.Application
 import io.ktor.application.ApplicationFeature
-import io.ktor.application.ApplicationStopped
 import io.ktor.util.AttributeKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -95,7 +95,7 @@ class RedisFeature(configuration: Configuration) {
                         single { client }
                         if (keyspaceNotificationListener != null)
                             single { keyspaceNotificationListener }
-                        pipeline.environment.monitor.subscribe(ApplicationStopped) { shutdown() }
+                        KoinApplicationShutdownManager.register { shutdown() }
                     }
                 )
             }

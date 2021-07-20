@@ -9,6 +9,7 @@ import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.json.json
+import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.error.ErrorLogConfig
@@ -20,7 +21,6 @@ import fanpoll.infra.logging.request.RequestLogDBWriter
 import fanpoll.infra.logging.writers.*
 import io.ktor.application.Application
 import io.ktor.application.ApplicationFeature
-import io.ktor.application.ApplicationStopped
 import io.ktor.application.install
 import io.ktor.auth.principal
 import io.ktor.features.CallId
@@ -123,7 +123,7 @@ class LoggingFeature(configuration: Configuration) {
 
                         single { logWriter }
 
-                        pipeline.environment.monitor.subscribe(ApplicationStopped) { logWriter.shutdown() }
+                        KoinApplicationShutdownManager.register { logWriter.shutdown() }
                     }
                 )
             }

@@ -13,11 +13,12 @@ import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.ExceptionUtils
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.json.json
+import fanpoll.infra.base.koin.KoinApplicationShutdownManager
+import fanpoll.infra.base.koin.KoinLogger
 import fanpoll.infra.base.koinBaseModule
 import fanpoll.infra.base.location.LocationUtils.DataConverter
 import fanpoll.infra.base.response.I18nResponseCreator
 import fanpoll.infra.base.response.respond
-import fanpoll.infra.base.util.KoinLogger
 import fanpoll.infra.cache.CacheFeature
 import fanpoll.infra.database.DatabaseFeature
 import fanpoll.infra.logging.LoggingConfig
@@ -143,4 +144,6 @@ fun Application.main() {
             }
         )
     }
+
+    KoinApplicationShutdownManager.complete(environment)
 }

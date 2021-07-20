@@ -15,11 +15,15 @@ import io.ktor.application.Application
 import io.ktor.auth.authentication
 import io.ktor.auth.session
 import io.ktor.routing.routing
+import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.ext.koin
 
+private val logger = KotlinLogging.logger {}
+
 fun Application.opsMain() {
+    logger.info { "load ${OpsConst.projectId} project..." }
 
     val appConfig = get<MyApplicationConfig>()
 

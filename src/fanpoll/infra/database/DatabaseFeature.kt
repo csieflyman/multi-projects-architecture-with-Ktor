@@ -8,12 +8,12 @@ import com.zaxxer.hikari.HikariDataSource
 import fanpoll.MyApplicationConfig
 import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
+import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.writers.LogWriter
 import io.ktor.application.Application
 import io.ktor.application.ApplicationFeature
-import io.ktor.application.ApplicationStopping
 import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import org.flywaydb.core.Flyway
@@ -70,19 +70,22 @@ class DatabaseFeature(configuration: Configuration) {
 
             connect(configuration.hikariConfig)
             migrate(configuration.flywayConfig)
-            pipeline.environment.monitor.subscribe(ApplicationStopping) { shutdown() }
 
             val asyncExecutorConfig = appConfig.infra.database?.asyncExecutor ?: configuration.asyncExecutorConfig
             if (asyncExecutorConfig != null) {
                 initAsyncExecutor(pipeline, asyncExecutorConfig)
             }
 
+            KoinApplicationShutdownManager.register { shutdown() }
+
             return feature
         }
 
+        private var asyncExecutor: DBAsyncTaskCoroutineActor? = null
+
         private fun initAsyncExecutor(pipeline: Application, config: AsyncExecutorConfig) {
             val logWriter = pipeline.get<LogWriter>()
-            val asyncExecutor = DBAsyncTaskCoroutineActor(config.coroutineActor, logWriter)
+            asyncExecutor = DBAsyncTaskCoroutineActor(config.coroutineActor, logWriter)
             pipeline.koin {
                 modules(
                     module(createdAtStart = true) {
@@ -90,7 +93,6 @@ class DatabaseFeature(configuration: Configuration) {
                     }
                 )
             }
-            pipeline.environment.monitor.subscribe(ApplicationStopping) { asyncExecutor.shutdown() }
         }
 
         private fun configure(configuration: Configuration, databaseConfig: DatabaseConfig) {
@@ -153,9 +155,8 @@ class DatabaseFeature(configuration: Configuration) {
         }
 
         private fun shutdown() {
-            logger.info("shutdown DatabaseFeature...")
+            asyncExecutor?.shutdown()
             closeConnection()
-            logger.info("shutdown DatabaseFeature finished")
         }
 
         private fun closeConnection() {
