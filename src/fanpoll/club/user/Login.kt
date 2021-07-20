@@ -10,7 +10,6 @@ import fanpoll.club.ClubOpenApi
 import fanpoll.club.ClubUserType
 import fanpoll.infra.app.AppReleaseService
 import fanpoll.infra.app.UserDeviceTable
-import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION_RESULT
 import fanpoll.infra.auth.ClientVersionCheckResult
 import fanpoll.infra.auth.authorize
 import fanpoll.infra.auth.login.*
@@ -46,8 +45,7 @@ fun Routing.clubLogin() {
             post<AppLoginForm, AppLoginResponse>("/login", ClubOpenApi.Login) { form ->
                 form.populateRequest(call)
 
-                val clientVersionCheckResult = call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT)
-                    ?: if (form.checkClientVersion) appReleaseService.check(call) else null
+                val clientVersionCheckResult = if (form.checkClientVersion) appReleaseService.check(call) else null
 
                 val loginResponse = if (clientVersionCheckResult == ClientVersionCheckResult.ForceUpdate) {
                     AppLoginResponse(null, clientVersionCheckResult)

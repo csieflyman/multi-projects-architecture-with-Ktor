@@ -83,19 +83,21 @@ class AppReleaseService {
     }
 
     fun check(call: ApplicationCall): ClientVersionCheckResult? {
-        val principalSource = call.attributes[PrincipalSource.ATTRIBUTE_KEY]
-        return if (principalSource.checkClientVersion() &&
-            call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)
-        ) {
-            val clientVersion = call.attributes[ATTRIBUTE_KEY_CLIENT_VERSION]
-            val appVersion = AppVersion(principalSource.id, clientVersion)
-            logger.debug("client appVersion = $appVersion")
+        return call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT) ?: run {
+            val principalSource = call.attributes[PrincipalSource.ATTRIBUTE_KEY]
+            if (principalSource.checkClientVersion() &&
+                call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)
+            ) {
+                val clientVersion = call.attributes[ATTRIBUTE_KEY_CLIENT_VERSION]
+                val appVersion = AppVersion(principalSource.id, clientVersion)
+                logger.debug("client appVersion = $appVersion")
 
-            val result = check(appVersion)
-            call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT, result)
-            call.response.header(HEADER_CLIENT_VERSION_CHECK_RESULT, result.name)
-            result
-        } else null
+                val result = check(appVersion)
+                call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT, result)
+                call.response.header(HEADER_CLIENT_VERSION_CHECK_RESULT, result.name)
+                result
+            } else null
+        }
     }
 
     fun check(appVersion: AppVersion): ClientVersionCheckResult {
