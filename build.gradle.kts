@@ -125,8 +125,8 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
     // =============== utils - general ===============
-    implementation("com.github.kittinunf.result:result:5.0.0")
-    implementation("com.github.kittinunf.result:result-coroutines:5.0.0")
+    implementation("com.github.kittinunf.result:result:5.1.0")
+    implementation("com.github.kittinunf.result:result-coroutines:5.1.0")
     implementation("org.apache.commons:commons-text:1.9")
     implementation("com.google.guava:guava:30.1.1-jre")
 
