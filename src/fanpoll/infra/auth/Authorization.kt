@@ -6,7 +6,6 @@ package fanpoll.infra.auth
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.ResponseCode
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.feature
 import io.ktor.auth.Authentication
@@ -15,17 +14,6 @@ import io.ktor.routing.*
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
-
-object Authorization {
-
-    private val validateBlocks: MutableList<(principal: MyPrincipal, call: ApplicationCall) -> Unit> = mutableListOf()
-
-    fun addValidateBlock(block: (principal: MyPrincipal, call: ApplicationCall) -> Unit) = validateBlocks.add(block)
-
-    fun validate(principal: MyPrincipal, call: ApplicationCall) {
-        validateBlocks.forEach { it(principal, call) }
-    }
-}
 
 class AuthorizationRouteSelector(private val names: List<String?>, val principalAuths: List<PrincipalAuth>) : RouteSelector() {
 
@@ -62,7 +50,6 @@ fun Route.authorize(
             if (principalAuths.none { it.allow(principal, call) }) {
                 throw RequestException(ResponseCode.AUTH_ROLE_FORBIDDEN, "$principal is forbidden unable to access this api")
             } else {
-                Authorization.validate(principal, call)
                 logger.debug("$principal authenticated")
             }
         }

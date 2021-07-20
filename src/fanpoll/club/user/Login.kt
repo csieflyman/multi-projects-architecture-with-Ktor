@@ -15,7 +15,6 @@ import fanpoll.infra.auth.ClientVersionCheckResult
 import fanpoll.infra.auth.authorize
 import fanpoll.infra.auth.login.*
 import fanpoll.infra.auth.login.util.UserPasswordUtils
-import fanpoll.infra.auth.principal.ServicePrincipal
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.CodeResponseDTO
@@ -48,7 +47,7 @@ fun Routing.clubLogin() {
                 form.populateRequest(call)
 
                 val clientVersionCheckResult = call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT)
-                    ?: if (form.checkClientVersion) appReleaseService.check(call.principal<ServicePrincipal>()!!, call) else null
+                    ?: if (form.checkClientVersion) appReleaseService.check(call) else null
 
                 val loginResponse = if (clientVersionCheckResult == ClientVersionCheckResult.ForceUpdate) {
                     AppLoginResponse(null, clientVersionCheckResult)

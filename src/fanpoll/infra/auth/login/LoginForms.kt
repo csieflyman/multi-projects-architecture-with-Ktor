@@ -9,7 +9,6 @@ import fanpoll.infra.app.CreateUserDeviceForm
 import fanpoll.infra.app.UpdateUserDeviceForm
 import fanpoll.infra.app.UserDeviceDTO
 import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
-import fanpoll.infra.auth.HEADER_CLIENT_VERSION
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.ServicePrincipal
 import fanpoll.infra.auth.principal.UserRole
@@ -60,10 +59,12 @@ abstract class LoginForm<T> : Form<T>() {
         source = call.principal<ServicePrincipal>()!!.source
         ip = call.request.publicRemoteHost
 
-        checkClientVersion = clientVersion != null && source.checkClientVersion() &&
-                !call.request.headers.contains(HEADER_CLIENT_VERSION)
-        if (checkClientVersion)
+        if (clientVersion != null) {
             call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION, clientVersion!!)
+        } else {
+            clientVersion = call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION)
+        }
+        checkClientVersion = clientVersion != null && source.checkClientVersion()
     }
 
     fun populateUser(userType: UserType, userId: UUID, userRoles: Set<UserRole>? = null) {

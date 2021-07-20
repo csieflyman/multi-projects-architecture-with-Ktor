@@ -6,8 +6,10 @@
 
 package fanpoll.infra.app
 
-import fanpoll.infra.auth.*
-import fanpoll.infra.auth.principal.MyPrincipal
+import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
+import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION_RESULT
+import fanpoll.infra.auth.ClientVersionCheckResult
+import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.entity.EntityForm
@@ -36,12 +38,6 @@ import java.time.Instant
 class AppReleaseService {
 
     private val logger = KotlinLogging.logger {}
-
-    init {
-        Authorization.addValidateBlock { principal, call ->
-            check(principal, call)
-        }
-    }
 
     fun create(form: CreateAppReleaseForm) {
         if (form.releasedAt == null)
@@ -86,10 +82,13 @@ class AppReleaseService {
             ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "appVersion $appVersion does not exist")
     }
 
-    fun check(principal: MyPrincipal, call: ApplicationCall): ClientVersionCheckResult? {
-        return if (principal.source.checkClientVersion() && call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)) {
+    fun check(call: ApplicationCall): ClientVersionCheckResult? {
+        val principalSource = call.attributes[PrincipalSource.ATTRIBUTE_KEY]
+        return if (principalSource.checkClientVersion() &&
+            call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)
+        ) {
             val clientVersion = call.attributes[ATTRIBUTE_KEY_CLIENT_VERSION]
-            val appVersion = AppVersion(principal.source.id, clientVersion)
+            val appVersion = AppVersion(principalSource.id, clientVersion)
             logger.debug("client appVersion = $appVersion")
 
             val result = check(appVersion)
