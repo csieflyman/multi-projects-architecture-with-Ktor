@@ -36,6 +36,8 @@ class ServiceAuthProvider(config: Configuration) : AuthenticationProvider(config
             credential.apiKey == it.apiKey
         }
         if (authConfig != null) {
+            attributes.put(PrincipalSource.ATTRIBUTE_KEY, authConfig.principalSource)
+
             val hostAllowed = if (authConfig.allowHosts == null || authConfig.allowHosts == "*" || request.fromLocalhost()) true
             else if (authConfig.allowHosts == "*" && request.fromLocalhost()) true
             else authConfig.allowHosts.split(",").any { it == credential.host }
