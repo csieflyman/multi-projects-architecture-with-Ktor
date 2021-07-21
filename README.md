@@ -14,7 +14,7 @@ Ktor 是 JetBrain 開發的 Web 框架，其特性是
 
 由於 Ktor 是一個很年輕的框架，雖然目前官方不斷地改善使用文件，但開發者在學習過程中，仍然需要有實際的範例，將各個功能整合起來才知道如何建構一個完整的後端服務。但是目前 Ktor 的使用人數不多，網路上的範例也很少，而且大多為展示簡單的單一功能，缺乏 real world 等級的完整後端服務範例，這導致後端經驗不足的開發者會不知道該如何使用 Ktor 建構服務。而且 Ktor 官方也沒有規定或指南，建議開發者應該如何規劃專案的檔案結構及程式寫法，所以開發者必須根據經驗事先思考規劃，才能建構容易維護的專案
 
-綜合以上原因，本專案使用以下技術且包含常見網站後端服務功能的範例，截至 2021-07-21，codebase 累計已有 241 個 kt 檔，不含空白行已超過 13000 行，供大家參考學習
+綜合以上原因，本專案使用以下技術且包含常見網站後端服務功能的範例，供大家參考學習。截至 2021-07-21，codebase 累計已有 241 個 kt 檔，不含空白行已超過 13000 行
 
 ### Technique Stack
 - Kotlin 1.5.21
@@ -26,12 +26,12 @@ Ktor 是 JetBrain 開發的 Web 框架，其特性是
 ------------
 ### 建置部署
 #### 建置步驟
-1. 設定 git branch 對應至部署環境
+1. 設定 git branch 對應至部署環境  
 在 build.gradle.kts 檔案找到以下設定，你也可自行增加 prod, stage, test…等環境設定。Gradle shadow plugin 會根據當下的 git branch 打包程式及對應的環境設定檔為 zip 檔案
         val devBranchName = "dev"
         val releaseBranchName = "main"
         val branchToEnvMap: Map<String, String> = mapOf(devBranchName to "dev", releaseBranchName to "prod")
-2. 製作部署環境設定檔
+2. 製作部署環境設定檔  
 根據 git branch 對應的 env，建立 deploy/config/${env}/application-${env}.conf 檔案。設定檔範例可參考 deploy/config/dev/application-dev.conf
 3. 執行 gradle shadowEnvDistZip 打包為 zip
 
