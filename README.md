@@ -2,7 +2,7 @@
 Kotlin Ktor Web Framework Example
 
 ------------
-## 繁體中文 (Tranditional Chinese)
+## 繁體中文 (Traditional Chinese)
 Ktor 是 JetBrain 開發的 Web 框架，其特性是
 - 100% 純 Kotlin 開發
 - 使用 Coroutine 非同步的方式處理請求
