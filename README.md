@@ -3,7 +3,7 @@ Kotlin Ktor Web Framework Example
 
 ------------
 ## 繁體中文 (Traditional Chinese)
-Ktor 是 JetBrain 開發的 Web 框架，其特性是
+Ktor 是 JetBrains 開發的 Web 框架，其特性是
 - 100% 純 Kotlin 開發
 - 使用 Coroutine 非同步的方式處理請求
 - Unopinionated 使得 Ktor 核心更加地輕量、啟動快速
@@ -27,17 +27,18 @@ Ktor 是 JetBrain 開發的 Web 框架，其特性是
 ### 建置部署
 #### 建置步驟
 1. 設定 git branch 對應至部署環境  
-在 build.gradle.kts 檔案找到以下設定，你也可自行增加 prod, stage, test…等環境設定。Gradle shadow plugin 會根據當下的 git branch 打包程式及對應的環境設定檔為 zip 檔案
-        val devBranchName = "dev"
-        val releaseBranchName = "main"
-        val branchToEnvMap: Map<String, String> = mapOf(devBranchName to "dev", releaseBranchName to "prod")
+在 build.gradle.kts 檔案找到以下設定，你也可自行增加 stage, test…等環境對應。Gradle shadow plugin 會根據當下的 git branch 打包程式及 deploy/config/${env} 資料夾裡的檔案，最後壓縮為 zip 檔
+```kotlin
+    val devBranchName = "dev"
+    val releaseBranchName = "main"
+    val branchToEnvMap: Map<String, String> = mapOf(devBranchName to "dev", releaseBranchName to "prod")
+```
 2. 製作部署環境設定檔  
-根據 git branch 對應的 env，建立 deploy/config/${env}/application-${env}.conf 檔案。設定檔範例可參考 deploy/config/dev/application-dev.conf
+根據 git branch 對應的環境 env 變數值，建立 deploy/config/${env}/application-${env}.conf 檔案。設定檔範例可參考 deploy/config/dev/application-dev.conf
 3. 執行 gradle shadowEnvDistZip 打包為 zip
 
 #### 部署步驟
-1. 根據 resources/application.conf 設定 server 的環境變數
-2. 上傳 zip 檔 (內含部署腳本檔案)
-3. 設定 version.sh，確定程式路徑無誤 
-4. 執行 deploy.sh 解壓縮 zip 及備份舊程式目錄
-5. 執行 start.sh 啟動服務
+1. 根據 application.conf 設定執行所需要的環境變數
+2. 解壓縮 zip 檔(內含部署腳本檔案)
+3. 設定 configs.sh
+4. 執行 start.sh 啟動服務
