@@ -1,7 +1,7 @@
 # Multi-Projects Architecture with Ktor
 
 ### Multi-Projects Architecture
-I develop two subprojects base on infrastructure and common library but each subproject can be optional deployed with ktor module configuration like microservice. Subproject also has its own
+This project contain two subprojects base on common infrastructure and library but each subproject can be optional deployed with ktor module configuration like microservice. Subproject also has its own
 * routes and openapi document
 * authentication methods
 * user type and its roles
