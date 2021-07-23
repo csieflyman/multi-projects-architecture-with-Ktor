@@ -1,5 +1,11 @@
-# ktor-example
-Kotlin Ktor Web Framework Example
+# Multi-Projects Archietecture with Ktor
+
+### Multi-Projects Architecture
+I develop two subprojects base on infrastructure and common library but each subproject can be optional deployed with ktor module configuration like microservice. Subproject also has its own
+* routes and openapi document
+* authentication methods
+* user type and its roles
+* notification types
 
 ### Technique Stack
 * Kotlin 1.5.21
@@ -7,17 +13,35 @@ Kotlin Ktor Web Framework Example
 * Gradle 7.1.1
 * PostgreSQL 13.2
 * Redis 6.2.1
-* Kotlinx Serialization, Kotlinx Coroutine, Exposed ORM，Koin DI
+* Kotlinx Serialization, Kotlinx Coroutine
+* Exposed ORM, HikariCP, Flyway database migration tool
+* Koin DI
 
 ### Ktor Enhancement
-* i18n support
+* Ktor Feature (Plugin)
+    * integrate with Koin DI
+    * All features can be configured with DSL or external config file 
+* i18n Support
+    * specify the language supported by application in config file
+    * retrieving supported languages from an HTTP request cookie and Accept-Language header as ktor ApplicationCall extension function
+    * support HOCON and Java Properties message provider
 * OpenAPI Generator
+    * support multiple openapi documents
+    * support basic authentication to protect your openapi document
+    * integrate gradle git plugin to add git version information into openapi document
 * Authentication and Role-Based Authoriation, like Spring Security
-
+    * You can specify authentication providers, user types and user roles using ktor routing DSL
+* Typesafe Config
+    * replace ktor ApplicationConfig with typesafe config and convert config to Kotlin Objects using [config4k](https://github.com/config4k/config4k)
+* Request Data Validation
+    * validate incoming request body and path, query parameters automatically before pass it to your route dsl function
 ### Infrastructure
 * Logging
     * use coroutine channel to write log to different destinations, support file, database, AWS Kinesis stream
     * includes request log, error log, login log, notification log 
+* Authentication Methods
+    * Service: API key authentication
+    * User: password authentication using bcrypt
 * Redis
     * session storage and support session key expired notification by [Redis PubSub Keyspace Notification](https://redis.io/topics/notifications)
     * data cache
@@ -26,14 +50,12 @@ Kotlin Ktor Web Framework Example
     * use coroutine channel to send notifications to multiple channels, includes email(AWS SES), push(Firebase), sms(not implemented yet)
     * integrate freemarker template engine
     * support user language preference
-
-### Multi-Projects Architecture
-I develop two subprojects base on infrastructure and common library but each subproject can be optional deployed with ktor module configuration and has its own
-* routes and openapi document
-* authentication methods
-* user type and it's roles
-* notification types
-
+* Mobile App Management
+    * support multiple apps
+    * check app version whether need to upgrade or not 
+    * manage user devices and push tokens
+* Performance Tunning
+    * All Coroutine Channel and Java ExeuctorService threadpool parameters can be configured in the config file. You can also create the config files for each different environment in the deploy folder
 ------------
 ## 繁體中文 (Traditional Chinese)
 Ktor 是 JetBrains 開發的 Web 框架，其特性是
