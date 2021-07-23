@@ -73,6 +73,18 @@ Ktor 是 JetBrains 開發的 Web 框架，其特性是
 
 ### Ktor Enhancement
 
+Ktor 是一個 unopinionated 的微框架，缺乏與常用第三方框架或函式庫之間的整合，例如 DI, ORM，甚至 i18n 也沒有實作。所以如果要直接拿 Ktor 開發規模較大的專案，就無法像 Spring Boot 設定後即可使用，必須要先花時間自行開發缺少的功能及整合。本專案對 Ktor 進行了以下改善
+
+* Ktor Feature (Plugin)
+    * 整合了 Koin DI 至 Ktor Feature, 協助設定及初始化 Feature
+    * Ktor Feature 的開發慣例是使用 DSL 語法進行設定，但實務上，許多參數設定必須由外部設定檔或環境變數提供。所以本專案實作的所有 Feature 都支援以上2種方式，並且以外部設定檔為優先
+* i18n Support
+    * 可在設定檔指定系統支援的語系 `myapp.infra.i18n.langs = ["zh-TW", "en"]`
+    * 可從 cookie 或 Accept-Language header 取得 HTTP 請求的語言，然後使用 Ktor ApplicationCall 的 extension function `lang()` 進行操作
+    * 多國語言訊息檔案支援 HOCON 及 Java Properties 2 種格式
+* OpenAPI Generator
+
+
 ### Multi-Projects Architecture
 
 ### Infrastructure
