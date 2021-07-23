@@ -1,6 +1,39 @@
 # ktor-example
 Kotlin Ktor Web Framework Example
 
+### Technique Stack
+* Kotlin 1.5.21
+* Ktor 1.6.1
+* Gradle 7.1.1
+* PostgreSQL 13.2
+* Redis 6.2.1
+* Kotlinx Serialization, Kotlinx Coroutine, Exposed ORM，Koin DI
+
+### Ktor Enhancement
+* i18n support
+* OpenAPI Generator
+* Authentication and Role-Based Authoriation, like Spring Security
+
+### Infrastructure
+* Logging
+    * use coroutine channel to write log to different destinations, support file, database, AWS Kinesis stream
+    * includes request log, error log, login log, notification log 
+* Redis
+    * session storage and support session key expired notification by [Redis PubSub Keyspace Notification](https://redis.io/topics/notifications)
+    * data cache
+    * use [ktorio redis client](https://github.com/ktorio/ktor-clients) based on coroutines. ktorio is a experimental project developed by JetBrains ktor team. I will use [Lettuce coroutine extension](https://lettuce.io/core/release/reference/#kotlin) in the future 
+* Notification Service
+    * use coroutine channel to send notifications to multiple channels, includes email(AWS SES), push(Firebase), sms(not implemented yet)
+    * integrate freemarker template engine
+    * support user language preference
+
+### Multi-Projects Architecture
+I develop two subprojects base on infrastructure and common library but each subproject can be optional deployed with ktor module configuration and has its own
+* routes and openapi document
+* authentication methods
+* user type and it's roles
+* notification types
+
 ------------
 ## 繁體中文 (Traditional Chinese)
 Ktor 是 JetBrains 開發的 Web 框架，其特性是
