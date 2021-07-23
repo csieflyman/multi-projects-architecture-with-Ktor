@@ -1,7 +1,7 @@
 # Multi-Projects Architecture with Ktor
 
 ### Multi-Projects Architecture
-This project contain two subprojects base on common infrastructure and library but each subproject can be optional deployed with ktor module configuration like microservice. Subproject also has its own
+This project contain two subprojects base on common infrastructure and library but each subproject can be deployed optionally with ktor module configuration like microservice. Subproject also has its own
 * routes and openapi document
 * authentication methods
 * user type and its roles
@@ -30,7 +30,7 @@ This project contain two subprojects base on common infrastructure and library b
     * support basic authentication to protect your openapi document
     * integrate gradle git plugin to add git version information into openapi document
 * Authentication and Role-Based Authoriation, like Spring Security
-    * You can specify authentication providers, user types and user roles using ktor routing DSL
+    * You can specify authentication providers, user types and user roles in ktor routing DSL
 * Typesafe Config
     * replace ktor ApplicationConfig with typesafe config and convert config to Kotlin Objects using [config4k](https://github.com/config4k/config4k)
 * Request Data Validation
