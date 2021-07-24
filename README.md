@@ -1,13 +1,13 @@
 # Multi-Projects Architecture with Ktor
 
-### Multi-Projects Architecture
+## Multi-Projects Architecture
 This project contain two subprojects base on common infrastructure and library but each subproject can be deployed optionally with ktor module configuration like microservice. Subproject also has its own
 * routes and openapi document
 * authentication methods
 * user types and roles
 * notification types
 
-### Technique Stack
+## Technique Stack
 * Kotlin 1.5.21
 * Ktor 1.6.1
 * Gradle 7.1.1
@@ -17,7 +17,7 @@ This project contain two subprojects base on common infrastructure and library b
 * Exposed ORM, HikariCP, Flyway database migration tool
 * Koin DI
 
-### Ktor Enhancement
+## Ktor Enhancement
 * **Ktor Feature** (Plugin)
     * integrate with Koin DI to initialize ktor feature
     * feature configuration can be configured with DSL or external config file
@@ -41,7 +41,7 @@ authorize(ClubAuth.Admin) {
 }
 ```
 * **Type-safe and Validatable Configuration**
-    * replace ktor ApplicationConfig with typesafe Config and convert it to Kotlin data class using [Config4k](https://github.com/config4k/config4k). Moreover, data class can override `validate()` function to validate the config value
+    * replace ktor ApplicationConfig with typesafe Config and convert it to Kotlin data class using [Config4k](https://github.com/config4k/config4k). Moreover, data class can override `validate()` function to validate the config values
 ```kotlin
 data class SessionConfig(
     val expireDuration: Duration? = null,
@@ -56,9 +56,9 @@ data class SessionConfig(
 }
 ```
 * **Request Data Validation**
-    * validate incoming request body and path, query parameters automatically before pass it to the route dsl function. We use [Konform](https://github.com/konform-kt/konform)，以 type-safe DSL 的方式撰寫驗證邏輯，未來再考慮是否支援 JSR-303 annotation
+    * use [Konform](https://github.com/konform-kt/konform) to validate incoming request body and path, query parameters automatically before pass it to the route dsl function. I will support JSR-303 annotation in the future
 
-### Infrastructure
+## Infrastructure
 * **Logging**
     * use coroutine channel to write log to different destinations, support file, database, AWS Kinesis stream
     * includes request log, error log, login log, notification log 
@@ -80,7 +80,7 @@ data class SessionConfig(
 * **Performance Tunning**
     * All Coroutine Channel and Java ExeuctorService threadpool parameters can be configured in the config file. You can also create the config files for each different environment in the deploy folder
 ------------
-## 繁體中文 (Traditional Chinese)
+# 繁體中文 (Traditional Chinese)
 Ktor 是 JetBrains 開發的 Web 框架，其特性是
 - 100% 純 Kotlin 開發
 - 使用 Coroutine 非同步的方式處理請求
@@ -94,7 +94,17 @@ Ktor 是 JetBrains 開發的 Web 框架，其特性是
 
 綜合以上原因，本專案使用以下技術且包含常見網站後端服務功能的範例，供大家參考學習。截至 2021-07-21，codebase 累計已有 241 個 kt 檔，不含空白行超過 13000 行
 
-### Ktor Enhancement
+## Technique Stack
+* Kotlin 1.5.21
+* Ktor 1.6.1
+* Gradle 7.1.1
+* PostgreSQL 13.2
+* Redis 6.2.1
+* Kotlinx Serialization, Kotlinx Coroutine
+* Exposed ORM, HikariCP, Flyway database migration tool
+* Koin DI
+
+## Ktor Enhancement
 
 Ktor 是一個微框架，缺乏與常用第三方框架或函式庫之間的整合，例如 DI, ORM，甚至連 request data validation 及 i18n 也沒有實作。所以如果要直接使用 Ktor 開發專案，就無法像 Spring Boot 設定後立即使用，必須要先花時間自行開發缺少的功能及整合，所以本專案對 Ktor 進行了以下增強改善
 
@@ -140,22 +150,37 @@ data class SessionConfig(
 * **Request Data Validation**
     * Ktor 沒有實作對請求資料進行驗證的功能，本專案透過自定義 route extension fuction 的方式，先將 request body, path parameter, query parameter 轉為 data class 之後，隨即進行資料驗證，最後再傳入 route DSL function 作為參數進行操作。目前本專案使用 [Konform](https://github.com/konform-kt/konform)，以 type-safe DSL 的方式撰寫驗證邏輯，未來再考慮是否支援 JSR-303 annotation
 
-### Multi-Projects Architecture
+## Multi-Projects Architecture
+近年微服務架構興起，但對於小團隊而言，
 
 ### Infrastructure
+* **Logging**
+    * 使用 coroutine channel 非同步地寫入 log 至檔案、資料庫或 AWS Kinesis stream
+    * 目前包含 request log, error log, login log, notification log，每一種 log 都可以各自設定寫入的目的地 
+* **Authentication Methods**
+    * Service 驗證: 使用 API key authentication
+    * User 驗證: 使用 bcrypt password authentication。未來預計支援 OAuth
+* **Redis**
+    * 儲存 user session，並且支援 [Redis PubSub Keyspace Notification](https://redis.io/topics/notifications) 實作 session key 逾期通知機制 
+    * 支援 data cache
+    * 目前使用 [ktorio redis client](https://github.com/ktorio/ktor-clients)，特色是實作簡單而且是基於 coroutines。不過這是 JetBrains ktor 團隊的實驗性專案，所以未來預計將轉換為 [Lettuce coroutine extension](https://lettuce.io/core/release/reference/#kotlin)
+* **Notification Service**
+    * 使用 coroutine channel 非同步地發送通知至多個管道，包含 email(AWS SES), push(Firebase), sms(尚未串接)
+    * 整合 freemarker template engine 處理 email 內容
+    * 可根據使用者偏好語言發送通知
+* **Mobile App Management**
+    * 支援管理多個 app
+    * 驗證客戶端 app 版本，檢查是否有新版本，甚至強迫升級
+    * manage user devices and push tokens
+* **Performance Tunning**
+    * All Coroutine Channel and Java ExeuctorService threadpool parameters can be configured in the config file. You can also create the config files for each different environment in the deploy folder
 
-### Technique Stack
-* Kotlin 1.5.21
-* Ktor 1.6.1
-* Gradle 7.1.1
-* PostgreSQL 13.2
-* Redis 6.2.1
-* Kotlinx Serialization, Kotlinx Coroutine
-* Exposed ORM, HikariCP, Flyway database migration tool
-* Koin DI
-------------
-### Build & Deploy
-#### Build Steps
+### Ops Project
+
+### Club Project
+
+## Build & Deploy
+### Build Steps
 1. 設定 git branch 對應至部署環境  
 在 build.gradle.kts 檔案找到以下設定，你也可自行增加 stage, test…等環境對應。Gradle shadow plugin 會根據當下的 git branch 打包程式及 deploy/config/${env} 資料夾裡的檔案，最後壓縮為 zip 檔
 ```kotlin
@@ -169,7 +194,7 @@ data class SessionConfig(
 設定檔範例可參考 `deploy/config/dev/application-dev.conf`
 3. 執行 gradle shadowEnvDistZip 打包為 zip
 
-#### Deploy Steps
+### Deploy Steps
 1. 根據 application.conf 設定執行所需要的環境變數
 2. 解壓縮 zip 檔(內含部署腳本檔案)
 3. 設定 configs.sh
