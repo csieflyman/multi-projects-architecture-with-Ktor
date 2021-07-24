@@ -18,20 +18,20 @@ This project contain two subprojects base on common infrastructure and library b
 * Koin DI
 
 ### Ktor Enhancement
-* Ktor Feature (Plugin)
-    * integrate with Koin DI
-    * All features can be configured with DSL or external config file 
-* i18n Support
-    * specify the language supported by application in config file
-    * retrieving supported languages from an HTTP request cookie and Accept-Language header as ktor ApplicationCall extension function
-    * support HOCON and Java Properties message provider
-* OpenAPI Generator
-    * support multiple openapi documents
-    * support basic authentication to protect your openapi document
-    * integrate gradle git plugin to add git version information into openapi document
-* Authentication and Role-Based Authoriation, like Spring Security
-    * You can specify authentication providers, user types and user roles in ktor routing DSL
-```kotlin=
+* **Ktor Feature** (Plugin)
+    * integrate with Koin DI to initialize ktor feature
+    * feature configuration can be configured with DSL or external config file
+* **i18n Support**
+    * specify the language supported by application in config file. e.g. `myapp.infra.i18n.langs = ["zh-TW", "en"]`
+    * support HOCON and Java Properties message source
+    * retrieving supported languages from an HTTP request cookie and Accept-Language header by ktor ApplicationCall extension function `lang()`
+* **OpenAPI Generator**
+    * generate openapi document respectively for each subproject
+    * support HTTP basic authentication to protect your API document
+    * integrate gradle git plugin to add git version information into API document
+* **Authentication and Role-Based Authoriation, like Spring Security**
+    * You can specify authentication providers, user types and roles in ktor route DSL function
+```kotlin
 authorize(ClubAuth.Admin) {
 
     put<UUIDEntityIdLocation, UpdateUserForm, Unit>(ClubOpenApi.UpdateUser) { _, form ->
@@ -40,30 +40,44 @@ authorize(ClubAuth.Admin) {
     }
 }
 ```
-* Typesafe Config
-    * replace ktor ApplicationConfig with typesafe config and convert config to Kotlin Objects using [config4k](https://github.com/config4k/config4k)
-* Request Data Validation
-    * validate incoming request body and path, query parameters automatically before pass it to your route dsl function
+* **Type-safe and Validatable Configuration**
+    * replace ktor ApplicationConfig with typesafe Config and convert it to Kotlin data class using [Config4k](https://github.com/config4k/config4k). Moreover, data class can override `validate()` function to validate the config value
+```kotlin
+data class SessionConfig(
+    val expireDuration: Duration? = null,
+    val extendDuration: Duration? = null
+) : ValidateableConfig {
+
+    override fun validate() {
+        require(if (expireDuration != null && extendDuration != null) expireDuration > extendDuration else true) {
+            "expireDuration $expireDuration should be greater than extendDuration $extendDuration"
+        }
+    }
+}
+```
+* **Request Data Validation**
+    * validate incoming request body and path, query parameters automatically before pass it to the route dsl function. We use [Konform](https://github.com/konform-kt/konform)，以 type-safe DSL 的方式撰寫驗證邏輯，未來再考慮是否支援 JSR-303 annotation
+
 ### Infrastructure
-* Logging
+* **Logging**
     * use coroutine channel to write log to different destinations, support file, database, AWS Kinesis stream
     * includes request log, error log, login log, notification log 
-* Authentication Methods
+* **Authentication Methods**
     * Service: API key authentication
     * User: password authentication using bcrypt
-* Redis
+* **Redis**
     * session storage and support session key expired notification by [Redis PubSub Keyspace Notification](https://redis.io/topics/notifications)
     * data cache
     * use [ktorio redis client](https://github.com/ktorio/ktor-clients) based on coroutines. ktorio is a experimental project developed by JetBrains ktor team. I will use [Lettuce coroutine extension](https://lettuce.io/core/release/reference/#kotlin) in the future 
-* Notification Service
+* **Notification Service**
     * use coroutine channel to send notifications to multiple channels, includes email(AWS SES), push(Firebase), sms(not implemented yet)
     * integrate freemarker template engine
     * support user language preference
-* Mobile App Management
+* **Mobile App Management**
     * support multiple apps
     * check app version whether need to upgrade or not 
     * manage user devices and push tokens
-* Performance Tunning
+* **Performance Tunning**
     * All Coroutine Channel and Java ExeuctorService threadpool parameters can be configured in the config file. You can also create the config files for each different environment in the deploy folder
 ------------
 ## 繁體中文 (Traditional Chinese)
@@ -84,22 +98,22 @@ Ktor 是 JetBrains 開發的 Web 框架，其特性是
 
 Ktor 是一個微框架，缺乏與常用第三方框架或函式庫之間的整合，例如 DI, ORM，甚至連 request data validation 及 i18n 也沒有實作。所以如果要直接使用 Ktor 開發專案，就無法像 Spring Boot 設定後立即使用，必須要先花時間自行開發缺少的功能及整合，所以本專案對 Ktor 進行了以下增強改善
 
-* Ktor Feature (官方未來將改名為 Plugin)
+* **Ktor Feature** (官方未來將改名為 Plugin)
     * 整合了 Koin DI 至 Ktor Feature, 協助初始化 Feature
     * Ktor Feature 的開發慣例是使用 DSL 語法進行設定，但實務上，許多參數設定必須由外部設定檔或環境變數提供。所以本專案實作的所有 Feature 都支援以上2種方式，並且以外部設定檔為優先
-* i18n Support
+* **i18n Support**
     * 在設定檔指定系統支援的語言 `myapp.infra.i18n.langs = ["zh-TW", "en"]`
     * 多國語言訊息檔支援 HOCON 及 Java Properties 2 種格式
     * 可從 cookie 或 Accept-Language header 取得 HTTP 請求的語言，再使用 Ktor ApplicationCall 的 extension function `lang()` 進行操作
-* OpenAPI Generator
+* **OpenAPI Generator**
     * 自行實作文件產生器，所以可根據自身需求調整以最佳化產出的文件 
     * 以編程方式撰寫 OpenAPI Definition，並且集中在專屬的 kt 檔案方便管理，取代一般在 route function 加註大量 annotation 的方式，使得 route function 看起來更簡潔
     * 每個子專案可各自產生文件，避免將所有不同功能的 API 都集中在一份文件
     * 支援 Http Basic Authentication，保護 API 文件不外流
     * 整合 Gradle Git Plugin，將 Git 版本資訊、建置部署時間…等資訊加進文件中 
-* Authentication and Role-Based Authoriation
+* **Authentication and Role-Based Authoriation**
     * Ktor 本身僅實作 authentication，並沒有定義 User 及 User Role。本專案可讓每個子專案定義自己的 User Types 及其 Roles，並整合原有 Ktor authentication 機制，達到類似 Spring Security 的功能
-```kotlin=
+```kotlin
 authorize(ClubAuth.Admin) {
 
     put<UUIDEntityIdLocation, UpdateUserForm, Unit>(ClubOpenApi.UpdateUser) { _, form ->
@@ -108,9 +122,9 @@ authorize(ClubAuth.Admin) {
     }
 }
 ```
-* Type-safe and Validatable Configuration
+* **Type-safe and Validatable Configuration**
     * Ktor 讀取設定檔的方式是透過 ApplicationConfig 物件，但只能使用 `getString()` 函式取值。本專案使用 [Config4k](https://github.com/config4k/config4k) 將設定值轉換至 Kotlin data class，不僅可以達到 type-safe 的效果，直接操作物件的方式也更簡潔。除此之外，本專案也在 config4k 轉換時插入驗證函式`validate()`，類別可實作此函式檢查設定值是否有效
-```kotlin=
+```kotlin
 data class SessionConfig(
     val expireDuration: Duration? = null,
     val extendDuration: Duration? = null
@@ -123,7 +137,7 @@ data class SessionConfig(
     }
 }
 ```
-* Request Data Validation
+* **Request Data Validation**
     * Ktor 沒有實作對請求資料進行驗證的功能，本專案透過自定義 route extension fuction 的方式，先將 request body, path parameter, query parameter 轉為 data class 之後，隨即進行資料驗證，最後再傳入 route DSL function 作為參數進行操作。目前本專案使用 [Konform](https://github.com/konform-kt/konform)，以 type-safe DSL 的方式撰寫驗證邏輯，未來再考慮是否支援 JSR-303 annotation
 
 ### Multi-Projects Architecture
