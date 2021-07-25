@@ -1,8 +1,9 @@
 # Multi-Projects Architecture with Ktor
 
 ## Multi-Projects Architecture
-This project contain two subprojects base on common infrastructure and library but each subproject can be deployed optionally with ktor module configuration like microservice. Subproject also has its own
-* routes and openapi document
+This project has two subprojects built on common infrastructure and library but each subproject can be deployed optionally as a ktor module , somewhat like a microservice. Subproject has its own
+* routes
+* openapi document
 * authentication methods
 * user types and roles
 * notification types
@@ -19,7 +20,7 @@ This project contain two subprojects base on common infrastructure and library b
 
 ## Ktor Enhancement
 * **Ktor Feature** (Plugin)
-    * integrate with Koin DI to initialize ktor feature
+    * integrate Koin DI to initialize ktor feature
     * feature configuration can be configured with DSL or external config file
 * **i18n Support**
     * specify the language supported by application in config file. e.g. `myapp.infra.i18n.langs = ["zh-TW", "en"]`
@@ -151,7 +152,10 @@ data class SessionConfig(
     * Ktor 沒有實作對請求資料進行驗證的功能，本專案透過自定義 route extension fuction 的方式，先將 request body, path parameter, query parameter 轉為 data class 之後，隨即進行資料驗證，最後再傳入 route DSL function 作為參數進行操作。目前本專案使用 [Konform](https://github.com/konform-kt/konform)，以 type-safe DSL 的方式撰寫驗證邏輯，未來再考慮是否支援 JSR-303 annotation
 
 ## Multi-Projects Architecture
-近年微服務架構興起，但對於小團隊而言，
+近年微服務架構興起，對於規模較小的開發團隊而言，一開始就規劃拆分為多個微服務是個沉重的負擔，所以大多還是從單體式架構 monolithic 出發，往後再視情況逐步拆分為微服務。雖然這種開發方式廣泛被採用，但實際上並不是所有團隊都能輕鬆轉換至微服務架構，這取決於單體式架構裡的各功能實作上是否能低耦合，甚至模組化。
+另一方面，即使往後將各個功能拆分成微服務，因為通常拆分的時間點不一, 或是負責的團隊或工程師的技術實作偏好不同，就容易導致各個微服務在基礎設施服務方面的實作方式上有所差異，提高了開發及維運的成本。  
+
+本專案雖然是單體式架構，但是以模組化開發方式為準則，並且在共同的基礎設施服務及函式庫上建立子專案。規劃子專案的方式可以遵循 DDD 的概念, 將子專案對應到一個 Bounded Context。為了確保各個 Context 可以獨立不耦合，在架構設計上，每個子專案可以定義自己的使用者及角色，還有事件通知。另外在實作方面，每個子專案都是一個 Ktor Module，所以可以透過調整設定檔決定要部署那些模組。如果一個模組沒有被部署，則不會進行任何初始化動作，也就不會部署任何 API，這與一般 multi-projects 只在專案結構方面模組化建置的作法，可以節省執行期的運行資源。
 
 ### Infrastructure
 * **Logging**
@@ -171,9 +175,9 @@ data class SessionConfig(
 * **Mobile App Management**
     * 支援管理多個 app
     * 驗證客戶端 app 版本，檢查是否有新版本，甚至強迫升級
-    * manage user devices and push tokens
+    * 管理使用者裝置的推播 token
 * **Performance Tunning**
-    * All Coroutine Channel and Java ExeuctorService threadpool parameters can be configured in the config file. You can also create the config files for each different environment in the deploy folder
+    * 所有的 Coroutine Channel 及 Java ExeuctorService threadpool 參數都可以透過設定檔進行調整。我們可以事先在 deploy 資料夾下建立各種環境的設定檔，根據每個環境的效能需求及限制給予不同的設定值
 
 ### Ops Project
 
