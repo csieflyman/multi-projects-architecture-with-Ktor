@@ -7,6 +7,15 @@ This project has two subprojects built on common infrastructure and library but 
 * authentication methods
 * openapi document
 
+```
+    application {
+        modules = [
+            fanpoll.ApplicationKt.main,
+            fanpoll.ops.OpsProjectKt.opsMain,
+            fanpoll.club.ClubProjectKt.clubMain
+        ]
+    }
+```
 ## Technique Stack
 * Kotlin 1.5.21
 * Ktor 1.6.1
@@ -198,15 +207,15 @@ data class SessionConfig(
 * Root: 管理 Ops 專案的使用者
 * Monitor: 實作類似 spring-actuator 的監控功能，目前支援 healthCheck，預計未來將提供更多系統狀態的資訊
 * Operation Team: 
-    * 可以填寫任意文字作為 email 及推播通知的內容，傳送給符合查詢條件的使用者
+    * 可以填寫任意文字作為 email 的內容，傳送給符合查詢條件的使用者
     * 給定查詢條件將資料庫裡符合的資料匯出成 Excel 檔案，再寄送至指定的 email
 * App Team: App 版本管理
 * User: 登入、登出、變更密碼
 #### Club Project
-Club 為展示功能的範例專案, 目前包含 Admin 及 Mmember 2種使用者角色，以 iOS, Android App 作為使用者客戶端
+Club 為展示功能的範例專案, 目前包含 Admin 及 Member 2種使用者角色，以 iOS, Android App 作為使用者客戶端
 * Admin 
     * 管理 Club 使用者
-    * 可以填寫任意文字作為 email 的內容，傳送給符合查詢條件的使用者
+    * 可以填寫任意文字作為 email 及推播通知的內容，傳送給符合查詢條件的使用者
 * Member: 目前沒有 Member 才能執行的功能
 * User: 登入、登出、變更密碼
 ## Build & Deploy
