@@ -123,7 +123,7 @@ Ktor 是一個微框架，缺乏與常用第三方框架或函式庫之間的整
     * 支援 Http Basic Authentication，保護 API 文件不外流
     * 整合 Gradle Git Plugin，將 Git 版本資訊、建置部署時間…等資訊加進文件中 
 * **Authentication and Role-Based Authoriation**
-    * Ktor 本身僅實作 authentication，並沒有定義 User 及 User Role。本專案可讓每個子專案定義自己的 User Types 及其 Roles，並整合原有 Ktor authentication 機制，達到類似 Spring Security 的功能
+    * Ktor 本身僅實作 authentication 機制，並沒有定義使用者及其角色。本專案允許每個子專案定義自己的使用者及其角色，並且整合至原有的 Ktor authentication 機制，達到類似 Spring Security 的功能
 ```kotlin
 authorize(ClubAuth.Admin) {
 
@@ -134,7 +134,7 @@ authorize(ClubAuth.Admin) {
 }
 ```
 * **Type-safe and Validatable Configuration**
-    * Ktor 讀取設定檔的方式是透過 ApplicationConfig 物件，但只能使用 `getString()` 函式取值。本專案使用 [Config4k](https://github.com/config4k/config4k) 將設定值轉換至 Kotlin data class，不僅可以達到 type-safe 的效果，直接操作物件的方式也更簡潔。除此之外，本專案也在 config4k 轉換時插入驗證函式`validate()`，類別可實作此函式檢查設定值是否有效
+    * Ktor 讀取設定檔的方式是透過 ApplicationConfig 物件，但只能使用 `getString()` 函式取值。本專案使用 [Config4k](https://github.com/config4k/config4k) 將設定值轉換至 Kotlin data class，不僅可以達到 type-safe 的效果，直接操作物件的寫法也更簡潔易懂。除此之外，本專案也在 config4k 轉換時插入驗證函式`validate()`，類別可實作此函式檢查設定值是否合法
 ```kotlin
 data class SessionConfig(
     val expireDuration: Duration? = null,
@@ -152,10 +152,10 @@ data class SessionConfig(
     * Ktor 沒有實作對請求資料進行驗證的功能，本專案透過自定義 route extension fuction 的方式，先將 request body, path parameter, query parameter 轉為 data class 之後，隨即進行資料驗證，最後再傳入 route DSL function 作為參數進行操作。目前本專案使用 [Konform](https://github.com/konform-kt/konform)，以 type-safe DSL 的方式撰寫驗證邏輯，未來再考慮是否支援 JSR-303 annotation
 
 ## Multi-Projects Architecture
-近年微服務架構興起，對於規模較小的開發團隊而言，一開始就規劃拆分為多個微服務是個沉重的負擔，所以大多還是從單體式架構 monolithic 出發，往後再視情況逐步拆分為微服務。雖然這種開發方式廣泛被採用，但實際上並不是所有團隊都能輕鬆轉換至微服務架構，這取決於單體式架構裡的各功能實作上是否能低耦合，甚至模組化。
-另一方面，即使往後將各個功能拆分成微服務，因為通常拆分的時間點不一, 或是負責的團隊或工程師的技術實作偏好不同，就容易導致各個微服務在基礎設施服務方面的實作方式上有所差異，提高了開發及維運的成本。  
+近年微服務架構興起，對於規模較小的開發團隊而言，一開始就規劃拆分為多個微服務是個沉重的負擔，所以大多還是從單體式架構 monolithic 出發，往後再視情況逐步拆分為微服務。雖然這種開發方式廣泛被採用，但實際上並不是所有團隊都能無痛轉換至微服務架構，這取決於單體式架構裡的各個功能實作上是否低耦合，甚至模組化。
+另一方面，即使往後將各個功能拆分成微服務，因為通常拆分的時間點不一, 或是由不同的工程師負責實作，如果沒有事先規劃及規定統一的作法，就容易導致各個微服務在基礎設施功能方面的實作方式上有所差異，提高了往後開發維護及維運的成本。  
 
-本專案雖然是單體式架構，但是以模組化開發方式為準則，並且在共同的基礎設施服務及函式庫上建立子專案。規劃子專案的方式可以遵循 DDD 的概念, 將子專案對應到一個 Bounded Context。為了確保各個 Context 可以獨立不耦合，在架構設計上，每個子專案可以定義自己的使用者及角色，還有事件通知。另外在實作方面，每個子專案都是一個 Ktor Module，所以可以透過調整設定檔決定要部署那些模組。如果一個模組沒有被部署，則不會進行任何初始化動作，也就不會部署任何 API，這與一般 multi-projects 只在專案結構方面模組化建置的作法，可以節省執行期的運行資源。
+本專案雖然是單體式架構，但是以模組化開發方式為準則，並且在共同的函式庫及基礎設施功能上建立子專案。規劃子專案可以遵循 DDD 的概念, 將子專案對應到一個 Bounded Context。為了確保各個 Context 獨立不耦合，在架構設計上，每個子專案可以定義自己的使用者及角色，還有事件通知。另外在實作方面，每個子專案都是一個 Ktor Module，所以可以透過調整設定檔決定要部署那些模組。如果一個模組沒有被部署，則不會進行任何初始化動作，也就不會部署任何 API，這與一般 Gradle multi-projects 只在專案結構方面模組化建置的作法，可以更進一步節省執行期的運行資源。
 
 ### Infrastructure
 * **Logging**
