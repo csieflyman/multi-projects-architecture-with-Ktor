@@ -12,7 +12,7 @@ plugins {
     id("fanpoll.java-conventions")
     application
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("org.flywaydb.flyway") version "7.11.2"
+    id("org.flywaydb.flyway") version "7.11.4"
     id("org.unbroken-dome.gitversion") version "0.10.0"
     id("com.github.node-gradle.node") version "3.0.1"
 }

@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     val kotlinVersion = "1.5.21"
-    val ktorVersion = "1.6.1"
+    val ktorVersion = "1.6.2"
     val koinVersion = "3.1.2"
     val exposedVersion = "0.32.1"
     val jacksonVersion = "2.12.4"
@@ -75,7 +75,7 @@ dependencies {
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
     implementation("com.zaxxer:HikariCP:4.0.3")
-    implementation("org.flywaydb:flyway-core:7.11.2")
+    implementation("org.flywaydb:flyway-core:7.11.4")
 
     runtimeOnly("org.postgresql:postgresql:42.2.23")
 

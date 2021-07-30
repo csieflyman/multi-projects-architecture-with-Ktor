@@ -18,7 +18,7 @@ This project has two subprojects built on common infrastructure and library but 
 ```
 ## Technique Stack
 * Kotlin 1.5.21
-* Ktor 1.6.1
+* Ktor 1.6.2
 * Gradle 7.1.1
 * PostgreSQL 13.2
 * Redis 6.2.1
@@ -104,8 +104,9 @@ Ktor 是 JetBrains 開發的 Web 框架，其特性是
 綜合以上原因，本專案使用以下技術且包含常見網站後端服務功能的範例，供大家參考學習。截至 2021-07-21，codebase 累計已有 241 個 kt 檔，不含空白行超過 13000 行
 
 ## Technique Stack
+
 * Kotlin 1.5.21
-* Ktor 1.6.1
+* Ktor 1.6.2
 * Gradle 7.1.1
 * PostgreSQL 13.2
 * Redis 6.2.1
