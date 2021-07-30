@@ -1,0 +1,51 @@
+<configuration debug="false">
+
+    <property name="LOG_FILE_PATH" value="${user.home}"/>
+    <property name="LOG_FILE_NAME" value="fanpoll"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE_PATH}/${LOG_FILE_NAME}.log</file>
+        　　　　
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_PATH}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            　　　　　　
+            <MaxHistory>2</MaxHistory>
+            　　　　
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %m%n%xEx</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %logger{15} - %m%n%xEx{10}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNCFILE"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!--
+    <logger name="org.eclipse.jetty" level="INFO"/>
+    <logger name="io.netty" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="DEBUG"/>
+    <logger name="org.flywaydb" level="DEBUG"/>
+    -->
+
+    <logger name="Exposed" level="DEBUG"/>
+    <logger name="[Koin]" level="INFO"/>
+
+    <logger name="fanpoll.infra.database" level="INFO"/>
+    <logger name="fanpoll.infra.base.async.CoroutineUtils" level="WARN"/>
+    <logger name="fanpoll.infra.openapi" level="WARN"/>
+    <logger name="fanpoll.infra.app" level="WARN"/>
+
+    <logger name="fanpoll" level="DEBUG"/>
+</configuration>
