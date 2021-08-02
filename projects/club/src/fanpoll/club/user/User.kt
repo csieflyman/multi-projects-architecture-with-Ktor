@@ -64,7 +64,7 @@ fun Routing.clubUser() {
 
     route("${ClubConst.urlRootPath}/users") {
 
-        authorize(ClubAuth.Admin) {
+        authorize(ClubAuth.Root) {
 
             post<CreateUserForm, UUID>(ClubOpenApi.CreateUser) { form ->
                 val id = clubUserService.createUser(form)

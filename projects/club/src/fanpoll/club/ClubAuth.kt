@@ -4,6 +4,7 @@
 
 package fanpoll.club
 
+import fanpoll.club.ClubAuth.RootSource
 import fanpoll.infra.auth.AuthConst
 import fanpoll.infra.auth.PrincipalAuth
 import fanpoll.infra.auth.principal.PrincipalSource
@@ -22,6 +23,9 @@ object ClubAuth {
     private val sessionIdAuthScheme = SecurityScheme.apiKeyAuth("SessionIdAuth", AuthConst.SESSION_ID_HEADER_NAME)
     private val userAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
     val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
+
+    val RootSource = PrincipalSource(ClubConst.projectId, "root", PrincipalSourceType.Postman, false)
+    val Root = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, setOf(RootSource))
 
     val Android: PrincipalSource = PrincipalSource(
         ClubConst.projectId, "android", PrincipalSourceType.Android, true
@@ -51,11 +55,16 @@ object ClubAuth {
 }
 
 data class ClubAuthConfig(
+    private val root: ServiceAuthExternalConfig,
     private val android: UserAuthExternalConfig,
     private val iOS: UserAuthExternalConfig
 ) {
 
     val principalSourceAuthConfigs = listOf(
+        PrincipalSourceAuthConfig(
+            RootSource,
+            root.toServiceAuthConfig(RootSource)
+        ),
         PrincipalSourceAuthConfig(
             ClubAuth.Android,
             android.toServiceAuthConfig(ClubAuth.Android),
