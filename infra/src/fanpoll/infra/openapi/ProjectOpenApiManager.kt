@@ -6,7 +6,7 @@ package fanpoll.infra.openapi
 
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.json.Jackson
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import kotlin.collections.set
 
 class ProjectOpenApiManager(val config: OpenApiConfig) {
@@ -25,7 +25,7 @@ class ProjectOpenApiManager(val config: OpenApiConfig) {
     fun getOpenApiJson(projectId: String): String {
         return openApiJsonMap.getOrPut(projectId) {
             val openAPIObject = openApiMap[projectId]?.openAPIObject
-                ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "$projectId openapi json not found")
+                ?: throw RequestException(InfraResponseCode.ENTITY_NOT_FOUND, "$projectId openapi json not found")
             Jackson.toJsonString(openAPIObject)
         }
     }

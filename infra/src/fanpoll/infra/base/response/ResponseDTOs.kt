@@ -20,10 +20,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
 
-/**
- * reference: https://google.github.io/styleguide/jsoncstyleguide.xml, https://github.com/dewitt/opensearch
- */
-
 suspend fun ApplicationCall.respond(responseDTO: ResponseDTO) {
     respond(responseDTO.code.httpStatusCode, responseDTO)
 }
@@ -32,7 +28,7 @@ suspend fun ApplicationCall.respond(responseDTO: ResponseDTO) {
 sealed class ResponseDTO {
 
     abstract val code: ResponseCode
-    abstract val codeType: ResponseCodeType
+    abstract val message: String?
     abstract val data: JsonElement?
 }
 
@@ -40,76 +36,73 @@ sealed class ResponseDTO {
 @SerialName("code")
 class CodeResponseDTO(override val code: ResponseCode) : ResponseDTO() {
 
+    override val message: String? = null
     override val data: JsonElement? = null
 
-    override val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
-
     companion object {
-        val OK = CodeResponseDTO(ResponseCode.OK)
+        val OK = CodeResponseDTO(InfraResponseCode.OK)
     }
 }
 
 @Serializable
 @SerialName("data")
-class DataResponseDTO(override val code: ResponseCode, override val data: JsonElement) : ResponseDTO() {
-
-    override val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
-
-    constructor(data: JsonElement) : this(ResponseCode.OK, data)
+class DataResponseDTO(
+    override val code: ResponseCode = InfraResponseCode.OK,
+    override val message: String? = null,
+    override val data: JsonElement
+) : ResponseDTO() {
 
     companion object {
 
-        inline operator fun <reified T : Any> invoke(data: T): DataResponseDTO {
-            return DataResponseDTO(json.encodeToJsonElement(T::class.serializer(), data))
+        inline operator fun <reified T : Any> invoke(data: T, message: String? = null): DataResponseDTO {
+            return DataResponseDTO(data = json.encodeToJsonElement(T::class.serializer(), data), message = message)
         }
 
-        inline operator fun <reified T : Any> invoke(data: List<T>): DataResponseDTO {
-            return DataResponseDTO(JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
+        inline operator fun <reified T : Any> invoke(data: List<T>, message: String? = null): DataResponseDTO {
+            return DataResponseDTO(data = JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }), message = message)
         }
 
         fun longId(id: Long): DataResponseDTO {
-            return DataResponseDTO(JsonObject(mapOf("id" to JsonPrimitive(id))))
+            return DataResponseDTO(data = JsonObject(mapOf("id" to JsonPrimitive(id))))
         }
 
         fun stringId(id: String): DataResponseDTO {
-            return DataResponseDTO(JsonObject(mapOf("id" to JsonPrimitive(id))))
+            return DataResponseDTO(data = JsonObject(mapOf("id" to JsonPrimitive(id))))
         }
 
         fun uuid(id: UUID): DataResponseDTO {
-            return DataResponseDTO(JsonObject(mapOf("id" to JsonPrimitive(id.toString()))))
+            return DataResponseDTO(data = JsonObject(mapOf("id" to JsonPrimitive(id.toString()))))
         }
     }
 }
 
 @Serializable
 @SerialName("paging")
-class PagingDataResponseDTO(override val code: ResponseCode, override val data: JsonElement) : ResponseDTO() {
-
-    override val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
-
-    constructor(data: JsonElement) : this(ResponseCode.OK, data)
+class PagingDataResponseDTO(
+    override val code: ResponseCode = InfraResponseCode.OK,
+    override val message: String? = null,
+    override val data: JsonElement
+) : ResponseDTO() {
 
     companion object {
 
-        inline fun <reified T : Any> dtoList(offsetLimit: DynamicQuery.OffsetLimit, total: Long, items: List<T>): PagingDataResponseDTO {
+        inline fun <reified T : Any> dtoList(
+            offsetLimit: DynamicQuery.OffsetLimit,
+            total: Long,
+            items: List<T>,
+            message: String? = null
+        ): PagingDataResponseDTO {
             return jsonArray(
-                offsetLimit, total, JsonArray(items.map { json.encodeToJsonElement(T::class.serializer(), it) })
+                offsetLimit, total, JsonArray(items.map { json.encodeToJsonElement(T::class.serializer(), it) }), message
             )
         }
 
-        fun jsonArray(offsetLimit: DynamicQuery.OffsetLimit, total: Long, items: JsonArray): PagingDataResponseDTO {
+        fun jsonArray(
+            offsetLimit: DynamicQuery.OffsetLimit,
+            total: Long,
+            items: JsonArray,
+            message: String? = null
+        ): PagingDataResponseDTO {
             val totalPages = (total / offsetLimit.itemsPerPage) + (if (total % offsetLimit.itemsPerPage == 0L) 0 else 1)
             val finalItems = if (total != items.size.toLong()) items else {
                 val startIndex: Int = (offsetLimit.itemsPerPage * (offsetLimit.pageIndex - 1)).toInt()
@@ -124,10 +117,11 @@ class PagingDataResponseDTO(override val code: ResponseCode, override val data: 
                 }
             }
             return PagingDataResponseDTO(
-                json.encodeToJsonElement(
+                data = json.encodeToJsonElement(
                     PagingData.serializer(),
                     PagingData(total, totalPages, offsetLimit.itemsPerPage, offsetLimit.pageIndex, finalItems)
-                )
+                ),
+                message = message
             )
         }
     }
@@ -144,82 +138,33 @@ class PagingDataResponseDTO(override val code: ResponseCode, override val data: 
 @SerialName("error")
 class ErrorResponseDTO(
     override val code: ResponseCode,
-    val message: String,
+    override val message: String,
     val detail: String,
     val reqId: String,
     override val data: JsonObject? = null,
     val errors: MutableList<ErrorResponseDetailError>? = null
-) : ResponseDTO() {
-
-    override val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
-}
+) : ResponseDTO()
 
 @Serializable
 class ErrorResponseDetailError(
     val code: ResponseCode,
     val detail: String,
     val data: JsonObject? = null
-) {
-    val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
-}
-
-@Serializable
-@SerialName("dataMessage")
-class DataMessageResponseDTO(
-    override val code: ResponseCode,
-    val message: String,
-    override val data: JsonElement
-) : ResponseDTO() {
-
-    override val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
-
-    companion object {
-
-        inline operator fun <reified T : Form<*>> invoke(
-            code: ResponseCode, message: String, data: T
-        ): DataMessageResponseDTO {
-            return DataMessageResponseDTO(code, message, json.encodeToJsonElement(T::class.serializer(), data))
-        }
-
-        inline operator fun <reified T : Form<*>> invoke(
-            code: ResponseCode, message: String, data: List<T>
-        ): DataMessageResponseDTO {
-            return DataMessageResponseDTO(code, message, JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
-        }
-    }
-}
+)
 
 @Serializable
 @SerialName("batch")
 class BatchResponseDTO(
     override val code: ResponseCode,
-    val message: String,
+    override val message: String,
     override val data: JsonObject
 ) : ResponseDTO() {
-
-    override val codeType: ResponseCodeType
-
-    init {
-        codeType = code.codeType
-    }
 
     companion object {
 
         operator fun invoke(code: ResponseCode, args: Map<String, Any>? = null, call: ApplicationCall): BatchResponseDTO {
             // ENHANCEMENT
-            throw InternalServerException(ResponseCode.NOT_IMPLEMENTED_ERROR)
+            throw InternalServerException(InfraResponseCode.NOT_IMPLEMENTED_ERROR)
         }
     }
 }

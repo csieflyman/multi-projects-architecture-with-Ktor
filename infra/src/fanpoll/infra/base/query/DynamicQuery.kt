@@ -8,7 +8,7 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
 import fanpoll.infra.base.json.json
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.request.ApplicationRequest
 import io.ktor.util.toMap
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -109,7 +109,10 @@ class DynamicQuery(
                 if (count) {
                     val invalidKeywords = queryKeywords.filter { map.containsKey(it) }.subtract(countQueryKeywords)
                     if (invalidKeywords.isNotEmpty())
-                        throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_COUNT and $invalidKeywords are mutually exclusive")
+                        throw RequestException(
+                            InfraResponseCode.BAD_REQUEST_QUERYSTRING,
+                            "$QUERY_COUNT and $invalidKeywords are mutually exclusive"
+                        )
                 }
             },
             map.filter { it.key.startsWith(QUERY_KEYWORD_PREFIX) && !queryKeywords.contains(it.key) }.toMutableMap()
@@ -132,7 +135,7 @@ class DynamicQuery(
             logger.debug("query filter: $dsl")
             if (!dsl.startsWith("[") || !dsl.endsWith("]"))
                 throw RequestException(
-                    ResponseCode.BAD_REQUEST_QUERYSTRING,
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                     "invalid query filter: filter should be startWith '[' and endWith ']"
                 )
             dsl = dsl.substring(1, dsl.length - 1)
@@ -158,37 +161,40 @@ class DynamicQuery(
 
         private fun parseOffsetLimit(offset: Long, limit: Int): OffsetLimit = try {
             if (offset < 0)
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_OFFSET must be >= 0")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_OFFSET must be >= 0")
             if (limit < 1 || limit > MAX_LIMIT)
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_LIMIT must be 1 ~ $MAX_LIMIT")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_LIMIT must be 1 ~ $MAX_LIMIT")
 
             OffsetLimit(offset, limit, false)
         } catch (e: NumberFormatException) {
-            throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_OFFSET/$QUERY_LIMIT must be integer", e)
+            throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_OFFSET/$QUERY_LIMIT must be integer", e)
         }
 
         private fun parsePaging(pageIndex: Long, itemsPerPage: Int): OffsetLimit = try {
             if (pageIndex < 1)
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_PAGE_INDEX must be >= 1")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_PAGE_INDEX must be >= 1")
             if (itemsPerPage < 1 || itemsPerPage > MAX_LIMIT)
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_ITEMS_PER_PAGE must be 1 ~ $MAX_LIMIT")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_ITEMS_PER_PAGE must be 1 ~ $MAX_LIMIT")
 
             val offset = (pageIndex - 1) * itemsPerPage
             OffsetLimit(offset, itemsPerPage, true)
         } catch (e: NumberFormatException) {
-            throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_PAGE_INDEX/$QUERY_ITEMS_PER_PAGE must be integer", e)
+            throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_PAGE_INDEX/$QUERY_ITEMS_PER_PAGE must be integer", e)
         }
 
         private fun validateOffsetLimit(offset: Long?, limit: Int?, pageIndex: Long?, itemsPerPage: Int?) {
             if ((offset != null).xor(limit != null))
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_OFFSET and $QUERY_LIMIT are mutually necessary")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_OFFSET and $QUERY_LIMIT are mutually necessary")
 
             if ((pageIndex != null).xor(itemsPerPage != null))
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "$QUERY_PAGE_INDEX and $QUERY_ITEMS_PER_PAGE are mutually necessary")
+                throw RequestException(
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
+                    "$QUERY_PAGE_INDEX and $QUERY_ITEMS_PER_PAGE are mutually necessary"
+                )
 
             if (offset != null && pageIndex != null)
                 throw RequestException(
-                    ResponseCode.BAD_REQUEST_QUERYSTRING,
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                     "$QUERY_OFFSET/$QUERY_LIMIT and $QUERY_PAGE_INDEX/$QUERY_ITEMS_PER_PAGE are mutually exclusive"
                 )
         }
@@ -261,7 +267,7 @@ class DynamicQuery(
             fun queryStringValueOf(expr: String): PredicateOperator = try {
                 values().first { it.sqlExpr == expr }
             } catch (e: NoSuchElementException) {
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query predicate operator: $expr")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query predicate operator: $expr")
             }
         }
     }
@@ -308,7 +314,7 @@ class DynamicQuery(
                         val containOr = dsl.contains("or", true)
                         if (containAnd && containOr)
                             throw RequestException(
-                                ResponseCode.BAD_REQUEST_QUERYSTRING,
+                                InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                                 "invalid query filter: operator should be either 'and' or 'or' => $dsl"
                             )
                         return Junction(containAnd, junctionDsl.map { parseSimpleDsl(it) }.toMutableList())
@@ -326,7 +332,7 @@ class DynamicQuery(
                                 isConjunction = isAnd
                             else if (isConjunction != isAnd) {
                                 throw RequestException(
-                                    ResponseCode.BAD_REQUEST_QUERYSTRING,
+                                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                                     "invalid query filter: operator should be either 'and' or 'or' => $dsl"
                                 )
                             }
@@ -356,7 +362,7 @@ class DynamicQuery(
                 }
                 if (depth != 0)
                     throw RequestException(
-                        ResponseCode.BAD_REQUEST_QUERYSTRING,
+                        InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                         "invalid query filter: missing '(' or ')' => $dsl"
                     )
                 return junctionIndexPairs
@@ -385,7 +391,7 @@ class DynamicQuery(
                     )
                 }
 
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query filter: syntax error => $dsl")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query filter: syntax error => $dsl")
             }
         }
 

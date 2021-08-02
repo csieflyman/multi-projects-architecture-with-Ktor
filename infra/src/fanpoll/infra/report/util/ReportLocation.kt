@@ -6,7 +6,7 @@ package fanpoll.infra.report.util
 
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.LocalDateRange
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.request.MyCallLoggingFeature.Feature.ATTRIBUTE_KEY_TAG
 import fanpoll.infra.report.Report
 import io.ktor.application.ApplicationCall
@@ -26,17 +26,17 @@ interface ReportLocation {
 
     private fun validateQueryParameters() {
         if (reportIds.isBlank())
-            throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "reportIds can't be blank")
+            throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "reportIds can't be blank")
 
         if ((compareStartTime != null).xor(compareEndTime != null))
             throw RequestException(
-                ResponseCode.BAD_REQUEST_QUERYSTRING,
+                InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                 "compareStartTime and compareEndTime are mutually necessary"
             )
 
         if (compareStartTime != null && compareTimeUnit != null)
             throw RequestException(
-                ResponseCode.BAD_REQUEST_QUERYSTRING,
+                InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                 "compareStartTime, compareEndTime and compareTo are mutually exclusively"
             )
     }
@@ -46,14 +46,14 @@ interface ReportLocation {
 
         val reports = reportIds.split(",").map { reportId ->
             allReports.find { it.id == reportId }
-                ?: throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid reportId: $reportId")
+                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid reportId: $reportId")
         }
         call.attributes.put(ATTRIBUTE_KEY_TAG, reportIds)
 
         val zoneId = try {
             ZoneId.of(zone)
         } catch (e: Exception) {
-            throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid zone: $zone")
+            throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid zone: $zone")
         }
 
         val range = LocalDateRange.parse(startTime, endTime)

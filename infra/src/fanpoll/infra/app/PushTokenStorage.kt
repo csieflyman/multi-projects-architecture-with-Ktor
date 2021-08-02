@@ -5,7 +5,7 @@
 package fanpoll.infra.app
 
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
@@ -26,7 +26,7 @@ class PushTokenStorage(private val logWriter: LogWriter) {
             logger.error("$errorMsg => $tokens", e)
             logWriter.write(
                 ErrorLog.internal(
-                    InternalServerException(ResponseCode.NOTIFICATION_ERROR, errorMsg, e, mapOf("tokens" to tokens)),
+                    InternalServerException(InfraResponseCode.NOTIFICATION_ERROR, errorMsg, e, mapOf("tokens" to tokens)),
                     "PushTokenStorage", "deleteUnRegisteredTokens"
                 )
             )

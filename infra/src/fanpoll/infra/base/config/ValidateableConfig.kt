@@ -5,7 +5,7 @@
 package fanpoll.infra.base.config
 
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 
 interface ValidateableConfig {
 
@@ -15,7 +15,7 @@ interface ValidateableConfig {
         try {
             kotlin.require(value, lazyMessage)
         } catch (e: IllegalArgumentException) {
-            throw InternalServerException(ResponseCode.SERVER_CONFIG_ERROR, e.message)
+            throw InternalServerException(InfraResponseCode.SERVER_CONFIG_ERROR, e.message)
         }
     }
 }

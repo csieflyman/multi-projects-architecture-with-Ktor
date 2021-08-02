@@ -5,7 +5,7 @@
 package fanpoll.infra.database.sql
 
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import mu.KotlinLogging
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
@@ -23,7 +23,7 @@ fun <T> transaction(db: Database? = null, statement: Transaction.() -> T): T {
         try {
             statement()
         } catch (e: ExposedSQLException) {
-            throw InternalServerException(ResponseCode.DB_SQL_ERROR, e.toString(), e) // include caused SQL
+            throw InternalServerException(InfraResponseCode.DB_SQL_ERROR, e.toString(), e) // include caused SQL
         } finally {
             profilingLogger.debug {
                 "===== Transaction execution time: ${Duration.between(begin, Instant.now()).toMillis()} millis ($id) ====="

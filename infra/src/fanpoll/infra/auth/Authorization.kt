@@ -5,7 +5,7 @@ package fanpoll.infra.auth
 
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.base.exception.RequestException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.application.call
 import io.ktor.application.feature
 import io.ktor.auth.Authentication
@@ -48,7 +48,7 @@ fun Route.authorize(
             require(principal is MyPrincipal)
 
             if (principalAuths.none { it.allow(principal, call) }) {
-                throw RequestException(ResponseCode.AUTH_ROLE_FORBIDDEN, "$principal is forbidden unable to access this api")
+                throw RequestException(InfraResponseCode.AUTH_ROLE_FORBIDDEN, "$principal is forbidden unable to access this api")
             } else {
                 logger.debug("$principal authenticated")
             }

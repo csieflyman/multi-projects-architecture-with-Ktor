@@ -10,7 +10,7 @@ import fanpoll.infra.auth.login.AppLoginResponse
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.response.DataResponseDTO
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.NotificationContent
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.notification.Recipient
@@ -26,13 +26,14 @@ import fanpoll.infra.openapi.schema.operation.definitions.ExampleObject
 import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
+import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
 import java.util.*
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.typeOf
 
 object ClubOpenApi {
 
-    private val AuthTag = Tag("fanpoll/infra/auth")
+    private val AuthTag = Tag("auth")
     private val UserTag = Tag("user")
 
     val CreateUser = OpenApiOperation("CreateUser", listOf(UserTag))
@@ -57,8 +58,8 @@ object ClubOpenApi {
     val Login = OpenApiOperation("Login", listOf(AuthTag)) {
 
         addErrorResponses(
-            ResponseCode.AUTH_PRINCIPAL_DISABLED,
-            ResponseCode.AUTH_LOGIN_UNAUTHENTICATED
+            InfraResponseCode.AUTH_PRINCIPAL_DISABLED,
+            InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED
         )
 
         addRequestExample(
@@ -69,7 +70,7 @@ object ClubOpenApi {
         )
 
         addResponseExample(
-            ResponseCode.OK,
+            InfraResponseCode.OK,
             ExampleObject(
                 ClientVersionCheckResult.Latest.name, ClientVersionCheckResult.Latest.name, "已是最新版本",
                 DataResponseDTO(
@@ -110,10 +111,16 @@ object ClubOpenApi {
             kClass = NotificationType::class
         )
 
+        private val ResponseCodeValueSchema = PropertyDef(
+            "ClubResponseCode", SchemaDataType.string,
+            ResponseUtils.buildResponseCodesDescription(ClubResponseCode.AllCodes),
+            enum = ClubResponseCode.AllCodes.map { it.value }.toList()
+        )
+
         override fun load(): List<ReferenceObject> {
             UserTypeSchema.enum = UserType.values().filter { it.projectId == ClubConst.projectId }.map { it.id }
             NotificationTypeSchema.enum = NotificationType.values().filter { it.projectId == ClubConst.projectId }.map { it.id }
-            return listOf(UserTypeSchema, NotificationTypeSchema).map { it.createRef() }
+            return listOf(UserTypeSchema, NotificationTypeSchema, ResponseCodeValueSchema).map { it.createRef() }
         }
     }
 

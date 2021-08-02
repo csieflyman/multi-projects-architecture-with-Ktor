@@ -6,7 +6,7 @@ package fanpoll.infra.logging.writers
 
 import fanpoll.infra.base.async.CoroutineActor
 import fanpoll.infra.base.async.CoroutineActorConfig
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -25,7 +25,7 @@ class LogMessageCoroutineActor(
     )
 
     override fun write(message: LogMessage) {
-        actor.sendToUnlimitedChannel(message, ResponseCode.LOG_ERROR) // non-blocking by Channel.UNLIMITED
+        actor.sendToUnlimitedChannel(message, InfraResponseCode.LOG_ERROR) // non-blocking by Channel.UNLIMITED
     }
 
     private fun execute(message: LogMessage) {

@@ -5,7 +5,7 @@
 package fanpoll.infra.base.form
 
 import fanpoll.infra.base.exception.RequestException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.konform.validation.Invalid
 import io.konform.validation.Validation
 
@@ -17,6 +17,6 @@ abstract class Form<Self> {
         val validator = validator()
         val result = validator?.validate(this as Self)
         if (result is Invalid)
-            throw RequestException(ResponseCode.BAD_REQUEST_BODY, result)
+            throw RequestException(InfraResponseCode.BAD_REQUEST_BODY, result)
     }
 }

@@ -7,7 +7,7 @@ package fanpoll.infra.notification.i18n
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.i18n.Messages
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.notification.channel.NotificationChannel
 
@@ -40,7 +40,7 @@ class I18nNotificationMessages(private val messages: Messages) : Messages {
     override val lang: Lang = messages.lang
 
     override fun get(key: String, args: Map<String, Any>?): String = messages.get(key, args)
-        ?: throw InternalServerException(ResponseCode.DEV_ERROR, "notification i18n message key $key is not found")
+        ?: throw InternalServerException(InfraResponseCode.DEV_ERROR, "notification i18n message key $key is not found")
 
     override fun isDefined(key: String): Boolean = messages.isDefined(key)
 }

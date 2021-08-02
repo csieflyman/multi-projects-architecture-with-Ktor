@@ -15,7 +15,7 @@ import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.json.TaiwanInstantSerializer
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.DateTimeUtils.TAIWAN_DATE_TIME_FORMATTER
 import fanpoll.infra.database.sql.LongIdTable
 import fanpoll.infra.database.sql.insert
@@ -43,17 +43,20 @@ class AppReleaseService {
         if (form.releasedAt == null)
             form.releasedAt = Instant.now()
         else if (form.releasedAt!! < Instant.now())
-            throw RequestException(ResponseCode.ENTITY_PROP_VALUE_INVALID, "appVersion ${form.appVersion} releasedAt can't be past time")
+            throw RequestException(
+                InfraResponseCode.ENTITY_PROP_VALUE_INVALID,
+                "appVersion ${form.appVersion} releasedAt can't be past time"
+            )
 
         val appOs = try {
             PrincipalSource.lookup(form.appId).type.let { AppOs.from(it) }
         } catch (e: NoSuchElementException) {
-            throw RequestException(ResponseCode.ENTITY_NOT_EXIST, "appId ${form.appId} does not exist")
+            throw RequestException(InfraResponseCode.ENTITY_NOT_EXIST, "appId ${form.appId} does not exist")
         }
 
         transaction {
             if (AppReleaseTable.select { toSQLCondition(form.appVersion) }.count() > 0)
-                throw RequestException(ResponseCode.ENTITY_ALREADY_EXISTS, "appVersion ${form.appVersion} already exists")
+                throw RequestException(InfraResponseCode.ENTITY_ALREADY_EXISTS, "appVersion ${form.appVersion} already exists")
             AppReleaseTable.insert(form) { table ->
                 table[os] = appOs
             }
@@ -62,13 +65,16 @@ class AppReleaseService {
 
     fun update(form: UpdateAppReleaseForm) {
         if (form.releasedAt != null && form.releasedAt < Instant.now())
-            throw RequestException(ResponseCode.ENTITY_PROP_VALUE_INVALID, "appVersion ${form.appVersion} releasedAt can't be past time")
+            throw RequestException(
+                InfraResponseCode.ENTITY_PROP_VALUE_INVALID,
+                "appVersion ${form.appVersion} releasedAt can't be past time"
+            )
 
         transaction {
             val dbDto = get(form.appVersion)
             if (form.releasedAt != null && dbDto.releasedAt != null && dbDto.releasedAt!! < Instant.now() && dbDto.enabled!!)
                 throw RequestException(
-                    ResponseCode.ENTITY_STATUS_CONFLICT,
+                    InfraResponseCode.ENTITY_STATUS_CONFLICT,
                     "cannot update releasedAt because appVersion ${form.appVersion} had been released at " +
                             TAIWAN_DATE_TIME_FORMATTER.format(dbDto.releasedAt!!)
                 )
@@ -79,7 +85,7 @@ class AppReleaseService {
 
     fun get(appVersion: AppVersion): AppReleaseDTO {
         return AppReleaseTable.select { toSQLCondition(appVersion) }.singleOrNull()?.toDTO(AppReleaseDTO::class)
-            ?: throw RequestException(ResponseCode.ENTITY_NOT_FOUND, "appVersion $appVersion does not exist")
+            ?: throw RequestException(InfraResponseCode.ENTITY_NOT_FOUND, "appVersion $appVersion does not exist")
     }
 
     fun check(call: ApplicationCall): ClientVersionCheckResult? {

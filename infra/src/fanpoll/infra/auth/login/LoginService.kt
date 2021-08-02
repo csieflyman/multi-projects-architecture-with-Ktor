@@ -11,7 +11,7 @@ import fanpoll.infra.auth.login.session.UserSession
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.exception.RequestException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.insert
 import fanpoll.infra.database.sql.update
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
@@ -66,11 +66,11 @@ class LoginService(
             )
         }
         when (resultCode) {
-            LoginResultCode.ACCOUNT_NOT_FOUND -> throw RequestException(ResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
-            LoginResultCode.BAD_CREDENTIAL -> throw RequestException(ResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
-            LoginResultCode.ACCOUNT_DISABLED -> throw RequestException(ResponseCode.AUTH_PRINCIPAL_DISABLED)
-            LoginResultCode.TENANT_DISABLED -> throw RequestException(ResponseCode.AUTH_TENANT_DISABLED)
-            LoginResultCode.OAUTH_NEW_USER -> throw InternalServerException(ResponseCode.NOT_IMPLEMENTED_ERROR)
+            LoginResultCode.ACCOUNT_NOT_FOUND -> throw RequestException(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
+            LoginResultCode.BAD_CREDENTIAL -> throw RequestException(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
+            LoginResultCode.ACCOUNT_DISABLED -> throw RequestException(InfraResponseCode.AUTH_PRINCIPAL_DISABLED)
+            LoginResultCode.TENANT_DISABLED -> throw RequestException(InfraResponseCode.AUTH_TENANT_DISABLED)
+            LoginResultCode.OAUTH_NEW_USER -> throw InternalServerException(InfraResponseCode.NOT_IMPLEMENTED_ERROR)
             else -> error("undefined loginFail LoginResultCode: $resultCode")
         }
     }

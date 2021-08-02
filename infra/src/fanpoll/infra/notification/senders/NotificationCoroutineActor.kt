@@ -6,7 +6,7 @@ package fanpoll.infra.notification.senders
 
 import fanpoll.infra.base.async.CoroutineActor
 import fanpoll.infra.base.async.CoroutineActorConfig
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.Notification
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +28,7 @@ class NotificationCoroutineActor(
     )
 
     override fun send(notification: Notification) {
-        actor.sendToUnlimitedChannel(notification, ResponseCode.NOTIFICATION_ERROR) // non-blocking by Channel.UNLIMITED
+        actor.sendToUnlimitedChannel(notification, InfraResponseCode.NOTIFICATION_ERROR) // non-blocking by Channel.UNLIMITED
     }
 
     private fun execute(notification: Notification) {

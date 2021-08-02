@@ -13,7 +13,7 @@ import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.auth.provider.UserRunAsAuthProvider.Companion.RUN_AS_TOKEN_HEADER_NAME
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.json.json
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.IdentifiableObject
 import io.ktor.application.call
@@ -77,7 +77,7 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
                     .sumOf { index -> segments[index].length } + 3)).jsonObject else null
             RunAsToken(userType, userId, clientId, sessionData)
         } catch (e: Exception) {
-            throw RequestException(ResponseCode.BAD_REQUEST_HEADER, "invalid runAs token value format => $tokenPatternDescription")
+            throw RequestException(InfraResponseCode.BAD_REQUEST_HEADER, "invalid runAs token value format => $tokenPatternDescription")
         }
     }
 

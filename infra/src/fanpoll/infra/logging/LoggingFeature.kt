@@ -10,7 +10,7 @@ import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.error.ErrorLogConfig
 import fanpoll.infra.logging.error.ErrorLogDBWriter
@@ -101,7 +101,7 @@ class LoggingFeature(configuration: Configuration) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> RequestLogDBWriter()
                                 LogDestination.AwsKinesis -> awsKinesisLogWriter ?: throw InternalServerException(
-                                    ResponseCode.SERVER_CONFIG_ERROR, "AwsKinesisLogWriter is not configured"
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "AwsKinesisLogWriter is not configured"
                                 )
                             }
                             logMessageDispatcher.register(RequestLog.LOG_TYPE, requestLogWriter)
@@ -111,7 +111,7 @@ class LoggingFeature(configuration: Configuration) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> ErrorLogDBWriter()
                                 LogDestination.AwsKinesis -> awsKinesisLogWriter ?: throw InternalServerException(
-                                    ResponseCode.SERVER_CONFIG_ERROR, "kinesisLogWriter is not configured"
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "kinesisLogWriter is not configured"
                                 )
                             }
                             logMessageDispatcher.register(ErrorLog.LOG_TYPE, errorLogWriter)

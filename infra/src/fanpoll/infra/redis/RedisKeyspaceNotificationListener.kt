@@ -6,7 +6,7 @@ package fanpoll.infra.redis
 
 import fanpoll.infra.base.async.CoroutineActor
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.redis.ktorio.commands.RedisPubSub
@@ -49,7 +49,7 @@ class RedisKeyspaceNotificationListener(
                         }
                         logWriter.write(
                             ErrorLog.internal(
-                                InternalServerException(ResponseCode.REDIS_ERROR, errorMsg, e, mapOf("message" to message)),
+                                InternalServerException(InfraResponseCode.REDIS_ERROR, errorMsg, e, mapOf("message" to message)),
                                 actorName, message.id
                             )
                         )

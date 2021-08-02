@@ -7,7 +7,7 @@ package fanpoll.ops
 import fanpoll.infra.auth.login.WebLoginForm
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.NotificationContent
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.notification.Recipient
@@ -22,12 +22,13 @@ import fanpoll.infra.openapi.schema.component.support.ComponentLoader
 import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
+import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.typeOf
 
 object OpsOpenApi {
 
-    private val AuthTag = Tag("fanpoll/infra/auth")
+    private val AuthTag = Tag("auth")
     private val UserTag = Tag("user")
     private val MonitorTag = Tag("monitor")
     private val DataTag = Tag("data")
@@ -56,8 +57,8 @@ object OpsOpenApi {
     val Login = OpenApiOperation("Login", listOf(AuthTag)) {
 
         addErrorResponses(
-            ResponseCode.AUTH_PRINCIPAL_DISABLED,
-            ResponseCode.AUTH_LOGIN_UNAUTHENTICATED
+            InfraResponseCode.AUTH_PRINCIPAL_DISABLED,
+            InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED
         )
 
         addRequestExample(WebLoginForm("tester@test.com", "test123"))
@@ -91,10 +92,16 @@ object OpsOpenApi {
             kClass = NotificationType::class
         )
 
+        private val ResponseCodeValueSchema = PropertyDef(
+            "OpsResponseCode", SchemaDataType.string,
+            ResponseUtils.buildResponseCodesDescription(OpsResponseCode.AllCodes),
+            enum = OpsResponseCode.AllCodes.map { it.value }.toList()
+        )
+
         override fun load(): List<ReferenceObject> {
             UserTypeSchema.enum = UserType.values().filter { it.projectId == OpsConst.projectId }.map { it.id }
             NotificationTypeSchema.enum = NotificationType.values().filter { it.projectId == OpsConst.projectId }.map { it.id }
-            return listOf(UserTypeSchema, NotificationTypeSchema).map { it.createRef() }
+            return listOf(UserTypeSchema, NotificationTypeSchema, ResponseCodeValueSchema).map { it.createRef() }
         }
     }
 

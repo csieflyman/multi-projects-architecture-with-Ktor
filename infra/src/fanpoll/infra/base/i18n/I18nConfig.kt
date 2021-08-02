@@ -6,7 +6,7 @@ package fanpoll.infra.base.i18n
 
 import fanpoll.infra.base.config.ValidateableConfig
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import org.apache.commons.lang3.LocaleUtils
 import java.util.*
 
@@ -20,7 +20,7 @@ data class I18nConfig(val langs: List<String>? = null) : ValidateableConfig {
                     try {
                         Locale.Builder().setLanguageTag(tag).build()
                     } catch (e: IllformedLocaleException) {
-                        throw InternalServerException(ResponseCode.SERVER_CONFIG_ERROR, "invalid i18n lang: $tag")
+                        throw InternalServerException(InfraResponseCode.SERVER_CONFIG_ERROR, "invalid i18n lang: $tag")
                     }
                 )
             }

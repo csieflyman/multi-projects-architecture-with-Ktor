@@ -9,7 +9,9 @@ import fanpoll.infra.ProjectManager
 import fanpoll.infra.auth.provider.UserSessionAuthValidator
 import fanpoll.infra.auth.provider.service
 import fanpoll.infra.base.i18n.AvailableLangs
+import fanpoll.infra.base.i18n.HoconMessagesProvider
 import fanpoll.infra.base.i18n.PropertiesMessagesProvider
+import fanpoll.infra.base.response.ResponseMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationProjectMessages
 import fanpoll.ops.features.OpsLoginService
@@ -49,6 +51,12 @@ fun Application.opsMain() {
     }
 
     val availableLangs = get<AvailableLangs>()
+
+    val responseMessagesProvider = get<ResponseMessagesProvider>()
+    responseMessagesProvider.merge(
+        HoconMessagesProvider(availableLangs, "i18n/response/${OpsConst.projectId}", "response_")
+    )
+
     val i18nNotificationProjectMessages = get<I18nNotificationProjectMessages>()
     i18nNotificationProjectMessages.addProvider(
         OpsConst.projectId,

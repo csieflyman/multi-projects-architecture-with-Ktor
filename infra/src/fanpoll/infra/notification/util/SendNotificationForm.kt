@@ -7,7 +7,7 @@ package fanpoll.infra.notification.util
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.form.Form
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.Notification
 import fanpoll.infra.notification.NotificationContent
 import fanpoll.infra.notification.NotificationType
@@ -44,7 +44,7 @@ data class SendNotificationForm(
 
         val recipients = recipients ?: type.findRecipients(userFilters)
         if (recipients.isEmpty()) {
-            throw RequestException(ResponseCode.QUERY_RESULT_EMPTY, "recipients is empty")
+            throw RequestException(InfraResponseCode.QUERY_RESULT_EMPTY, "recipients is empty")
         }
 
         return Notification(

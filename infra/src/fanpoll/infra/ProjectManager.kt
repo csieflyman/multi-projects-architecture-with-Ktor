@@ -8,7 +8,7 @@ import com.typesafe.config.ConfigFactory
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.openapi.ProjectOpenApiManager
 import io.github.config4k.extract
@@ -42,7 +42,7 @@ class ProjectManager(
 
         inline fun <reified T> loadConfig(projectId: String): T {
             val configDir = System.getProperty("project.config.dir") ?: throw InternalServerException(
-                ResponseCode.SERVER_CONFIG_ERROR,
+                InfraResponseCode.SERVER_CONFIG_ERROR,
                 "application system property: -Dproject.config.dir is missing"
             )
             val projectConfigFile = "$configDir/application-$projectId.conf"

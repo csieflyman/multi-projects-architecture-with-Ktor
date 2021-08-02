@@ -18,7 +18,7 @@ import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.CodeResponseDTO
 import fanpoll.infra.base.response.DataResponseDTO
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.respond
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.database.util.toSingleDTO
@@ -80,7 +80,7 @@ class ClubLoginService(private val loginService: LoginService) {
                 ClubUserTable.id, ClubUserTable.account, ClubUserTable.enabled, ClubUserTable.role, ClubUserTable.password,
                 UserDeviceTable.id, UserDeviceTable.osVersion, UserDeviceTable.pushToken
             ).select { ClubUserTable.account eq form.account }.toList().toSingleDTO(UserDTO::class)
-                ?: throw RequestException(ResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
+                ?: throw RequestException(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
         }
 
         val loginResultCode: LoginResultCode = if (!user.enabled!!)

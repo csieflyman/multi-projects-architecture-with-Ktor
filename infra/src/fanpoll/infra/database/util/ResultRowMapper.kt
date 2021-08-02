@@ -9,7 +9,7 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.filterNotNull
 import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.propName
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.EntityID
@@ -156,7 +156,10 @@ class ResultRowDTOMapper<T : EntityDTO<*>>(
             if (head == field) table
             else getTable(field.substringAfter(".", field), mapper.fieldToDTOMapperMap[head]!!)
         } else {
-            mapper.fieldToColumnMap[head]?.table ?: throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "field $field is undefined")
+            mapper.fieldToColumnMap[head]?.table ?: throw RequestException(
+                InfraResponseCode.BAD_REQUEST_QUERYSTRING,
+                "field $field is undefined"
+            )
         }
     }
 
@@ -171,12 +174,12 @@ class ResultRowDTOMapper<T : EntityDTO<*>>(
         return if (!field.contains(".")) {
             fieldToColumnMap[field]?.let { listOf(it) }
                 ?: fieldToDTOMapperMap[field]?.propertyToColumnMap?.values?.toList()
-                ?: throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "field $field is undefined")
+                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "field $field is undefined")
         } else {
             val head = field.substringBefore(".")
             val tail = field.substringAfter(".")
             fieldToDTOMapperMap[head]?.getColumns(tail)
-                ?: throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "field $head is undefined")
+                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "field $head is undefined")
         }
     }
 

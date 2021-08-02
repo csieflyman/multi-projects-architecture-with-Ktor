@@ -8,7 +8,7 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigParseOptions
 import com.typesafe.config.ConfigResolveOptions
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 
 class HoconMessagesProvider(availableLangs: AvailableLangs, basePackagePath: String, filePrefix: String, allowUnresolved: Boolean = false) :
     MessagesProvider<HoconMessagesImpl> {
@@ -27,7 +27,7 @@ class HoconMessagesProvider(availableLangs: AvailableLangs, basePackagePath: Str
         val defaultLang = availableLangs.first()
         if (!messages.containsKey(defaultLang))
             throw InternalServerException(
-                ResponseCode.SERVER_CONFIG_ERROR,
+                InfraResponseCode.SERVER_CONFIG_ERROR,
                 "default lang file $basePackagePath/$filePrefix${defaultLang.code}.conf is missing"
             )
     }

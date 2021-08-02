@@ -10,6 +10,7 @@ import fanpoll.infra.auth.login.session.SessionService
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.response.CodeResponseDTO
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.response.respond
 import io.ktor.application.call
@@ -35,7 +36,7 @@ class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConf
             val authConfig = authConfigs.firstOrNull { it.principalSource == principal.source }
             if (authConfig != null) {
                 if (authConfig.apiKey != null && authConfig.apiKey != apiKey) {
-                    attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, ResponseCode.AUTH_BAD_KEY)
+                    attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, InfraResponseCode.AUTH_BAD_KEY)
                     null
                 } else {
                     attributes.put(PrincipalSource.ATTRIBUTE_KEY, principal.source)
@@ -43,7 +44,7 @@ class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConf
                     principal
                 }
             } else {
-                attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, ResponseCode.AUTH_BAD_SOURCE)
+                attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, InfraResponseCode.AUTH_BAD_SOURCE)
                 null
             }
         }
@@ -56,7 +57,7 @@ class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConf
                 if (call.request.path().endsWith("/logout"))
                     call.respond(CodeResponseDTO.OK)
                 else
-                    call.respond(CodeResponseDTO(ResponseCode.AUTH_SESSION_NOT_FOUND))
+                    call.respond(CodeResponseDTO(InfraResponseCode.AUTH_SESSION_NOT_FOUND))
             }
         }
     }

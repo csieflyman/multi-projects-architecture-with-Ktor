@@ -5,7 +5,7 @@
 package fanpoll.infra.base.httpclient
 
 import fanpoll.infra.base.json.json
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
@@ -67,10 +67,10 @@ object HttpClientCreator {
             HttpResponseValidator {
                 handleResponseException { cause ->
                     val responseCode = when (cause) {
-                        is HttpConnectTimeoutException -> ResponseCode.REMOTE_SERVICE_CONNECT_TIMEOUT_ERROR
-                        is HttpRequestTimeoutException -> ResponseCode.REMOTE_SERVICE_REQUEST_TIMEOUT_ERROR
+                        is HttpConnectTimeoutException -> InfraResponseCode.REMOTE_SERVICE_CONNECT_TIMEOUT_ERROR
+                        is HttpRequestTimeoutException -> InfraResponseCode.REMOTE_SERVICE_REQUEST_TIMEOUT_ERROR
                         //is HttpSocketTimeoutException -> ResponseCode.REMOTE_SERVICE_SOCKET_TIMEOUT_ERROR
-                        else -> ResponseCode.REMOTE_SERVICE_CONNECT_ERROR
+                        else -> InfraResponseCode.REMOTE_SERVICE_CONNECT_ERROR
                     }
                     throw HttpClientException(
                         responseCode, "HttpClient $name Response Error => ${cause.message}", cause,

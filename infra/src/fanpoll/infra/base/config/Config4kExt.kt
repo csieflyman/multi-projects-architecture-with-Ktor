@@ -6,7 +6,7 @@ package fanpoll.infra.base.config
 
 import com.typesafe.config.Config
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.github.config4k.ClassContainer
 import io.github.config4k.CustomType
 import io.github.config4k.extract
@@ -42,11 +42,11 @@ object Config4kExt {
         }
 
         override fun testToConfig(obj: Any): Boolean {
-            throw InternalServerException(ResponseCode.UNSUPPORTED_OPERATION_ERROR)
+            throw InternalServerException(InfraResponseCode.UNSUPPORTED_OPERATION_ERROR)
         }
 
         override fun toConfig(obj: Any, name: String): Config {
-            throw InternalServerException(ResponseCode.UNSUPPORTED_OPERATION_ERROR)
+            throw InternalServerException(InfraResponseCode.UNSUPPORTED_OPERATION_ERROR)
         }
 
     }

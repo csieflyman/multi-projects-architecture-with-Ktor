@@ -5,6 +5,7 @@
 package fanpoll.infra.base.async
 
 import fanpoll.infra.base.exception.InternalServerException
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.logging.error.ErrorLog
@@ -55,7 +56,7 @@ class CoroutineActor<T : IdentifiableObject<*>>(
                 errorMsg = "$name unexpected error" // we never call channel.cancel()
                 logger.error("$errorMsg => $message", e)
             }
-            if (errorCode != ResponseCode.LOG_ERROR) {
+            if (errorCode != InfraResponseCode.LOG_ERROR) {
                 logWriter?.write(
                     ErrorLog.internal(
                         InternalServerException(errorCode, errorMsg, e, mapOf("message" to message)),
@@ -87,7 +88,7 @@ class CoroutineActor<T : IdentifiableObject<*>>(
 
             produceBlock?.invoke(coroutineScope, channel)
         } catch (e: Throwable) {
-            throw InternalServerException(ResponseCode.LOG_ERROR, "fail to init coroutine actor $name", e)
+            throw InternalServerException(InfraResponseCode.LOG_ERROR, "fail to init coroutine actor $name", e)
         }
         logger.info("========== init coroutine actor $name completed ==========")
     }

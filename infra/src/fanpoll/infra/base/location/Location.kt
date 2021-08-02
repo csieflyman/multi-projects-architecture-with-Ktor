@@ -8,7 +8,7 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.receiveUTF8Text
 import fanpoll.infra.base.form.Form
 import fanpoll.infra.base.json.json
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.tenant.TenantForm
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.tenant.TenantIdLocation
@@ -25,7 +25,7 @@ abstract class Location {
     open fun validate(form: Form<*>? = null) {
         val result = validator<Location>()?.validate(this)
         if (result is Invalid<Location>)
-            throw RequestException(ResponseCode.BAD_REQUEST_PATH_OR_QUERYSTRING, result)
+            throw RequestException(InfraResponseCode.BAD_REQUEST_PATH_OR_QUERYSTRING, result)
     }
 }
 
@@ -34,7 +34,7 @@ suspend inline fun <reified T : Form<*>> ApplicationCall.receiveAndValidateBody(
     val form = try {
         json.decodeFromString(T::class.serializer(), receiveUTF8Text())
     } catch (e: Throwable) {
-        throw RequestException(ResponseCode.BAD_REQUEST_BODY, "can't deserialize from json: ${e.message}", e)
+        throw RequestException(InfraResponseCode.BAD_REQUEST_BODY, "can't deserialize from json: ${e.message}", e)
     }
     form.validate()
     if (form is TenantForm<*>) {

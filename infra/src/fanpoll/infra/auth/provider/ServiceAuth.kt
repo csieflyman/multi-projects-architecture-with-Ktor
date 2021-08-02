@@ -8,6 +8,7 @@ import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.ServicePrincipal
 import fanpoll.infra.base.extension.fromLocalhost
 import fanpoll.infra.base.response.CodeResponseDTO
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.response.respond
 import io.ktor.application.call
@@ -45,11 +46,11 @@ class ServiceAuthProvider(config: Configuration) : AuthenticationProvider(config
             if (hostAllowed) {
                 ServicePrincipal(authConfig.principalSource)
             } else {
-                attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, ResponseCode.AUTH_BAD_HOST)
+                attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, InfraResponseCode.AUTH_BAD_HOST)
                 null
             }
         } else {
-            attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, ResponseCode.AUTH_BAD_KEY)
+            attributes.put(ATTRIBUTE_KEY_AUTH_ERROR_CODE, InfraResponseCode.AUTH_BAD_KEY)
             null
         }
     }

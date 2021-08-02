@@ -11,7 +11,7 @@ import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.CodeResponseDTO
 import fanpoll.infra.base.response.DataResponseDTO
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.respond
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.database.util.toSingleDTO
@@ -63,7 +63,7 @@ class OpsLoginService(private val loginService: LoginService) {
             OpsUserTable
                 .slice(OpsUserTable.id, OpsUserTable.account, OpsUserTable.enabled, OpsUserTable.role, OpsUserTable.password)
                 .select { OpsUserTable.account eq form.account }.toList().toSingleDTO(UserDTO::class)
-                ?: throw RequestException(ResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
+                ?: throw RequestException(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED)
         }
 
         val loginResultCode: LoginResultCode = if (!user.enabled!!)

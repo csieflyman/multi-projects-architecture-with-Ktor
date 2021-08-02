@@ -6,7 +6,7 @@ package fanpoll.infra.base.i18n
 
 import com.ufoscout.properlty.Properlty
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 
 class PropertiesMessagesProvider(availableLangs: AvailableLangs, basePackagePath: String, filePrefix: String) :
     MessagesProvider<PropertiesMessagesImpl> {
@@ -23,7 +23,7 @@ class PropertiesMessagesProvider(availableLangs: AvailableLangs, basePackagePath
         val defaultLang = availableLangs.first()
         if (!messages.containsKey(defaultLang))
             throw InternalServerException(
-                ResponseCode.SERVER_CONFIG_ERROR,
+                InfraResponseCode.SERVER_CONFIG_ERROR,
                 "default lang file $basePackagePath/$filePrefix${defaultLang.code}.properties is missing"
             )
     }

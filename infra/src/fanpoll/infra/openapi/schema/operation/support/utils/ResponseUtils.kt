@@ -11,7 +11,7 @@ object ResponseUtils {
     private const val SWAGGER_NEWLINE = "<br><br>"
 
     fun buildResponseCodesDescription(codes: List<ResponseCode>): String {
-        return codes.groupBy { it.codeType }.mapValues { entry ->
+        return codes.groupBy { it.type }.mapValues { entry ->
             entry.value.joinToString(SWAGGER_NEWLINE) { buildResponseCodeDescription(it) }
         }.map { "[${it.key.name}] $SWAGGER_NEWLINE ${it.value}" }.joinToString(SWAGGER_NEWLINE)
     }

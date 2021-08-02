@@ -9,7 +9,7 @@ package fanpoll.infra.base.location
 import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.form.Form
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import java.util.*
 
@@ -19,7 +19,7 @@ abstract class EntityIdLocation : Location() {
 
     override fun validate(form: Form<*>?) {
         if (form is EntityForm<*, *, *> && form.getEntityId() != entityId)
-            throw RequestException(ResponseCode.BAD_REQUEST_PATH, "mismatch entityId between path and body")
+            throw RequestException(InfraResponseCode.BAD_REQUEST_PATH, "mismatch entityId between path and body")
         super.validate(form)
     }
 }

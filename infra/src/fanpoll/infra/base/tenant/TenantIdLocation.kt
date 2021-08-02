@@ -9,7 +9,7 @@ package fanpoll.infra.base.tenant
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.form.Form
 import fanpoll.infra.base.location.Location
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 
 @io.ktor.locations.Location("/{tenantId}")
@@ -17,7 +17,7 @@ data class TenantIdLocation(val tenantId: TenantId) : Location() {
 
     override fun validate(form: Form<*>?) {
         if (form is TenantForm<*> && form.tenantId != tenantId)
-            throw RequestException(ResponseCode.BAD_REQUEST_PATH, "mismatch tenantId between path and body")
+            throw RequestException(InfraResponseCode.BAD_REQUEST_PATH, "mismatch tenantId between path and body")
         try {
             super.validate(form)
         } catch (e: RequestException) {

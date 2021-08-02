@@ -79,7 +79,7 @@ fun Application.main() {
             // ASSUMPTION => (1) Principal should be not null
             //  instead of throwing exception when request is unauthenticated (2) need to install DoubleReceive feature
             if (e is InternalServerException ||
-                (call.principal<MyPrincipal>() != null && e.code.codeType.isError())
+                (call.principal<MyPrincipal>() != null && e.code.type.isError())
             ) {
                 ExceptionUtils.writeLogToFile(e, call)
 

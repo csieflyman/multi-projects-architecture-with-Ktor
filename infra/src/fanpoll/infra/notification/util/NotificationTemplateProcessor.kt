@@ -7,7 +7,7 @@ package fanpoll.infra.notification.util
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.i18n.AvailableLangs
 import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.NotificationType
 import freemarker.cache.ClassTemplateLoader
 import freemarker.core.HTMLOutputFormat
@@ -49,7 +49,7 @@ class NotificationTemplateProcessor(
             cfg.getTemplate(templateFileName, null, null, null, true, true)
                 ?: cfg.getTemplate(buildTemplateFileName(templateName, availableLangs.first(), ext))
         } catch (e: Throwable) {
-            throw InternalServerException(ResponseCode.DEV_ERROR, "template file $templateFileName parsing error or not found", e)
+            throw InternalServerException(InfraResponseCode.DEV_ERROR, "template file $templateFileName parsing error or not found", e)
         }
 
         return try {
@@ -57,7 +57,7 @@ class NotificationTemplateProcessor(
             template.process(args, outputWriter)
             outputWriter.toString()
         } catch (e: Throwable) {
-            throw InternalServerException(ResponseCode.DEV_ERROR, "process template error: template = $templateName, args = $args", e)
+            throw InternalServerException(InfraResponseCode.DEV_ERROR, "process template error: template = $templateName, args = $args", e)
         }
     }
 

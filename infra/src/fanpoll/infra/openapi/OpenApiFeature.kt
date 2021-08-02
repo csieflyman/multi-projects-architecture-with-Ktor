@@ -8,7 +8,7 @@ import fanpoll.infra.MyApplicationConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
 import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
 import fanpoll.infra.openapi.schema.operation.support.converters.SchemaObjectConverter
@@ -116,7 +116,7 @@ class OpenApiFeature(configuration: Configuration) {
 
             val swaggerUiDir = System.getProperty("swagger-ui.dir") ?: config?.dir
             ?: throw InternalServerException(
-                ResponseCode.SERVER_CONFIG_ERROR, "application system property: -Dswagger-ui.dir is missing"
+                InfraResponseCode.SERVER_CONFIG_ERROR, "application system property: -Dswagger-ui.dir is missing"
             )
             logger.info { "-Dswaggerui.dir = $swaggerUiDir" }
 
@@ -124,7 +124,7 @@ class OpenApiFeature(configuration: Configuration) {
 
                 get("/apidocs/schema/{schemaJsonFileName}") {
                     val schemaJsonFileName = call.parameters["schemaJsonFileName"]
-                        ?: throw RequestException(ResponseCode.BAD_REQUEST_PATH, "schema json file name is required")
+                        ?: throw RequestException(InfraResponseCode.BAD_REQUEST_PATH, "schema json file name is required")
                     val projectId = schemaJsonFileName.substringBefore(".")
                     call.respond(projectOpenApiManager.getOpenApiJson(projectId))
                 }

@@ -8,7 +8,7 @@ import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.json.json
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.notification.channel.NotificationChannel
 import fanpoll.infra.openapi.schema.operation.support.OpenApiIgnore
@@ -69,7 +69,7 @@ open class NotificationType(
         private fun lookup(projectId: String, name: String): NotificationType {
             val typeId = buildTypeId(projectId, name)
             return registeredTypes[typeId]
-                ?: throw RequestException(ResponseCode.BAD_REQUEST_BODY, "invalid NotificationType: $typeId")
+                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_BODY, "invalid NotificationType: $typeId")
         }
 
         private fun buildTypeId(projectId: String, name: String): String = "${projectId}_${name}"

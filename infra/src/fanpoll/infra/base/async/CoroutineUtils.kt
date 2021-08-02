@@ -5,7 +5,7 @@
 package fanpoll.infra.base.async
 
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -31,7 +31,7 @@ object CoroutineUtils {
         try {
             dispatcher.close()
         } catch (e: Throwable) {
-            throw InternalServerException(ResponseCode.COROUTINE_ERROR, "could not close $dispatcherName dispatcher", e)
+            throw InternalServerException(InfraResponseCode.COROUTINE_ERROR, "could not close $dispatcherName dispatcher", e)
         }
         logger.info("dispatcher $dispatcherName closed")
     }
@@ -41,7 +41,7 @@ object CoroutineUtils {
         try {
             channel.close()
         } catch (e: Throwable) {
-            throw InternalServerException(ResponseCode.COROUTINE_ERROR, "could not close $channelName channel", e)
+            throw InternalServerException(InfraResponseCode.COROUTINE_ERROR, "could not close $channelName channel", e)
         }
         logger.info("channel $channelName closed")
     }

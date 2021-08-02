@@ -24,7 +24,7 @@ class ErrorLogDBWriter : LogWriter {
             ErrorLogTable.insert {
                 it[occurAt] = dto.occurAt
                 it[errorCode] = dto.errorCode.value
-                it[errorCodeType] = dto.errorCode.codeType
+                it[errorCodeType] = dto.errorCode.type
                 it[errorMsg] = dto.errorMsg
                 it[data] = dto.data
                 it[reqId] = dto.reqId

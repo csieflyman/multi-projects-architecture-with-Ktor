@@ -11,7 +11,7 @@ import fanpoll.infra.base.async.ThreadPoolConfig
 import fanpoll.infra.base.config.ValidateableConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.redis.ktorio.RedisClient
 import fanpoll.infra.redis.ktorio.commands.ping
@@ -128,7 +128,7 @@ class RedisFeature(configuration: Configuration) {
                     logger.info("ping latency = $latency milliseconds")
                 }
             } catch (e: Throwable) {
-                throw InternalServerException(ResponseCode.REDIS_ERROR, "fail to init redis client", e)
+                throw InternalServerException(InfraResponseCode.REDIS_ERROR, "fail to init redis client", e)
             }
             logger.info("========== init Redis Client completed ==========")
         }
@@ -160,7 +160,7 @@ class RedisFeature(configuration: Configuration) {
                     }
                 }
             } catch (e: Throwable) {
-                throw InternalServerException(ResponseCode.REDIS_ERROR, "fail to init Redis PubSub subscriber", e)
+                throw InternalServerException(InfraResponseCode.REDIS_ERROR, "fail to init Redis PubSub subscriber", e)
             }
             logger.info("========== init Redis PubSub subscriber completed ==========")
         }
@@ -183,7 +183,7 @@ class RedisFeature(configuration: Configuration) {
 
                     keyspaceNotificationListener?.shutdown()
                 } catch (e: Throwable) {
-                    throw InternalServerException(ResponseCode.REDIS_ERROR, "fail to close Redis PubSub subscriber connection", e)
+                    throw InternalServerException(InfraResponseCode.REDIS_ERROR, "fail to close Redis PubSub subscriber connection", e)
                 }
             }
         }
@@ -200,7 +200,7 @@ class RedisFeature(configuration: Configuration) {
                     CoroutineUtils.closeDispatcher(dispatcherName, dispatcher as ExecutorCoroutineDispatcher)
                 }
             } catch (e: Throwable) {
-                throw InternalServerException(ResponseCode.REDIS_ERROR, "fail to close redis connection", e)
+                throw InternalServerException(InfraResponseCode.REDIS_ERROR, "fail to close redis connection", e)
             }
         }
     }

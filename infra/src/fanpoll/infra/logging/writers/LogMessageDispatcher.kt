@@ -5,7 +5,7 @@
 package fanpoll.infra.logging.writers
 
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogMessage
 
 class LogMessageDispatcher(private val defaultLogWriter: LogWriter? = null) : LogWriter {
@@ -20,7 +20,7 @@ class LogMessageDispatcher(private val defaultLogWriter: LogWriter? = null) : Lo
 
     override fun write(message: LogMessage) {
         val logWriter = logWriters[message.logType] ?: defaultLogWriter ?: throw InternalServerException(
-            ResponseCode.SERVER_CONFIG_ERROR, "logType ${message.logType} logWriter is not registered"
+            InfraResponseCode.SERVER_CONFIG_ERROR, "logType ${message.logType} logWriter is not registered"
         )
         logWriter.write(message)
     }

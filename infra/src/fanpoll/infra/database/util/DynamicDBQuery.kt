@@ -11,8 +11,8 @@ import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.query.DynamicQuery
 import fanpoll.infra.base.response.DataResponseDTO
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.PagingDataResponseDTO
-import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.response.ResponseDTO
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.database.dao.toDTO
@@ -222,7 +222,7 @@ class DynamicDBQuery<T : EntityDTO<*>>(dtoClass: KClass<T>, dynamicQuery: Dynami
             } catch (e: Exception) {
                 if (e is RequestException) throw e
                 else throw RequestException(
-                    ResponseCode.BAD_REQUEST_QUERYSTRING,
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                     "invalid query filter: field $field value is invalid => $value", e
                 )
             }
@@ -233,7 +233,7 @@ class DynamicDBQuery<T : EntityDTO<*>>(dtoClass: KClass<T>, dynamicQuery: Dynami
                 is String -> klass.java.enumConstants!!.first { it.name == value }
                 is Number -> klass.java.enumConstants!![value.toInt()]
                 else -> throw RequestException(
-                    ResponseCode.BAD_REQUEST_QUERYSTRING,
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                     "invalid query filter: field $field value is invalid for enum => $value"
                 )
             }
@@ -249,7 +249,7 @@ class DynamicDBQuery<T : EntityDTO<*>>(dtoClass: KClass<T>, dynamicQuery: Dynami
                 }.flatMapError {
                     Result.of { LocalDate.parse(value, DateTimeUtils.LOCAL_DATE_FORMATTER) }
                 }.getOrNull() ?: throw RequestException(
-                    ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query filter: field $field value is invalid for datetime => $value"
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query filter: field $field value is invalid for datetime => $value"
                 )
                 )
                 else -> columnType.valueFromDB(value)

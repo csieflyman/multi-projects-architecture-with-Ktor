@@ -18,7 +18,7 @@ import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.location.UUIDEntityIdLocation
 import fanpoll.infra.base.response.CodeResponseDTO
 import fanpoll.infra.base.response.DataResponseDTO
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.respond
 import fanpoll.infra.database.custom.lang
 import fanpoll.infra.database.sql.UUIDTable
@@ -101,7 +101,7 @@ class OpsUserService {
         form.password = UserPasswordUtils.hashPassword(form.password)
         return transaction {
             if (OpsUserTable.select { OpsUserTable.account eq form.account }.count() > 0)
-                throw RequestException(ResponseCode.ENTITY_ALREADY_EXISTS, "${form.account} already exists")
+                throw RequestException(InfraResponseCode.ENTITY_ALREADY_EXISTS, "${form.account} already exists")
             OpsUserTable.insert(form) as UUID
         }
     }
@@ -122,12 +122,12 @@ class OpsUserService {
         transaction {
             val hashedPassword = OpsUserTable.slice(OpsUserTable.password).select { OpsUserTable.id eq userId }
                 .singleOrNull()?.let { it[OpsUserTable.password] }
-                ?: throw RequestException(ResponseCode.ENTITY_NOT_EXIST, "user $userId does not exist")
+                ?: throw RequestException(InfraResponseCode.ENTITY_NOT_EXIST, "user $userId does not exist")
             if (UserPasswordUtils.verifyPassword(form.oldPassword, hashedPassword)) {
                 OpsUserTable.update({ OpsUserTable.id eq userId }) {
                     it[password] = UserPasswordUtils.hashPassword(form.newPassword)
                 }
-            } else throw RequestException(ResponseCode.AUTH_BAD_PASSWORD)
+            } else throw RequestException(InfraResponseCode.AUTH_BAD_PASSWORD)
         }
     }
 }

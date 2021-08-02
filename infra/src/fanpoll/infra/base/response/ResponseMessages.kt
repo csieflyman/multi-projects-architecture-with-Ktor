@@ -7,13 +7,14 @@ package fanpoll.infra.base.response
 import fanpoll.infra.base.exception.BaseException
 import fanpoll.infra.base.exception.EntityException
 import fanpoll.infra.base.extension.toNotNullMap
+import fanpoll.infra.base.i18n.HoconMessagesImpl
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.i18n.Messages
 
-class ResponseMessages(private val messages: Messages) : Messages {
+class ResponseMessages(val messages: HoconMessagesImpl) : Messages {
 
     fun getMessage(ex: BaseException): String =
-        if (ex.code.isError()) getCodeTypeMessage(ex.code.codeType)
+        if (ex.code.isError()) getCodeTypeMessage(ex.code.type)
         else getCodeMessage(ex)
 
     fun getDetailMessage(ex: BaseException): String {
@@ -44,7 +45,7 @@ class ResponseMessages(private val messages: Messages) : Messages {
 
     private fun getCodeMessage(code: ResponseCode, args: Map<String, Any>? = null): String {
         val message = get("code.${code.value}", args)
-        if (code.codeType == ResponseCodeType.CLIENT_INFO)
+        if (code.type == ResponseCodeType.CLIENT_INFO)
             requireNotNull(message)
         return message ?: ""
     }

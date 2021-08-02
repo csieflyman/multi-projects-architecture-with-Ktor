@@ -5,7 +5,7 @@ package fanpoll.infra.auth.login.session
 
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.json.json
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
@@ -110,8 +110,8 @@ class RedisSessionService(
                     logWriter.write(
                         ErrorLog.internal(
                             InternalServerException(
-                                ResponseCode.REDIS_KEY_NOTIFICATION_ERROR, errorMsg, e,
-                                mapOf("fanpoll/infra/notification" to notification)
+                                InfraResponseCode.REDIS_KEY_NOTIFICATION_ERROR, errorMsg, e,
+                                mapOf("notification" to notification)
                             ),
                             "SessionService", "subscribeSessionKeyExpired"
                         )

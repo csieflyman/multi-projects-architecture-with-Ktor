@@ -17,7 +17,9 @@ import org.koin.dsl.module
 fun Application.koinBaseModule(appConfig: MyApplicationConfig): Module {
 
     val availableLangs = appConfig.infra.i18n?.availableLangs() ?: AvailableLangs(listOf(Lang.SystemDefault))
-    val responseMessagesProvider = ResponseMessagesProvider(HoconMessagesProvider(availableLangs, "i18n/response", "response_"))
+    val responseMessagesProvider = ResponseMessagesProvider(
+        HoconMessagesProvider(availableLangs, "i18n/response", "response_")
+    )
 
     return module(createdAtStart = true) {
         //  i18n

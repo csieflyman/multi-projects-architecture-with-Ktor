@@ -10,7 +10,7 @@ import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.i18n.AvailableLangs
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogDestination
 import fanpoll.infra.logging.writers.AwsKinesisLogWriter
 import fanpoll.infra.logging.writers.FileLogWriter
@@ -100,7 +100,7 @@ class NotificationFeature(configuration: Configuration) {
                                 channelConfig.email.mock == true -> MockNotificationChannelSender(loggingConfig, logWriter)
                                 channelConfig.email.awsSES != null -> AwsSESSender(channelConfig.email.awsSES, loggingConfig, logWriter)
                                 else -> throw InternalServerException(
-                                    ResponseCode.SERVER_CONFIG_ERROR,
+                                    InfraResponseCode.SERVER_CONFIG_ERROR,
                                     "at least one email sender should be configured"
                                 )
                             }
@@ -119,7 +119,7 @@ class NotificationFeature(configuration: Configuration) {
                                     logWriter
                                 )
                                 else -> throw InternalServerException(
-                                    ResponseCode.SERVER_CONFIG_ERROR,
+                                    InfraResponseCode.SERVER_CONFIG_ERROR,
                                     "at least one push sender should be configured"
                                 )
                             }
@@ -132,7 +132,7 @@ class NotificationFeature(configuration: Configuration) {
                                 channelConfig.sms.mock == true -> MockNotificationChannelSender(loggingConfig, logWriter)
                                 channelConfig.sms.mitake != null -> MitakeSender(channelConfig.sms.mitake, loggingConfig, logWriter)
                                 else -> throw InternalServerException(
-                                    ResponseCode.SERVER_CONFIG_ERROR,
+                                    InfraResponseCode.SERVER_CONFIG_ERROR,
                                     "at least one sms sender should be configured"
                                 )
                             }

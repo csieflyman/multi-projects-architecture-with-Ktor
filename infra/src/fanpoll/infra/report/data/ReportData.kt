@@ -7,7 +7,7 @@ package fanpoll.infra.report.data
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.base.util.IdentifiableObject
 import kotlinx.serialization.json.JsonElement
@@ -135,7 +135,7 @@ class ReportData(
                 outputStream.close()
                 bytes
             } catch (e: IOException) {
-                throw InternalServerException(ResponseCode.IO_ERROR, "fail to write excel report $id", e)
+                throw InternalServerException(InfraResponseCode.IO_ERROR, "fail to write excel report $id", e)
             }
         }
 
@@ -156,7 +156,7 @@ class ReportData(
             }
             printer.out.toString().toByteArray(StandardCharsets.UTF_8)
         } catch (e: IOException) {
-            throw InternalServerException(ResponseCode.IO_ERROR, "fail to write csv report $id", e)
+            throw InternalServerException(InfraResponseCode.IO_ERROR, "fail to write csv report $id", e)
         }
     }
 

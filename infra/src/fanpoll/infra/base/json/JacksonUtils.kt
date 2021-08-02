@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.DateTimeUtils
 import java.io.InputStream
 import java.math.BigDecimal
@@ -56,7 +56,7 @@ object Jackson {
         return try {
             mapper.valueToTree(data)
         } catch (e: Exception) {
-            throw InternalServerException(ResponseCode.DEV_ERROR, "fail to json serialize", e)
+            throw InternalServerException(InfraResponseCode.DEV_ERROR, "fail to json serialize", e)
         }
     }
 

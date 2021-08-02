@@ -9,7 +9,7 @@ import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.EntityException
 import fanpoll.infra.base.extension.copyPropsFrom
 import fanpoll.infra.base.form.Form
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.Table
 import fanpoll.infra.database.sql.dtoIdEq
 import fanpoll.infra.database.sql.entityIdEq
@@ -91,7 +91,7 @@ fun <EC : EntityClass<ID, E>, E : Entity<ID>, ID : Comparable<ID>> EC.findByEnti
 }
 
 fun <EC : EntityClass<ID, E>, E : Entity<ID>, ID : Comparable<ID>> EC.getByEntityId(id: ID): E {
-    return findById(id) ?: throw EntityException(ResponseCode.ENTITY_NOT_FOUND, "can't find entity by entityId", entityId = id)
+    return findById(id) ?: throw EntityException(InfraResponseCode.ENTITY_NOT_FOUND, "can't find entity by entityId", entityId = id)
 }
 
 fun <EC : EntityClass<ID, E>, E : Entity<ID>, ID : Comparable<ID>> EC.findByDTOId(id: Any): E? {
@@ -99,7 +99,7 @@ fun <EC : EntityClass<ID, E>, E : Entity<ID>, ID : Comparable<ID>> EC.findByDTOI
 }
 
 fun <EC : EntityClass<ID, E>, E : Entity<ID>, ID : Comparable<ID>> EC.getByDTOId(id: Any): E {
-    return findByDTOId(id) ?: throw EntityException(ResponseCode.ENTITY_NOT_FOUND, "can't find entity by dtoId", entityId = id)
+    return findByDTOId(id) ?: throw EntityException(InfraResponseCode.ENTITY_NOT_FOUND, "can't find entity by dtoId", entityId = id)
 }
 
 fun <T : EntityDTO<*>> Entity<*>.toDTO(dtoClass: KClass<T>, defaultValueMap: Map<String, Any>? = null): T {

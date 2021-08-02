@@ -8,7 +8,7 @@ import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMapError
 import com.github.kittinunf.result.getOrNull
 import fanpoll.infra.base.exception.RequestException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.base.util.DateTimeUtils.LOCAL_DATE_FORMATTER
 import fanpoll.infra.base.util.DateTimeUtils.LOCAL_DATE_TIME_FORMATTER
@@ -89,7 +89,7 @@ class LocalDateTimeRange(
 
     init {
         if (start > endInclusive)
-            throw throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "startTime should be before endTime")
+            throw throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "startTime should be before endTime")
     }
 
     infix fun step(step: Long) = step(step, ChronoUnit.HOURS)
@@ -123,19 +123,19 @@ class LocalDateTimeRange(
         fun parse(text: String): LocalDateTimeRange = try {
             thisHour(LocalDateTime.parse(text, LOCAL_DATE_TIME_FORMATTER))
         } catch (e: DateTimeParseException) {
-            throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid datetime format: $text")
+            throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid datetime format: $text")
         }
 
         fun parse(startTimeText: String, endTimeText: String): LocalDateTimeRange {
             val startTime = try {
                 LocalDateTime.parse(startTimeText, LOCAL_DATE_TIME_FORMATTER)
             } catch (e: DateTimeParseException) {
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid startTime format: $startTimeText")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid startTime format: $startTimeText")
             }
             val endTime = try {
                 LocalDateTime.parse(endTimeText, LOCAL_DATE_TIME_FORMATTER)
             } catch (e: DateTimeParseException) {
-                throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid endTime format: $endTimeText")
+                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid endTime format: $endTimeText")
             }
             return LocalDateTimeRange(startTime, endTime)
         }
@@ -154,7 +154,7 @@ class LocalDateRange(
 
     init {
         if (start > endInclusive)
-            throw throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "startDate should be before endDate")
+            throw throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "startDate should be before endDate")
     }
 
     infix fun step(step: Long) = step(step, ChronoUnit.DAYS)
@@ -219,7 +219,7 @@ class LocalDateRange(
                 start is YearMonth && end is YearMonth -> of(start, end)
                 start is Year && end is Year -> of(start, end)
                 else -> throw RequestException(
-                    ResponseCode.BAD_REQUEST_QUERYSTRING,
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                     "invalid temporal type: start = ${start.javaClass.kotlin.qualifiedName}, " +
                             "end = ${end.javaClass.kotlin.qualifiedName}"
                 )
@@ -233,7 +233,7 @@ class LocalDateRange(
                     is YearMonth -> thisMonth(startTemporal)
                     is Year -> thisYear(startTemporal)
                     else -> throw RequestException(
-                        ResponseCode.BAD_REQUEST_QUERYSTRING,
+                        InfraResponseCode.BAD_REQUEST_QUERYSTRING,
                         "invalid temporal type: ${startTemporal.javaClass.kotlin.qualifiedName}"
                     )
                 }
@@ -248,7 +248,7 @@ class LocalDateRange(
             }.flatMapError {
                 Result.of { Year.parse(text, DateTimeUtils.YEAR_FORMATTER) }
             }.getOrNull() as? Temporal
-                ?: throw RequestException(ResponseCode.BAD_REQUEST_QUERYSTRING, "invalid temporal format: $text")
+                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid temporal format: $text")
         }
     }
 }

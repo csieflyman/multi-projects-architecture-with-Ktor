@@ -7,7 +7,7 @@ package fanpoll.infra.database.util
 import fanpoll.infra.base.async.CoroutineActor
 import fanpoll.infra.base.async.CoroutineActorConfig
 import fanpoll.infra.base.exception.InternalServerException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ class DBAsyncTaskCoroutineActor(
 
     fun run(type: String, block: Transaction.() -> Any?): UUID {
         val task = DBAsyncTask(type, block)
-        actor.sendToUnlimitedChannel(task, ResponseCode.DB_ASYNC_TASK_ERROR) // non-blocking by Channel.UNLIMITED
+        actor.sendToUnlimitedChannel(task, InfraResponseCode.DB_ASYNC_TASK_ERROR) // non-blocking by Channel.UNLIMITED
         return task.id
     }
 
@@ -50,7 +50,7 @@ class DBAsyncTaskCoroutineActor(
             logWriter.write(
                 ErrorLog.internal(
                     InternalServerException(
-                        ResponseCode.DB_ASYNC_TASK_ERROR, errorMsg, e,
+                        InfraResponseCode.DB_ASYNC_TASK_ERROR, errorMsg, e,
                         mapOf("taskId" to task.id, "taskType" to task.type)
                     ),
                     actorName, task.id.toString()

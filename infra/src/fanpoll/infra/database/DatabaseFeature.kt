@@ -9,7 +9,7 @@ import fanpoll.infra.MyApplicationConfig
 import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.writers.LogWriter
 import io.ktor.application.Application
@@ -137,7 +137,7 @@ class DatabaseFeature(configuration: Configuration) {
                 defaultDatabase.transactionManager.defaultRepetitionAttempts = 0
             } catch (e: Throwable) {
                 throw InternalServerException(
-                    ResponseCode.DB_ERROR,
+                    InfraResponseCode.DB_ERROR,
                     "fail to connect database connection pool! => ${config.jdbcUrl}", e
                 )
             }
@@ -150,7 +150,7 @@ class DatabaseFeature(configuration: Configuration) {
                 flyway.migrate()
                 logger.info("===== Flyway migrate finished =====")
             } catch (e: Throwable) {
-                throw InternalServerException(ResponseCode.DB_ERROR, "fail to migrate database", e)
+                throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to migrate database", e)
             }
         }
 
@@ -169,7 +169,7 @@ class DatabaseFeature(configuration: Configuration) {
                     logger.warn("database connection pool had been closed")
                 }
             } catch (e: Throwable) {
-                throw InternalServerException(ResponseCode.DB_ERROR, "could not close database connection pool", e)
+                throw InternalServerException(InfraResponseCode.DB_ERROR, "could not close database connection pool", e)
             }
         }
     }

@@ -9,10 +9,7 @@ import fanpoll.infra.auth.ClientVersionCheckResult
 import fanpoll.infra.auth.HEADER_CLIENT_VERSION
 import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
 import fanpoll.infra.auth.provider.UserRunAsAuthProvider
-import fanpoll.infra.base.response.ErrorResponseDTO
-import fanpoll.infra.base.response.ErrorResponseDetailError
-import fanpoll.infra.base.response.ResponseCode
-import fanpoll.infra.base.response.ResponseCodeType
+import fanpoll.infra.base.response.*
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.operation.definitions.*
 import fanpoll.infra.openapi.schema.operation.support.Example
@@ -29,31 +26,39 @@ object BuiltinComponents : ComponentLoader {
 
     // ==================== Schemas ====================
 
-    private val ResponseCodeTypeSchema = PropertyDef(
-        "ResponseCodeType", SchemaDataType.string,
-        ResponseCodeType.values().joinToString(" ; ") { it.name },
-        refName = "codeType", enum = ResponseCodeType.values().map { it.name }.toList(), kClass = ResponseCodeType::class
-    ).createRef()
+    val ResponseCodeSchema = buildResponseCodeSchema().createRef()
 
-    val ResponseCodeSchema = PropertyDef(
-        "ResponseCode", SchemaDataType.string,
-        "Checkout ResponseCodeValue",
-        refName = "code", kClass = ResponseCode::class
-    ).createRef()
+    private fun buildResponseCodeSchema(): ModelDef {
+        val requiredProperties = listOf("value", "name", "type")
+        val properties: Map<String, Schema> = listOf(
+            PropertyDef("value", SchemaDataType.string),
+            PropertyDef("name", SchemaDataType.string),
+            PropertyDef(
+                "type", SchemaDataType.string,
+                refName = "codeType", enum = ResponseCodeType.values().map { it.name }.toList(), kClass = ResponseCodeType::class
+            ),
+        ).associate { it.valuePair() } as Map<String, Schema>
 
-    private val ResponseCodeValueSchema = PropertyDef(
-        "ResponseCodeValue", SchemaDataType.string,
-        ResponseUtils.buildResponseCodesDescription(ResponseCode.values().toList()),
-        enum = ResponseCode.values().map { it.value }.toList()
+        return ModelDef(
+            ResponseCode::class.simpleName!!, requiredProperties, properties,
+            kClass = ResponseCode::class, refName = "code"
+        ).also {
+            it.properties.values.forEach { property -> (property.getDefinition() as SchemaObject).parent = it }
+        }
+    }
+
+    private val InfraResponseCodeValueSchema = PropertyDef(
+        "InfraResponseCode", SchemaDataType.string,
+        ResponseUtils.buildResponseCodesDescription(InfraResponseCode.AllCodes),
+        enum = InfraResponseCode.AllCodes.map { it.value }.toList()
     )
 
     private val ErrorResponseErrorsSchema = buildErrorResponseErrorsSchema().createRef()
 
     private fun buildErrorResponseErrorsSchema(): ArrayModelDef {
-        val requiredProperties = listOf("code", "codeType", "detail")
+        val requiredProperties = listOf("code", "detail")
         val properties: Map<String, Schema> = listOf(
             ResponseCodeSchema,
-            ResponseCodeTypeSchema,
             PropertyDef("detail", SchemaDataType.string, "detail message for developer"),
             DictionaryPropertyDef("data", description = "JsonObject or JsonArray")
         ).associate { it.valuePair() } as Map<String, Schema>
@@ -73,10 +78,9 @@ object BuiltinComponents : ComponentLoader {
     val ErrorResponseSchema = buildErrorResponseSchema()
 
     private fun buildErrorResponseSchema(): ModelDef {
-        val requiredProperties = listOf("code", "codeType", "message", "detail", "reqId")
+        val requiredProperties = listOf("code", "message", "detail", "reqId")
         val properties: Map<String, Schema> = listOf(
             ResponseCodeSchema,
-            ResponseCodeTypeSchema,
             PropertyDef("message", SchemaDataType.string, "message for user"),
             PropertyDef("detail", SchemaDataType.string, "detail message for developer"),
             PropertyDef("reqId", SchemaDataType.string, "request unique id"),
@@ -160,7 +164,7 @@ object BuiltinComponents : ComponentLoader {
     )
 
     private val schemaList: List<ReferenceObject> = listOf(
-        ResponseCodeTypeSchema, ResponseCodeSchema, ResponseCodeValueSchema,
+        ResponseCodeSchema, InfraResponseCodeValueSchema,
         ErrorResponseSchema, ErrorResponseErrorsSchema,
         DynamicQueryPagingResponseSchema, DynamicQueryItemsResponseSchema, DynamicQueryTotalResponseSchema
     ).map { it.createRef() }
@@ -284,7 +288,7 @@ object BuiltinComponents : ComponentLoader {
     ).createRef()
 
     val DefaultErrorResponse = ResponseObject(
-        "DefaultErrorResponse", "Checkout ResponseCode and ErrorResponse Schema", null,
+        "DefaultErrorResponse", "Check out ResponseCode and ErrorResponse Schema", null,
         mapOf(ContentType.Application.Json to MediaTypeObject(ErrorResponseSchema))
     ).createRef()
 

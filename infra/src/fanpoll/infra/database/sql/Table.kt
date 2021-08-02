@@ -7,7 +7,7 @@ package fanpoll.infra.database.sql
 import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.EntityException
-import fanpoll.infra.base.response.ResponseCode
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.util.toDTO
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.exceptions.ExposedSQLException
@@ -54,9 +54,9 @@ fun <T> T.insert(
         // COMPATIBILITY => MySQL: "Duplicate key", PostgreSQL: ""
         if (e.cause is SQLIntegrityConstraintViolationException) {
             if (e.message!!.contains("Duplicate", true))
-                throw EntityException(ResponseCode.ENTITY_ALREADY_EXISTS, "entity should be unique", e, entityId = form.tryGetId())
+                throw EntityException(InfraResponseCode.ENTITY_ALREADY_EXISTS, "entity should be unique", e, entityId = form.tryGetId())
             else
-                throw EntityException(ResponseCode.ENTITY_PROP_VALUE_INVALID, null, e, entityId = form.tryGetId())
+                throw EntityException(InfraResponseCode.ENTITY_PROP_VALUE_INVALID, null, e, entityId = form.tryGetId())
         } else throw e
     }
     return (this as? IdTable<*>)?.let { result[it.id].value }
@@ -85,7 +85,7 @@ fun <T> T.update(
 
     val size = update(where, null, myBody)
     if (size == 0)
-        throw EntityException(ResponseCode.ENTITY_NOT_FOUND, entityId = form.getId())
+        throw EntityException(InfraResponseCode.ENTITY_NOT_FOUND, entityId = form.getId())
     return size
 }
 
@@ -99,7 +99,7 @@ fun <T> T.insertOrUpdate(
         true
     }
     1 -> false
-    else -> throw EntityException(ResponseCode.ENTITY_ALREADY_EXISTS, "entity should be unique", entityId = form.getId())
+    else -> throw EntityException(InfraResponseCode.ENTITY_ALREADY_EXISTS, "entity should be unique", entityId = form.getId())
 }
 
 inline fun <T, ID : Comparable<ID>, reified D : EntityDTO<ID>> T.findByEntityId(id: ID): D? where T : org.jetbrains.exposed.sql.Table, T : Table<ID> {
@@ -108,7 +108,7 @@ inline fun <T, ID : Comparable<ID>, reified D : EntityDTO<ID>> T.findByEntityId(
 }
 
 inline fun <T, ID : Comparable<ID>, reified D : EntityDTO<ID>> T.getByEntityId(id: ID): D where T : org.jetbrains.exposed.sql.Table, T : Table<ID> {
-    return findByEntityId(id) ?: throw EntityException(ResponseCode.ENTITY_NOT_FOUND, "can't find entity by entityId", entityId = id)
+    return findByEntityId(id) ?: throw EntityException(InfraResponseCode.ENTITY_NOT_FOUND, "can't find entity by entityId", entityId = id)
 }
 
 inline fun <T, ID : Comparable<ID>, reified D : EntityDTO<ID>> T.findByDTOId(id: Any): D? where T : org.jetbrains.exposed.sql.Table, T : Table<ID> {
@@ -117,7 +117,7 @@ inline fun <T, ID : Comparable<ID>, reified D : EntityDTO<ID>> T.findByDTOId(id:
 }
 
 inline fun <T, ID : Comparable<ID>, reified D : EntityDTO<ID>> T.getByDTOId(id: Any): D where T : org.jetbrains.exposed.sql.Table, T : Table<ID> {
-    return findByDTOId(id) ?: throw EntityException(ResponseCode.ENTITY_NOT_FOUND, "can't find entity by dtoId", entityId = id)
+    return findByDTOId(id) ?: throw EntityException(InfraResponseCode.ENTITY_NOT_FOUND, "can't find entity by dtoId", entityId = id)
 }
 
 fun SqlExpressionBuilder.entityIdEq(table: Table<*>, id: Any): Op<Boolean> {
