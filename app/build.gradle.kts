@@ -220,7 +220,7 @@ val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
 }
 
 val openApiProjectName = "club"
-val openApiSchemaUrl = "http://localhost:9000/apidocs/schema/$openApiProjectName.json"
+val openApiSchemaUrl = "http://localhost:8080/apidocs/schema/$openApiProjectName.json"
 val postmanEnvironment = "localhost"
 
 val postmanApiKey: String = System.getenv("POSTMAN_API_KEY") ?: ""

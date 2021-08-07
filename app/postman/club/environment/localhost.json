@@ -5,7 +5,7 @@
     "values": [
       {
         "key": "baseUrl",
-        "value": "http://localhost:9000/club",
+        "value": "http://localhost:8080/club",
         "type": "text",
         "enabled": true,
         "hovered": false
