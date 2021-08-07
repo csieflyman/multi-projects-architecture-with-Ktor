@@ -8,5 +8,5 @@ export APP_OPTS="-Dconfig.file=$KTOR_APP_PATH/application.conf -Dlogback.configu
 
 echo "$JAVA_OPTS" "$APP_OPTS"
 echo "start..."
-"$KTOR_APP_PATH"/bin/fanpoll &
+"$KTOR_APP_PATH"/bin/app &
 
