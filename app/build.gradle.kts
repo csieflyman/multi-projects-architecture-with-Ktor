@@ -17,8 +17,8 @@ plugins {
     id("com.github.node-gradle.node") version "3.0.1"
 }
 
-val appName = "fanpoll"
-group = "com.$appName"
+val appName = "app"
+group = "com.fanpoll"
 version = "1.0.0"
 
 repositories {
