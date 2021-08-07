@@ -33,11 +33,10 @@ dependencies {
 
 application {
     mainClass.set("fanpoll.ApplicationKt")
-    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8", "-Duser.timezone=UTC", "-Dkotlinx.coroutines.debug")
-    //-Dconfig.file=$install_path\application-local.conf
-    //-Dlogback.configurationFile=$install_path/logback-local.xml
-    //-Dproject.config.dir=$install_path
-    //-Dswagger-ui.dir=$install_path/swagger-ui
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
+    // -Duser.timezone=UTC -Dkotlinx.coroutines.debug
+    // -Dconfig.file=$install_path\application.conf -Dlogback.configurationFile=$install_path/logback.xml
+    // -Dproject.config.dir=$install_path -Dswagger-ui.dir=$install_path/swagger-ui
 }
 
 // =============================== Flyway Plugin ===============================
