@@ -1,8 +1,8 @@
 /.gradle
 /.idea
-/out
 /buildSrc/build
 /buildSrc/.gradle
+/app/out
 /app/swagger-ui
 /app/src/dist
 /app/deploy/config/local/
