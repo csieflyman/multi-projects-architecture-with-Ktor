@@ -9,7 +9,7 @@ dependencies {
     val kotlinVersion = "1.5.21"
     val ktorVersion = "1.6.2"
     val koinVersion = "3.1.2"
-    val exposedVersion = "0.32.1"
+    val exposedVersion = "0.33.1"
     val jacksonVersion = "2.12.4"
 
     // =============== kotlin, kotlinx ===============
