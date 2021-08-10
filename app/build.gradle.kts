@@ -32,7 +32,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("fanpoll.ApplicationKt")
+    mainClass.set("fanpoll.infra.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
     // -Duser.timezone=UTC -Dkotlinx.coroutines.debug
     // -Dconfig.file=$install_path\application.conf -Dlogback.configurationFile=$install_path/logback.xml
