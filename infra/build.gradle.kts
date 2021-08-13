@@ -19,7 +19,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
 
     // ===============  ktor ===============
-    api("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
     api("io.ktor:ktor-locations:$ktorVersion")
     api("io.ktor:ktor-serialization:$ktorVersion")
     api("io.ktor:ktor-client-cio:$ktorVersion")
@@ -41,17 +41,17 @@ dependencies {
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
     // =============== utils - feature ===============
-    api("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
     api("io.konform:konform-jvm:0.3.0")
-    api("at.favre.lib:bcrypt:0.9.0")
+    implementation("at.favre.lib:bcrypt:0.9.0")
 
     // =============== utils - config file parser ===============
-    api("com.ufoscout.properlty:properlty-kotlin:1.9.0")
-    api("io.github.config4k:config4k:0.4.2")
+    implementation("com.ufoscout.properlty:properlty-kotlin:1.9.0")
+    implementation("io.github.config4k:config4k:0.4.2")
     //api("com.charleskorn.kaml:kaml:0.19.0")
 
     // =============== utils - bean ===============
-    api("com.github.rocketraman:kpropmap:0.0.2")
+    implementation("com.github.rocketraman:kpropmap:0.0.2")
 
     //api("org.mapstruct:mapstruct:1.4.2.Final")
     //kapt("org.mapstruct:mapstruct-processor:1.4.2.Final")
@@ -66,10 +66,9 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
     // =============== utils - general ===============
-    api("com.github.kittinunf.result:result:5.1.0")
-    api("com.github.kittinunf.result:result-coroutines:4.0.0")
-    api("org.apache.commons:commons-text:1.9")
-    api("com.google.guava:guava:30.1.1-jre")
+    implementation("com.github.kittinunf.result:result:5.1.0")
+    implementation("com.github.kittinunf.result:result-coroutines:4.0.0")
+    implementation("org.apache.commons:commons-text:1.9")
 
     // =============== test ===============
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
