@@ -35,6 +35,6 @@ tasks {
     }
 }
 
-tasks.withType<JavaCompile> {
+tasks.withType<JavaCompile>().configureEach {
     options.isFork = true
 }
