@@ -9,11 +9,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 plugins {
-    id("fanpoll.java-conventions")
     application
     id("com.github.johnrengelman.shadow") version "7.0.0"
     id("org.flywaydb.flyway") version "7.11.4"
     id("org.unbroken-dome.gitversion") version "0.10.0"
+    //id("org.barfuin.gradle.taskinfo") version "1.3.0"
     id("com.github.node-gradle.node") version "3.0.1"
 }
 
@@ -95,48 +95,10 @@ val tagVersion = "${semVersion.major}.${semVersion.minor}.${semVersion.patch}"
 val branch = semVersion.prereleaseTag!!
 val env = branchToEnvMap[branch]
 
-// =============================== Distribution & Shadow Plugin ===============================
+// =============================== Deployment ===============================
 
-tasks.withType<Jar> {
-    manifest {
-        attributes(
-            mapOf(
-                "Main-Class" to application.mainClass
-            )
-        )
-    }
-}
-
-tasks.shadowJar {
-    archiveBaseName.set(appName)
-    archiveVersion.set(tagVersion)
-    archiveClassifier.set(env)
-
-    mergeServiceFiles()
-}
-
-tasks.shadowDistZip {
-
-    outputs.upToDateWhen { false }
-
-    if (project.hasProperty("local.archive.destinationDirectory")) {
-        destinationDirectory.set(
-            file(
-                Paths.get(project.property("local.archive.destinationDirectory")!!.toString()).toUri().toURL()
-            )
-        )
-    }
-
-    archiveBaseName.set(appName)
-    archiveVersion.set(tagVersion)
-    archiveClassifier.set(env)
-}
-
-val shadowEnvDistZip by tasks.registering {
-
+val shadowEnvDistFiles by tasks.register("shadowEnvDistFiles") {
     group = "distribution"
-
-    finalizedBy(tasks.shadowDistZip)
 
     doLast {
         println("========================================")
@@ -164,6 +126,51 @@ val shadowEnvDistZip by tasks.registering {
             into("src/dist/scripts")
         }
     }
+}
+
+// =============================== Shadow ===============================
+
+val shadowEnvDistZip by tasks.register("shadowEnvDistZip") {
+    group = "distribution"
+    dependsOn(shadowEnvDistFiles)
+    finalizedBy(tasks.shadowDistZip)
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes(
+            mapOf(
+                "Main-Class" to application.mainClass
+            )
+        )
+    }
+}
+
+sourceSets["main"].resources.srcDirs("resources")
+
+tasks.shadowJar {
+    archiveBaseName.set(appName)
+    archiveVersion.set(tagVersion)
+    archiveClassifier.set(env)
+
+    mergeServiceFiles()
+}
+
+tasks.shadowDistZip {
+
+    outputs.upToDateWhen { false }
+
+    if (project.hasProperty("local.archive.destinationDirectory")) {
+        destinationDirectory.set(
+            file(
+                Paths.get(project.property("local.archive.destinationDirectory")!!.toString()).toUri().toURL()
+            )
+        )
+    }
+
+    archiveBaseName.set(appName)
+    archiveVersion.set(tagVersion)
+    archiveClassifier.set(env)
 }
 
 // =============================== Postman ===============================
