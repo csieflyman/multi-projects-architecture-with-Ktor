@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "com.fanpoll"
@@ -38,4 +39,8 @@ tasks {
 
 tasks.withType<JavaCompile>().configureEach {
     options.isFork = true
+}
+
+tasks.shadowJar {
+    mergeServiceFiles()
 }

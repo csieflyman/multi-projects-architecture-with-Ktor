@@ -1,6 +1,5 @@
 plugins {
     id("app.java-conventions")
-    id("com.github.johnrengelman.shadow")
 }
 
 dependencies {
@@ -15,5 +14,4 @@ tasks.shadowJar {
         exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:.*"))
         exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk8:.*"))
     }
-    mergeServiceFiles()
 }

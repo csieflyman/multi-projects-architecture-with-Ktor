@@ -1,6 +1,5 @@
 plugins {
     id("app.java-conventions")
-    id("com.github.johnrengelman.shadow")
     `java-library`
 }
 
