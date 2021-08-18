@@ -1,0 +1,55 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: app
+    ports:
+      - "8080:8080"
+    stop_grace_period: 5s
+    environment:
+      APP_HOME: /app
+      APP_LOG_HOME: /app/log
+      JAVA_OPTS: -Xms128m -Xmx256m -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=/app/jvm.log
+      APP_OPTS: -Dconfig.file=/app/application.conf -Dlogback.configurationFile=/app/logback.xml -Dproject.config.dir=/app -Dswaggerui.dir=/app/swagger-ui -Duser.timezone=UTC -Dkotlinx.coroutines.debug
+      PORT: 8080
+      SERVER_SHUTDOWN_KEY: changeit
+      DB_URL: jdbc:postgresql://postgres:5432/fanpoll
+      DB_USER: fanpoll
+      DB_PASSWORD: fanpoll
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SWAGGER_UI_PATH: /app/swagger-ui
+      SWAGGER_UI_AUTH_USER: swagger
+      SWAGGER_UI_AUTH_PASSWORD: changeit
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-key.json
+      # ===== subproject ops =====
+      OPS_AUTH_ROOT_API_KEY: changeit
+      OPS_AUTH_MONITOR_API_KEY: changeit
+      OPS_AUTH_USER_API_KEY: changeit
+      # ===== subproject club =====
+      CLUB_AUTH_ROOT_API_KEY: changeit
+      CLUB_AUTH_ANDROID_API_KEY: changeit
+      CLUB_AUTH_ANDROID_RUNAS_KEY: changeit
+      CLUB_AUTH_IOS_API_KEY: changeit
+      CLUB_AUTH_IOS_RUNAS_KEY: changeit
+    volumes:
+      - F:/docker/volume/fanpoll-app/log:/app/log
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: fanpoll
+    volumes:
+      - F:/docker/volume/fanpoll-postgres/data:/var/lib/postgresql/data
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - F:/docker/volume/fanpoll-redis/data:/data
