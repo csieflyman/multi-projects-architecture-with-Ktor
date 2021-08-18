@@ -90,7 +90,7 @@ class LoggingFeature(configuration: Configuration) {
                         val logMessageDispatcher = LogMessageDispatcher(FileLogWriter())
                         single { logMessageDispatcher }
 
-                        val awsKinesisLogWriter = loggingConfig.writer?.awsAwsKinesis?.let {
+                        val awsKinesisLogWriter = loggingConfig.writer?.awsKinesis?.let {
                             AwsKinesisLogWriter(it, serverConfig)
                         }
                         if (awsKinesisLogWriter != null)
@@ -162,7 +162,7 @@ data class LoggingConfig(
 )
 
 data class LogWriterConfig(
-    val awsAwsKinesis: AwsKinesisConfig? = null
+    val awsKinesis: AwsKinesisConfig? = null
 ) {
 
     class Builder {
