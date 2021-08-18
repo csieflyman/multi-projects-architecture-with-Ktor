@@ -34,9 +34,10 @@ dependencies {
 application {
     mainClass.set("fanpoll.infra.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
+    // -Xms128m -Xmx256m
     // -Duser.timezone=UTC -Dkotlinx.coroutines.debug
-    // -Dconfig.file=$install_path\application.conf -Dlogback.configurationFile=$install_path/logback.xml
-    // -Dproject.config.dir=$install_path -Dswagger-ui.dir=$install_path/swagger-ui
+    // -Dconfig.file=$APP_HOME/application.conf -Dlogback.configurationFile=$APP_HOME/logback.xml
+    // -Dproject.config.dir=$APP_HOME -Dswagger-ui.dir=$APP_HOME/swagger-ui
 }
 
 // =============================== Flyway Plugin ===============================
@@ -60,7 +61,11 @@ tasks.determineGitVersion {
 val devBranchName = "dev"
 val testBranchName = "test"
 val releaseBranchName = "main"
-val branchToEnvMap: Map<String, String> = mapOf(devBranchName to "dev", testBranchName to "test", releaseBranchName to "prod")
+val branchToEnvMap: Map<String, String> = mapOf(
+    devBranchName to "dev",
+    testBranchName to "test",
+    releaseBranchName to "prod"
+)
 
 gitVersion {
     rules {
@@ -95,46 +100,9 @@ val tagVersion = "${semVersion.major}.${semVersion.minor}.${semVersion.patch}"
 val branch = semVersion.prereleaseTag!!
 val env = branchToEnvMap[branch]
 
-// =============================== Deployment ===============================
-
-val shadowEnvDistFiles by tasks.register("shadowEnvDistFiles") {
-    group = "distribution"
-
-    doLast {
-        println("========================================")
-        println("semVersion = $semVersion")
-        println("env = $env")
-        println("========================================")
-
-        delete("src/dist")
-
-        copy {
-            from("deploy/config/$env")
-            into("src/dist")
-            filter<ReplaceTokens>(
-                "tokens" to mapOf(
-                    "env" to env,
-
-                    "gitTagVersion" to tagVersion,
-                    "gitCommitVersion" to semVersion.toString(),
-                    "buildTime" to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())
-                )
-            )
-        }
-        copy {
-            from("deploy/scripts")
-            into("src/dist/scripts")
-        }
-    }
-}
-
 // =============================== Shadow ===============================
 
-val shadowEnvDistZip by tasks.register("shadowEnvDistZip") {
-    group = "distribution"
-    dependsOn(shadowEnvDistFiles)
-    finalizedBy(tasks.shadowDistZip)
-}
+sourceSets["main"].resources.srcDirs("resources")
 
 tasks.withType<Jar> {
     manifest {
@@ -146,8 +114,6 @@ tasks.withType<Jar> {
     }
 }
 
-sourceSets["main"].resources.srcDirs("resources")
-
 tasks.shadowJar {
     archiveBaseName.set(appName)
     archiveVersion.set(tagVersion)
@@ -156,21 +122,58 @@ tasks.shadowJar {
     mergeServiceFiles()
 }
 
+tasks.installShadowDist {
+    dependsOn(shadowDistConfigFiles)
+}
+
 tasks.shadowDistZip {
-
+    dependsOn(shadowDistConfigFiles)
     outputs.upToDateWhen { false }
-
-    if (project.hasProperty("local.archive.destinationDirectory")) {
-        destinationDirectory.set(
-            file(
-                Paths.get(project.property("local.archive.destinationDirectory")!!.toString()).toUri().toURL()
-            )
-        )
-    }
-
     archiveBaseName.set(appName)
     archiveVersion.set(tagVersion)
     archiveClassifier.set(env)
+}
+
+val shadowDistConfigFiles by tasks.register("shadowDistConfigFiles") {
+    group = "distribution"
+
+    doLast {
+        println("========================================")
+        println("semVersion = $semVersion")
+        println("env = $env")
+        println("========================================")
+
+        // Don't need to copy swagger-ui every build
+        delete(fileTree("src/dist").matching {
+            exclude("swagger-ui/**")
+        })
+
+        if (!Paths.get("src/dist/swagger-ui").toFile().exists()) {
+            copy {
+                from("dist/swagger-ui")
+                into("src/dist/swagger-ui")
+            }
+        }
+
+        copy {
+            from("dist/config/$env")
+            into("src/dist")
+            filter<ReplaceTokens>(
+                "tokens" to mapOf(
+                    "env" to env,
+
+                    "gitTagVersion" to tagVersion,
+                    "gitCommitVersion" to semVersion.toString(),
+                    "buildTime" to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())
+                )
+            )
+        }
+
+        copy {
+            from("dist/bin")
+            into("src/dist/bin")
+        }
+    }
 }
 
 // =============================== Postman ===============================

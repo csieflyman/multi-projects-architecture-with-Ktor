@@ -3,14 +3,13 @@
 /buildSrc/build
 /buildSrc/.gradle
 /app/out
-/app/swagger-ui
+/app/build
+/app/dist/local
 /app/src/dist
-/app/deploy/config/local/
 /app/node_modules
 /app/postman/**/*-openapi.json
 /app/postman/**/*-collection.json
 /app/postman/**/report
-/app/build
 /infra/build
 projects/ops/build
 projects/club/build
