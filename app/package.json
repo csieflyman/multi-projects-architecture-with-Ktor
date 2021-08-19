@@ -2,16 +2,14 @@
   "name": "fanpoll",
   "version": "1.0.0",
   "dependencies": {
-    "newman-reporter-html": "^1.0.5",
-    "postman-collection": "^3.6.9"
+    "newman-reporter-html": "^1.0.5"
   },
   "devDependencies": {
-    "async": "^3.2.0",
+    "async": "^3.2.1",
     "bent": "^7.3.12",
     "newman": "^5.2.4",
     "newman-reporter-htmlextra": "^1.21.0",
-    "openapi-to-postmanv2": "^2.9.0",
-    "request": "^2.88.2",
+    "openapi-to-postmanv2": "^2.10.1",
     "uuid": "^8.3.2"
   }
 }
