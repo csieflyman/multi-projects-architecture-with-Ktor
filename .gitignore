@@ -4,8 +4,8 @@
 /buildSrc/.gradle
 /app/out
 /app/build
-/app/dist/local
 /app/src/dist
+/app/dist/config/local
 /app/node_modules
 /app/postman/**/*-openapi.json
 /app/postman/**/*-collection.json
