@@ -7,7 +7,6 @@ const newman = require('newman');
 //require('newman-reporter-htmlextra');
 const async = require('async');
 
-//const funName = process.argv[2];
 const projectName = process.argv[2];
 const envName = process.argv[3];
 const folderName = process.argv[4];

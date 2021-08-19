@@ -7,19 +7,10 @@ const postmanConverter = require('openapi-to-postmanv2');
 //const Event = require('postman-collection').Event
 const {v4: uuidv4} = require('uuid');
 
-const funName = process.argv[2];
-const projectName = process.argv[3];
+const projectName = process.argv[2];
+console.log(`projectName = ${projectName}`)
 
-switch (funName) {
-    case 'convert':
-        convert();
-        break;
-    case 'downloadThenConvert':
-        require("./openapi-json-provider").downloadJson().then(openapiJson => convert(openapiJson));
-        break;
-    default:
-        throw new Error("undefined function: " + funName);
-}
+convert().then(() => console.log("convert success"));
 
 async function convert(json) {
     let input = json ? {type: 'json', data: json} : {

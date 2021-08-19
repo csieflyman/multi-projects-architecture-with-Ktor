@@ -2,28 +2,30 @@
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-module.exports = {
-    downloadJson: downloadJson
-}
-
 const bent = require('bent');
 const fs = require('fs');
 
-const funName = process.argv[2];
-const projectName = process.argv[3];
-const schemaUrl = process.argv[4];
+const projectName = process.argv[2];
+const schemaUrl = process.argv[3];
+const username = process.argv[4];
+const password = process.argv[5];
 
-switch (funName) {
-    case 'downloadJson':
-        downloadJson();
-        break;
-    default:
-        throw new Error("undefined function: " + funName);
-}
+console.log(`projectName = ${projectName}`)
+console.log(`schemaUrl = ${schemaUrl}`)
+console.log(`username = ${username}`)
+
+downloadJson().then(() => console.log("download success"));
 
 async function downloadJson() {
-    let getJson = bent(schemaUrl, 'json');
-    let response = await getJson();
+    let headers = {}
+    if (username && password) {
+        headers = {
+            'Authorization': `Basic ${new Buffer(`${username}:${password}`).toString('base64')}==`
+        }
+    }
+
+    const getJson = bent('GET', 'json', headers, schemaUrl);
+    let response = await getJson()
     fs.writeFileSync(`postman/${projectName}/${projectName}-openapi.json`, JSON.stringify(response));
     return response
 }

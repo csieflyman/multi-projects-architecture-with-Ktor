@@ -218,7 +218,6 @@ val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
             "install",
             "uuid",
             "bent",
-            "request",
             "async",
             "openapi-to-postmanv2",
             "newman",
@@ -228,28 +227,29 @@ val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
     )
 }
 
-val openApiProjectName = "club"
+val openApiProjectName = "ops"
 val openApiSchemaUrl = "http://localhost:8080/apidocs/schema/$openApiProjectName.json"
 val postmanEnvironment = "localhost"
+val swaggerUserName = "fanpoll"
+val swaggerPassword = "fanpoll"
 
 val postmanApiKey: String = System.getenv("POSTMAN_API_KEY") ?: ""
 
 val downloadOpenApiJson by tasks.register<NodeTask>("downloadOpenApiJson") {
     group = "postman"
     script.set(file("postman/scripts/openapi-json-provider.js"))
-    args.set(listOf("downloadJson", openApiProjectName, openApiSchemaUrl))
+    args.set(listOf(openApiProjectName, openApiSchemaUrl, swaggerUserName, swaggerPassword))
 }
 
 val openApiToPostmanCollection by tasks.register<NodeTask>("openApiToPostmanCollection") {
     group = "postman"
     script.set(file("postman/scripts/openapi-to-postman-collection.js"))
-    args.set(listOf("convert", openApiProjectName))
+    args.set(listOf(openApiProjectName))
 }
 
-val generatePostmanCollection by tasks.register<NodeTask>("generatePostmanCollection") {
+val generatePostmanCollection by tasks.register("generatePostmanCollection") {
+    dependsOn(downloadOpenApiJson, openApiToPostmanCollection)
     group = "postman"
-    script.set(file("postman/scripts/openapi-to-postman-collection.js"))
-    args.set(listOf("downloadThenConvert", openApiProjectName))
 }
 
 val runPostmanTest by tasks.register<NodeTask>("runPostmanTest") {
