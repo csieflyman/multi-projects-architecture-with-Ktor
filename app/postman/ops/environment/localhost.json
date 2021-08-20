@@ -1,0 +1,22 @@
+{
+  "environment": {
+    "id": "3e3e0007-ca9c-4b04-b9cc-bba13305370f",
+    "name": "localhost",
+    "values": [
+      {
+        "key": "dummyRequestUrl",
+        "value": "http://localhost:8080/public/blank_page.html",
+        "type": "text",
+        "enabled": true,
+        "hovered": false
+      },
+      {
+        "key": "baseUrl",
+        "value": "http://localhost:8080/ops",
+        "type": "text",
+        "enabled": true,
+        "hovered": false
+      }
+    ]
+  }
+}
