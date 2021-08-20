@@ -80,7 +80,12 @@ fun Authentication.Configuration.service(providerName: String, authConfigs: List
             else AuthenticationFailedCause.InvalidCredentials
 
             context.challenge(providerName, cause) {
-                call.respond(CodeResponseDTO(call.attributes[ATTRIBUTE_KEY_AUTH_ERROR_CODE]))
+                call.respond(
+                    CodeResponseDTO(
+                        if (credentials == null) InfraResponseCode.AUTH_BAD_KEY
+                        else call.attributes[ATTRIBUTE_KEY_AUTH_ERROR_CODE]
+                    )
+                )
                 it.complete()
             }
         }
