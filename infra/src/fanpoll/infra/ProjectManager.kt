@@ -48,8 +48,8 @@ class ProjectManager(
             val projectConfigFile = "$configDir/application-$projectId.conf"
             try {
                 logger.info { "load project config file: $projectConfigFile" }
-                val myConfig = ConfigFactory.parseFile(File(projectConfigFile))
-                //logger.debug(myConfig.getConfig("$projectId").entrySet().toString())
+                val myConfig = ConfigFactory.parseFile(File(projectConfigFile)).resolve()
+                //logger.debug(myConfig.getConfig(projectId).entrySet().toString())
                 return myConfig.extract(projectId)
             } catch (e: Throwable) {
                 logger.error("fail to load project config file: $projectConfigFile", e)
