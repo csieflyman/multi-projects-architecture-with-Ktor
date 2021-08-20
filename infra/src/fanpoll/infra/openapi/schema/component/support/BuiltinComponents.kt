@@ -5,6 +5,7 @@
 package fanpoll.infra.openapi.schema.component.support
 
 import fanpoll.infra.app.AppVersion
+import fanpoll.infra.auth.AuthConst
 import fanpoll.infra.auth.ClientVersionCheckResult
 import fanpoll.infra.auth.HEADER_CLIENT_VERSION
 import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
@@ -158,6 +159,10 @@ object BuiltinComponents : ComponentLoader {
 
     // ==================== Parameter Schema ====================
 
+    private val sessionIdSchema = PropertyDef(
+        AuthConst.SESSION_ID_HEADER_NAME, SchemaDataType.string
+    )
+
     private val runAsTokenSchema = PropertyDef(
         UserRunAsAuthProvider.RUN_AS_TOKEN_HEADER_NAME, SchemaDataType.string,
         description = UserRunAsAuthProvider.tokenPatternDescription
@@ -189,6 +194,9 @@ object BuiltinComponents : ComponentLoader {
 
     // ===== Parameters(Header) ======
 
+    val SessionIdHeader = ParameterObject(ParameterInputType.header, true, sessionIdSchema).createRef()
+    val SessionIdOptionalHeader = ParameterObject(ParameterInputType.header, false, sessionIdSchema).createRef()
+
     private val RunAsOptionalHeader = ParameterObject(ParameterInputType.header, false, runAsTokenSchema).createRef()
 
     private val ClientVersionSchema = PropertyDef(
@@ -203,7 +211,7 @@ object BuiltinComponents : ComponentLoader {
     val ClientVersionOptionalHeader = ParameterObject(ParameterInputType.header, false, ClientVersionSchema).createRef()
 
     private val headerParameterList: List<ReferenceObject> = listOf(
-        RunAsOptionalHeader, ClientVersionOptionalHeader
+        SessionIdHeader, SessionIdOptionalHeader, RunAsOptionalHeader, ClientVersionOptionalHeader
     )
 
     // ===== Parameters(Query) ======

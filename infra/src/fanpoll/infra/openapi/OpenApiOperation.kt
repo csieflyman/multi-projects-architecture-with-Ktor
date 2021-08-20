@@ -78,6 +78,7 @@ class OpenApiOperation(
         operationObject.summary += "　=>　Auth = [${routeAuths?.joinToString(" or ") ?: "Public"}]"
         if (routeAuths != null) {
             setOperationSecurities(routeAuths)
+            setSessionIdHeader(routeAuths)
             setClientVersionHeader(routeAuths)
         }
     }
@@ -88,6 +89,14 @@ class OpenApiOperation(
         }.filter { it.isNotEmpty() }.toSet()
         if (securitySchemes.isNotEmpty()) {
             operationObject.security = securitySchemes.toList()
+        }
+    }
+
+    private fun setSessionIdHeader(routeAuths: List<PrincipalAuth>) {
+        if (routeAuths.all { it is PrincipalAuth.User }) {
+            operationObject.parameters += BuiltinComponents.SessionIdHeader
+        } else if (routeAuths.any { it is PrincipalAuth.User }) {
+            operationObject.parameters += BuiltinComponents.SessionIdOptionalHeader
         }
     }
 

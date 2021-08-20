@@ -5,13 +5,11 @@
 package fanpoll.club
 
 import fanpoll.club.ClubAuth.RootSource
-import fanpoll.infra.auth.AuthConst
 import fanpoll.infra.auth.PrincipalAuth
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.PrincipalSourceType
 import fanpoll.infra.auth.provider.*
 import fanpoll.infra.openapi.ProjectOpenApi
-import fanpoll.infra.openapi.schema.component.support.SecurityScheme
 
 object ClubAuth {
 
@@ -19,13 +17,10 @@ object ClubAuth {
     const val userAuthProviderName = "${ClubConst.projectId}-user"
     const val userRunAsAuthProviderName = "${ClubConst.projectId}-runAs"
 
-    private val serviceAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
-    private val sessionIdAuthScheme = SecurityScheme.apiKeyAuth("SessionIdAuth", AuthConst.SESSION_ID_HEADER_NAME)
-    private val userAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
-    val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme, sessionIdAuthScheme)
+    val allAuthSchemes = listOf(ProjectOpenApi.apiKeySecurityScheme)
 
     val RootSource = PrincipalSource(ClubConst.projectId, "root", PrincipalSourceType.Postman, false)
-    val Root = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, setOf(RootSource))
+    val Root = PrincipalAuth.Service(serviceAuthProviderName, allAuthSchemes, setOf(RootSource))
 
     val Android: PrincipalSource = PrincipalSource(
         ClubConst.projectId, "android", PrincipalSourceType.Android, true
@@ -35,20 +30,20 @@ object ClubAuth {
     )
     private val App: Set<PrincipalSource> = setOf(Android, iOS)
 
-    val Public = PrincipalAuth.Service(serviceAuthProviderName, serviceAuthSchemes, App)
+    val Public = PrincipalAuth.Service(serviceAuthProviderName, allAuthSchemes, App)
 
     val User = PrincipalAuth.User(
-        userAuthProviderName, userAuthSchemes, App,
+        userAuthProviderName, allAuthSchemes, App,
         mapOf(ClubUserType.User.value to ClubUserType.User.value.roles),
         runAsAuthProviderName = userRunAsAuthProviderName
     )
     val Admin = PrincipalAuth.User(
-        userAuthProviderName, userAuthSchemes, App,
+        userAuthProviderName, allAuthSchemes, App,
         mapOf(ClubUserType.User.value to setOf(ClubUserRole.Admin.value)),
         runAsAuthProviderName = userRunAsAuthProviderName
     )
     val Member = PrincipalAuth.User(
-        userAuthProviderName, userAuthSchemes, App,
+        userAuthProviderName, allAuthSchemes, App,
         mapOf(ClubUserType.User.value to setOf(ClubUserRole.Member.value)),
         runAsAuthProviderName = userRunAsAuthProviderName
     )
