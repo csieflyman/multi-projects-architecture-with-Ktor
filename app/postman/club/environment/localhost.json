@@ -4,22 +4,15 @@
     "name": "localhost",
     "values": [
       {
+        "key": "dummyRequestUrl",
+        "value": "http://localhost:8080/public/blank_page.html",
+        "type": "text",
+        "enabled": true,
+        "hovered": false
+      },
+      {
         "key": "baseUrl",
         "value": "http://localhost:8080/club",
-        "type": "text",
-        "enabled": true,
-        "hovered": false
-      },
-      {
-        "key": "X-API-KEY",
-        "value": "???",
-        "type": "text",
-        "enabled": true,
-        "hovered": false
-      },
-      {
-        "key": "sid",
-        "value": "???",
         "type": "text",
         "enabled": true,
         "hovered": false

@@ -34,7 +34,7 @@ async function convert(json) {
 
 function manipulateCollection(collection) {
     manipulateRequests(collection);
-    addMockRequestAtFirstPosition(collection);
+    addDummyRequestAtFirstPosition(collection);
     console.log("manipulateCollection success");
     fs.writeFileSync(`postman/${projectName}/${projectName}-collection.json`, JSON.stringify(collection));
 }
@@ -84,17 +84,6 @@ function setRequest(request) {
         }
     }
 
-    // postman has at most one auth (see openapi-to-postman SchemaUtils.js getAuthHelper function).
-    // we add session id header here
-    if (request.description.indexOf("user") !== -1) {
-        if (projectName === 'club') {
-            request.header.push({
-                key: "sid",
-                value: "{{sid}}"
-            });
-        }
-    }
-
     if (request.header) {
         request.header.filter(it => !ignoreHeaders.has(it.key)).forEach(it => it.value = `{{${it.key}}}`)
     }
@@ -126,15 +115,15 @@ function addEvent(event) {
     );
 }
 
-function addMockRequestAtFirstPosition(collection) {
+function addDummyRequestAtFirstPosition(collection) {
     collection.item.forEach(folder => {
         if (folder.item) {
             folder.item.splice(0, 0, {
                 id: uuidv4(),
-                name: 'Mock Request',
+                name: 'Dummy Request',
                 request: {
                     url: {
-                        host: ['{{baseUrl}}/public/blank_page.html']
+                        host: ['{{dummyRequestUrl}}']
                     },
                     method: 'GET'
                 },
