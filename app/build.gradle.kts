@@ -14,7 +14,7 @@ plugins {
     id("org.flywaydb.flyway") version "7.11.4"
     id("org.unbroken-dome.gitversion") version "0.10.0"
     //id("org.barfuin.gradle.taskinfo") version "1.3.0"
-    id("com.github.node-gradle.node") version "3.0.1"
+    id("com.github.node-gradle.node") version "3.1.0"
 }
 
 val appName = "app"
@@ -218,6 +218,7 @@ val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
             "install",
             "uuid",
             "bent",
+            "request",
             "async",
             "openapi-to-postmanv2",
             "newman",

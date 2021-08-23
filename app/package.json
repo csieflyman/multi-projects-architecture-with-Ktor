@@ -10,6 +10,7 @@
     "newman": "^5.2.4",
     "newman-reporter-htmlextra": "^1.21.0",
     "openapi-to-postmanv2": "^2.10.1",
+    "request": "^2.88.2",
     "uuid": "^8.3.2"
   }
 }
