@@ -33,6 +33,7 @@ async function convert(json) {
 }
 
 function manipulateCollection(collection) {
+    addCollectionEvent(collection);
     manipulateRequests(collection);
     addDummyRequestAtFirstPosition(collection);
     console.log("manipulateCollection success");
@@ -108,7 +109,7 @@ function addEvent(event) {
             script: {
                 type: "text/javascript",
                 exec: [
-                    "let script = pm.iterationData.get(\"_test\");eval(script);postman.setNextRequest(null);"
+                    "let script = pm.iterationData.get('_test');eval(script);postman.setNextRequest(null);"
                 ]
             }
         }
@@ -133,7 +134,7 @@ function addDummyRequestAtFirstPosition(collection) {
                         script: {
                             type: "text/javascript",
                             exec: [
-                                "postman.setNextRequest(pm.iterationData.get(\"_requestName\"));"
+                                "postman.setNextRequest(pm.iterationData.get('_requestName'));"
                             ]
                         }
                     }
@@ -141,6 +142,22 @@ function addDummyRequestAtFirstPosition(collection) {
             });
         }
     });
+}
+
+function addCollectionEvent(collection) {
+    collection.event.push(
+        {
+            listen: "prerequest",
+            script: {
+                type: "text/javascript",
+                exec: [
+                    "pm.request.url.query.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}')).forEach(it => it.disabled = true);",
+                    "pm.request.url.variables.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}')).forEach(it => it.disabled = true);",
+                    "pm.request.headers.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}')).forEach(it => it.disabled = true);"
+                ]
+            }
+        }
+    );
 }
 
 
