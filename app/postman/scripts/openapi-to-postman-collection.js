@@ -151,9 +151,9 @@ function addCollectionEvent(collection) {
             script: {
                 type: "text/javascript",
                 exec: [
-                    "pm.request.url.query.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}') && !pm.iterationData.has(it.value.substring(2, it.value.length -2))).forEach(it => it.disabled = true);",
-                    "pm.request.url.variables.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}') && !pm.iterationData.has(it.value.substring(2, it.value.length -2))).forEach(it => it.disabled = true);",
-                    "pm.request.headers.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}') && !pm.iterationData.has(it.value.substring(2, it.value.length -2))).forEach(it => it.disabled = true);"
+                    "pm.request.url.query.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}') && !pm.iterationData.has(it.value.substring(2, it.value.length -2)) && !pm.variables.has(it.value.substring(2, it.value.length -2))).forEach(it => it.disabled = true);",
+                    "pm.request.url.variables.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}') && !pm.iterationData.has(it.value.substring(2, it.value.length -2)) && !pm.variables.has(it.value.substring(2, it.value.length -2))).forEach(it => it.disabled = true);",
+                    "pm.request.headers.filter(it => it.value.startsWith('{{') && it.value.endsWith('}}') && !pm.iterationData.has(it.value.substring(2, it.value.length -2)) && !pm.variables.has(it.value.substring(2, it.value.length -2))).forEach(it => it.disabled = true);"
                 ]
             }
         }
