@@ -9,7 +9,7 @@
     "_requestName": "CreateUser",
     "X-API-KEY": "ops_root",
     "_requestBody": "{\"account\": \"tester@abcde.com\",\"password\": \"123456\",\"enabled\": true,\"role\": \"OpsTeam\",\"name\": \"tester\",\"email\": \"tester@abcde.com\",\"lang\": \"zh-TW\",\"mobile\": \"0987654321\"}",
-    "_test": "pm.test('200 ok', function(){pm.response.to.have.status(200);}); pm.test('check userId after create', function(){Number.isInteger(responseBody);}); postman.setEnvironmentVariable(\"userId\", responseBody);"
+    "_test": "pm.test('200 ok', function(){pm.response.to.have.status(200);});"
   },
   {
     "_requestName": "FindUsers",
