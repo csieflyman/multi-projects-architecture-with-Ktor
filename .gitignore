@@ -13,3 +13,6 @@
 /infra/build
 projects/ops/build
 projects/club/build
+/infra/out
+projects/ops/out
+projects/club/out
