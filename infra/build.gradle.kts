@@ -7,16 +7,17 @@ dependencies {
     val kotlinVersion = "1.5.30"
     val ktorVersion = "1.6.3"
     val koinVersion = "3.1.2"
-    val exposedVersion = "0.33.1"
+    val exposedVersion = "0.34.1"
     val jacksonVersion = "2.12.4"
 
     // =============== kotlin, kotlinx ===============
     implementation(kotlin("stdlib", kotlinVersion))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // ===============  ktor ===============
+    api("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     api("io.ktor:ktor-locations:$ktorVersion")
     api("io.ktor:ktor-serialization:$ktorVersion")
