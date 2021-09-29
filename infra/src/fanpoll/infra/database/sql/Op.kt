@@ -39,7 +39,7 @@ fun <T, R> SqlExpressionBuilder.overlap(
     )
 )
 
-fun SqlExpressionBuilder.multiIn(columns: List<Column<Any>>, values: List<List<Any>>) = object : Op<Boolean>() {
+fun SqlExpressionBuilder.multiIn(columns: List<Column<*>>, values: List<List<Any>>) = object : Op<Boolean>() {
     override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
         append(columns.joinToString(",", prefix = "(", postfix = ")") {
             it.name
