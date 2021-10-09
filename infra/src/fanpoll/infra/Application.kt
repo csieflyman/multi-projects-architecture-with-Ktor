@@ -5,10 +5,8 @@
 package fanpoll.infra
 
 import fanpoll.infra.app.AppFeature
-import fanpoll.infra.auth.AuthConst
-import fanpoll.infra.auth.MyAuthenticationFeature
+import fanpoll.infra.auth.SessionAuthPlugin
 import fanpoll.infra.auth.principal.MyPrincipal
-import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.ExceptionUtils
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.json.json
@@ -36,10 +34,6 @@ import io.ktor.features.*
 import io.ktor.locations.Locations
 import io.ktor.serialization.json
 import io.ktor.server.engine.ShutDownUrl
-import io.ktor.sessions.SessionSerializer
-import io.ktor.sessions.SessionStorage
-import io.ktor.sessions.Sessions
-import io.ktor.sessions.header
 import mu.KotlinLogging
 import org.koin.core.logger.Level
 import org.koin.dsl.module
@@ -55,6 +49,26 @@ fun Application.main() {
 
     val appConfig = ApplicationConfigLoader.load()
 
+    // =============== Install Plugins ===============
+
+    install(ContentNegotiation) {
+        json(json)
+    }
+
+    install(DataConversion, DataConverter)
+
+    install(Locations)
+
+    install(ShutDownUrl.ApplicationCallFeature) {
+        shutDownUrl = appConfig.server.shutDownUrl
+    }
+
+    install(Authentication)
+
+    install(XForwardedHeaderSupport)
+
+    install(Compression)
+
     install(Koin) {
         logger(KoinLogger(Level.INFO))
 
@@ -67,6 +81,20 @@ fun Application.main() {
     }
 
     install(LoggingFeature)
+
+    install(DatabaseFeature)
+
+    install(RedisFeature)
+
+    install(CacheFeature)
+
+    install(SessionAuthPlugin)
+
+    install(OpenApiFeature)
+
+    install(AppFeature)
+
+    install(NotificationFeature)
 
     install(StatusPages) {
         val loggingConfig = get<LoggingConfig>()
@@ -93,48 +121,7 @@ fun Application.main() {
         }
     }
 
-    install(DatabaseFeature)
-
-    install(RedisFeature)
-
-    install(CacheFeature)
-
-    install(Authentication)
-
-    install(MyAuthenticationFeature)
-
-    install(Sessions) {
-        val sessionStorage = get<SessionStorage>()
-        val sessionSerializer = get<SessionSerializer<UserPrincipal>>()
-
-        header<UserPrincipal>(AuthConst.SESSION_ID_HEADER_NAME, sessionStorage) {
-            serializer = sessionSerializer
-        }
-    }
-
-    install(AppFeature)
-
-    install(NotificationFeature)
-
-    install(OpenApiFeature)
-
-    install(XForwardedHeaderSupport)
-
-    install(Compression)
-
-    install(ContentNegotiation) {
-        json(json)
-    }
-
-    install(Locations)
-
-    install(DataConversion, DataConverter)
-
-    install(ShutDownUrl.ApplicationCallFeature) {
-        shutDownUrl = appConfig.server.shutDownUrl
-    }
-
-    routing()
+    // =============== End Plugin Installation ===============
 
     koin {
         modules(
@@ -145,4 +132,6 @@ fun Application.main() {
     }
 
     KoinApplicationShutdownManager.complete(environment)
+
+    routing()
 }

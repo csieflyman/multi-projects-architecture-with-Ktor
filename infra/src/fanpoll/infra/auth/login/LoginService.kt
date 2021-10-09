@@ -6,7 +6,7 @@ package fanpoll.infra.auth.login
 
 import fanpoll.infra.app.UserDeviceTable
 import fanpoll.infra.auth.login.logging.LoginLog
-import fanpoll.infra.auth.login.session.SessionService
+import fanpoll.infra.auth.login.session.MySessionStorage
 import fanpoll.infra.auth.login.session.UserSession
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.InternalServerException
@@ -21,7 +21,7 @@ import mu.KotlinLogging
 import java.time.Instant
 
 class LoginService(
-    private val sessionService: SessionService,
+    private val sessionStorage: MySessionStorage,
     private val dbAsyncTaskCoroutineActor: DBAsyncTaskCoroutineActor,
     private val logWriter: LogWriter
 ) {
@@ -45,7 +45,7 @@ class LoginService(
             )
         )
 
-        sessionService.setSession(session)
+        sessionStorage.setSession(session)
 
         if (form is AppLoginForm) {
             createOrUpdateUserDevice(form)
@@ -85,7 +85,7 @@ class LoginService(
             )
         )
 
-        sessionService.deleteSession(userPrincipal.session!!)
+        sessionStorage.deleteSession(userPrincipal.session!!)
     }
 
     private fun createOrUpdateUserDevice(form: AppLoginForm) {

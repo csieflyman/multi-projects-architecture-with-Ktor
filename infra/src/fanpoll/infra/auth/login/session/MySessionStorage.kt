@@ -8,7 +8,7 @@ import io.ktor.sessions.SessionStorage
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 
-class DefaultSessionStorage(private val sessionService: SessionService) : SessionStorage {
+abstract class MySessionStorage : SessionStorage {
 
     override suspend fun invalidate(id: String) {
         // CUSTOMIZATION
@@ -17,7 +17,7 @@ class DefaultSessionStorage(private val sessionService: SessionService) : Sessio
     }
 
     override suspend fun <R> read(id: String, consumer: suspend (ByteReadChannel) -> R): R {
-        return sessionService.getSessionAsByteArray(id)?.let { data -> consumer(ByteReadChannel(data)) }
+        return getSessionAsByteArray(id)?.let { data -> consumer(ByteReadChannel(data)) }
             ?: throw NoSuchElementException("Session $id not found")
     }
 
@@ -27,4 +27,16 @@ class DefaultSessionStorage(private val sessionService: SessionService) : Sessio
         // => see io.ktor.sessions.Sessions feature
         // but we want to control session write by ourself
     }
+
+    abstract suspend fun setSession(session: UserSession)
+
+    abstract suspend fun deleteSession(session: UserSession)
+
+    abstract suspend fun extendExpireTime(session: UserSession)
+
+    abstract suspend fun getSession(sid: String): UserSession?
+
+    abstract suspend fun getSessionAsByteArray(sid: String): ByteArray?
+
+    abstract suspend fun hasSession(sid: String): Boolean
 }

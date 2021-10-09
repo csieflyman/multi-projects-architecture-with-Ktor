@@ -23,7 +23,7 @@ data class SessionConfig(
         var extendDuration: Duration? = null
 
         fun build(): SessionConfig {
-            return SessionConfig(expireDuration, extendDuration)
+            return SessionConfig(expireDuration, extendDuration).apply { validate() }
         }
     }
 }

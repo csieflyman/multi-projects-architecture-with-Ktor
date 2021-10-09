@@ -5,8 +5,8 @@
 package fanpoll.infra.auth.provider
 
 import fanpoll.infra.auth.AuthConst
+import fanpoll.infra.auth.login.session.MySessionStorage
 import fanpoll.infra.auth.login.session.SessionConfig
-import fanpoll.infra.auth.login.session.SessionService
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.response.CodeResponseDTO
@@ -27,7 +27,7 @@ data class UserSessionAuthConfig(
 
 private val ATTRIBUTE_KEY_AUTH_ERROR_CODE = AttributeKey<ResponseCode>("AuthErrorCode")
 
-class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConfig>, private val sessionService: SessionService) {
+class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConfig>, private val sessionStorage: MySessionStorage) {
 
     val configureFunction: SessionAuthenticationProvider.Configuration<UserPrincipal>.() -> Unit = {
         validate { principal ->
@@ -40,7 +40,7 @@ class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConf
                     null
                 } else {
                     attributes.put(PrincipalSource.ATTRIBUTE_KEY, principal.source)
-                    sessionService.extendExpireTime(principal.session!!)
+                    sessionStorage.extendExpireTime(principal.session!!)
                     principal
                 }
             } else {

@@ -17,12 +17,12 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-class RedisSessionService(
+class RedisSessionStorage(
     private val sessionConfig: SessionConfig,
     private val redisClient: RedisClient,
     private val redisKeyspaceNotificationListener: RedisKeyspaceNotificationListener? = null,
     private val logWriter: LogWriter
-) : SessionService {
+) : MySessionStorage() {
 
     private val logger = KotlinLogging.logger {}
 

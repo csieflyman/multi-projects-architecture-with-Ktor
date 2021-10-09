@@ -5,7 +5,7 @@
 package fanpoll.infra
 
 import com.typesafe.config.ConfigFactory
-import fanpoll.infra.auth.AuthConfig
+import fanpoll.infra.auth.SessionAuthConfig
 import fanpoll.infra.base.config.Config4kExt
 import fanpoll.infra.base.i18n.I18nConfig
 import fanpoll.infra.cache.CacheConfig
@@ -34,13 +34,13 @@ enum class EnvMode {
 }
 
 data class InfraConfig(
-    val i18n: I18nConfig? = null,
     val logging: LoggingConfig? = null,
-    val auth: AuthConfig? = null,
-    val openApi: OpenApiConfig? = null,
     val database: DatabaseConfig? = null,
     val redis: RedisConfig? = null,
     val cache: CacheConfig? = null,
+    val sessionAuth: SessionAuthConfig? = null,
+    val openApi: OpenApiConfig? = null,
+    val i18n: I18nConfig? = null,
     val notification: NotificationConfig? = null,
 )
 
@@ -64,6 +64,4 @@ object ApplicationConfigLoader {
             throw e
         }
     }
-
-
 }
