@@ -10,11 +10,14 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import mu.KotlinLogging
 
 class LogMessageCoroutineActor(
     coroutineActorConfig: CoroutineActorConfig,
     private val logWriter: LogWriter
 ) : LogWriter {
+
+    private val logger = KotlinLogging.logger {}
 
     private val actorName = "LogWriterActor"
 
@@ -29,7 +32,11 @@ class LogMessageCoroutineActor(
     }
 
     private fun execute(message: LogMessage) {
-        logWriter.write(message)
+        try {
+            logWriter.write(message)
+        } catch (e: Throwable) {
+            logger.error("$actorName execute error => $message", e)
+        }
     }
 
     override fun shutdown() {
