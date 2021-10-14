@@ -105,7 +105,10 @@ class DynamicDBQuery<T : EntityDTO<*>>(dtoClass: KClass<T>, dynamicQuery: Dynami
                     val allColumns = linkedSetOf<Column<*>>()
                     val idColumns = mapper.table.primaryKey!!.columns
                     val fieldsColumns = dynamicQuery.fields.flatMap { mapper.getColumns(it) }
+                    val relationTables = mapper.getRelationTables(dynamicQuery.fields)
+                    val relationTableIdColumns = relationTables.flatMap { it.primaryKey!!.columns.toList() }
                     allColumns.addAll(idColumns)
+                    allColumns.addAll(relationTableIdColumns)
                     allColumns.addAll(fieldsColumns)
                     slice(allColumns.toList())
                 }

@@ -153,8 +153,10 @@ class ResultRowDTOMapper<T : EntityDTO<*>>(
     private fun getTable(field: String, mapper: ResultRowDTOMapper<T> = this): Table {
         val head = field.substringBefore(".", field)
         return if (mapper.fieldToDTOMapperMap.containsKey(head)) {
-            if (head == field) table
-            else getTable(field.substringAfter(".", field), mapper.fieldToDTOMapperMap[head]!!)
+            if (head == field)
+                mapper.fieldToDTOMapperMap[head]!!.table
+            else
+                getTable(field.substringAfter(".", field), mapper.fieldToDTOMapperMap[head]!!)
         } else {
             mapper.fieldToColumnMap[head]?.table ?: throw RequestException(
                 InfraResponseCode.BAD_REQUEST_QUERYSTRING,
