@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 plugins {
     application
     id("com.github.johnrengelman.shadow")
-    id("org.flywaydb.flyway") version "7.11.4"
+    id("org.flywaydb.flyway") version "8.0.1"
     id("org.unbroken-dome.gitversion") version "0.10.0"
     //id("org.barfuin.gradle.taskinfo") version "1.3.0"
     id("com.github.node-gradle.node") version "3.1.0"

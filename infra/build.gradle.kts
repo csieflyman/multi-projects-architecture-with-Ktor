@@ -4,16 +4,16 @@ plugins {
 }
 
 dependencies {
-    val kotlinVersion = "1.5.30"
-    val ktorVersion = "1.6.3"
+    val kotlinVersion = "1.5.31"
+    val ktorVersion = "1.6.4"
     val koinVersion = "3.1.2"
-    val exposedVersion = "0.34.1"
-    val jacksonVersion = "2.12.4"
+    val exposedVersion = "0.35.2"
+    val jacksonVersion = "2.13.0"
 
     // =============== kotlin, kotlinx ===============
     implementation(kotlin("stdlib", kotlinVersion))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // ===============  ktor ===============
@@ -61,21 +61,21 @@ dependencies {
     //api("com.bennyhuo.kotlin:deepcopy-runtime:1.3.72")
 
     // =============== utils - logging ===============
-    api("io.github.microutils:kotlin-logging-jvm:2.0.10")
+    api("io.github.microutils:kotlin-logging-jvm:2.0.11")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
     // =============== utils - general ===============
-    implementation("com.github.kittinunf.result:result:5.1.0")
+    implementation("com.github.kittinunf.result:result:5.2.0")
     implementation("com.github.kittinunf.result:result-coroutines:4.0.0")
     implementation("org.apache.commons:commons-text:1.9")
 
     // =============== test ===============
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
-    implementation("com.zaxxer:HikariCP:4.0.3")
-    implementation("org.flywaydb:flyway-core:7.11.4")
+    implementation("com.zaxxer:HikariCP:5.0.0")
+    implementation("org.flywaydb:flyway-core:8.0.1")
 
-    runtimeOnly("org.postgresql:postgresql:42.2.23")
+    runtimeOnly("org.postgresql:postgresql:42.2.24")
 
     // ===============  AWS Java SDK Version 2 ===============
     implementation(platform("software.amazon.awssdk:bom:2.16.34"))
@@ -96,7 +96,7 @@ dependencies {
 
     implementation("org.apache.poi:poi:5.0.0")
     implementation("org.apache.poi:poi-ooxml:5.0.0")
-    implementation("org.apache.commons:commons-csv:1.8")
+    implementation("org.apache.commons:commons-csv:1.9.0")
 
     // jackson only used for openapi
     // maybe need in the future https://github.com/FasterXML/jackson-modules-java8
