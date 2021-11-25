@@ -29,7 +29,7 @@ data class CreateUserDeviceForm(
     val pushToken: String? = null,
     val osVersion: String? = null,
     val userAgent: String? = null
-) : EntityForm<UserDeviceDTO, UUID, UUID>() {
+) : EntityForm<CreateUserDeviceForm, UUID, UUID>() {
 
     @Transient
     val enabled: Boolean = true
@@ -46,7 +46,7 @@ data class UpdateUserDeviceForm(
     val pushToken: String? = null,
     val osVersion: String? = null,
     val userAgent: String? = null
-) : EntityForm<UserDeviceDTO, UUID, UUID>() {
+) : EntityForm<UpdateUserDeviceForm, UUID, UUID>() {
 
     var enabled: Boolean? = null
 
