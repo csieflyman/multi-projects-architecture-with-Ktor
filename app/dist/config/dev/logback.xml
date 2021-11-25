@@ -40,6 +40,10 @@
     -->
 
     <logger name="Exposed" level="DEBUG"/>
+    <!--
+    <logger name="com.github.jasync.sql.db" level="DEBUG"/>
+    <logger name="com.github.jasync.sql.db.pool" level="DEBUG"/>
+    -->
     <logger name="[Koin]" level="INFO"/>
 
     <logger name="fanpoll.infra.database" level="INFO"/>

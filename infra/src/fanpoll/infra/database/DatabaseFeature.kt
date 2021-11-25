@@ -4,12 +4,19 @@
 
 package fanpoll.infra.database
 
+import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.ConnectionPoolConfiguration
+import com.github.jasync.sql.db.ConnectionPoolConfigurationBuilder
+import com.github.jasync.sql.db.pool.ConnectionPool
+import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
+import com.github.jasync.sql.db.postgresql.util.URLParser
 import com.zaxxer.hikari.HikariDataSource
 import fanpoll.infra.MyApplicationConfig
 import fanpoll.infra.base.async.AsyncExecutorConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.InfraResponseCode
+import fanpoll.infra.database.jasync.JasyncExposedAdapter
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.writers.LogWriter
 import io.ktor.application.Application
@@ -35,21 +42,26 @@ class DatabaseFeature(configuration: Configuration) {
             isAutoCommit = false
         }
 
-        internal val flywayConfig: FluentConfiguration = FluentConfiguration().apply {
-        }
-
-        internal var asyncExecutorConfig: AsyncExecutorConfig? = null
-
         fun hikari(configure: com.zaxxer.hikari.HikariConfig.() -> Unit) {
             hikariConfig.apply(configure)
         }
+
+        internal val flywayConfig: FluentConfiguration = FluentConfiguration().apply {}
 
         fun flyway(configure: FluentConfiguration.() -> Unit) {
             flywayConfig.apply(configure)
         }
 
+        internal var asyncExecutorConfig: AsyncExecutorConfig? = null
+
         fun asyncExecutor(configure: AsyncExecutorConfig.Builder.() -> Unit) {
             asyncExecutorConfig = AsyncExecutorConfig.Builder().apply(configure).build()
+        }
+
+        var jasyncConfig: ConnectionPoolConfiguration? = null
+
+        fun jasync(configure: ConnectionPoolConfigurationBuilder.() -> Unit) {
+            jasyncConfig = ConnectionPoolConfigurationBuilder().apply(configure).build()
         }
     }
 
@@ -68,8 +80,16 @@ class DatabaseFeature(configuration: Configuration) {
                 configure(configuration, appConfig.infra.database) // override config
             }
 
-            connect(configuration.hikariConfig)
-            migrate(configuration.flywayConfig)
+            connectWithHikari(configuration.hikariConfig)
+
+            initExposed()
+
+            flywayMigrate(configuration.flywayConfig)
+
+            jasyncEnabled = configuration.jasyncConfig != null
+            if (jasyncEnabled) {
+                initJasync(pipeline, configuration.jasyncConfig!!)
+            }
 
             val asyncExecutorConfig = appConfig.infra.database?.asyncExecutor ?: configuration.asyncExecutorConfig
             if (asyncExecutorConfig != null) {
@@ -96,6 +116,26 @@ class DatabaseFeature(configuration: Configuration) {
         }
 
         private fun configure(configuration: Configuration, databaseConfig: DatabaseConfig) {
+            val externalJasyncConfig = databaseConfig.jasync
+            if (externalJasyncConfig != null) {
+                val builder = ConnectionPoolConfigurationBuilder()
+                val connectionConfig = URLParser.parse(externalJasyncConfig.jdbcUrl)
+                with(builder) {
+                    host = connectionConfig.host
+                    port = connectionConfig.port
+                    database = connectionConfig.database
+
+                    username = externalJasyncConfig.username
+                    password = externalJasyncConfig.password
+                    maxActiveConnections = externalJasyncConfig.maxActiveConnections
+                    maxIdleTime = externalJasyncConfig.maxIdleTime
+                    connectionCreateTimeout = externalJasyncConfig.connectionCreateTimeout
+                    connectionTestTimeout = externalJasyncConfig.connectionTestTimeout
+                    queryTimeout = externalJasyncConfig.queryTimeout
+                }
+                configuration.jasyncConfig = builder.build()
+            }
+
             val externalHikariConfig = databaseConfig.hikari
             with(configuration.hikariConfig) {
                 driverClassName = externalHikariConfig.driverClassName
@@ -120,13 +160,20 @@ class DatabaseFeature(configuration: Configuration) {
         private lateinit var flyway: Flyway
         private lateinit var defaultDatabase: org.jetbrains.exposed.sql.Database
 
-        private fun connect(config: com.zaxxer.hikari.HikariConfig) {
+        private fun connectWithHikari(config: com.zaxxer.hikari.HikariConfig) {
             try {
                 logger.info("===== connect database ${config.jdbcUrl}... =====")
                 dataSource = HikariDataSource(config)
                 defaultDatabase = ExposedDatabase.connect(dataSource)
                 logger.info("===== database connected =====")
+            } catch (e: Throwable) {
+                throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to connect database: ${config.jdbcUrl}", e)
+            }
+        }
 
+        private fun initExposed() {
+            try {
+                defaultDatabase = ExposedDatabase.connect(dataSource)
                 /**
                  * see https://github.com/JetBrains/Exposed/wiki/Transactions
                  * After that any exception that happens within transaction block will not rollback the whole transaction
@@ -136,14 +183,11 @@ class DatabaseFeature(configuration: Configuration) {
                 defaultDatabase.useNestedTransactions = false
                 defaultDatabase.transactionManager.defaultRepetitionAttempts = 0
             } catch (e: Throwable) {
-                throw InternalServerException(
-                    InfraResponseCode.DB_ERROR,
-                    "fail to connect database connection pool! => ${config.jdbcUrl}", e
-                )
+                throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to init Exposed", e)
             }
         }
 
-        private fun migrate(config: FluentConfiguration) {
+        private fun flywayMigrate(config: FluentConfiguration) {
             try {
                 logger.info("===== Flyway migrate... =====")
                 flyway = config.dataSource(dataSource).load()
@@ -156,10 +200,13 @@ class DatabaseFeature(configuration: Configuration) {
 
         private fun shutdown() {
             asyncExecutor?.shutdown()
-            closeConnection()
+            if (jasyncEnabled) {
+                closeJasyncConnectionPool()
+            }
+            closeHikariConnectionPool()
         }
 
-        private fun closeConnection() {
+        private fun closeHikariConnectionPool() {
             try {
                 if (dataSource.isRunning) {
                     logger.info("close database connection pool...")
@@ -169,7 +216,49 @@ class DatabaseFeature(configuration: Configuration) {
                     logger.warn("database connection pool had been closed")
                 }
             } catch (e: Throwable) {
-                throw InternalServerException(InfraResponseCode.DB_ERROR, "could not close database connection pool", e)
+                logger.error("fail to close database connection pool", e)
+                //throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to close database connection pool", e)
+            }
+        }
+
+        private var jasyncEnabled = false
+        private lateinit var jasyncConnection: Connection
+
+        private fun initJasync(pipeline: Application, config: ConnectionPoolConfiguration) {
+            connectWithJasync(config)
+
+            pipeline.koin {
+                modules(
+                    module(createdAtStart = true) {
+                        single { jasyncConnection }
+                    }
+                )
+            }
+
+            JasyncExposedAdapter.bind(defaultDatabase, jasyncConnection)
+        }
+
+        private fun connectWithJasync(config: ConnectionPoolConfiguration) {
+            try {
+                logger.info("===== connect database with jasync ... =====")
+                jasyncConnection = ConnectionPool(
+                    PostgreSQLConnectionFactory(config.connectionConfiguration), config
+                )
+                jasyncConnection.connect().get()
+                logger.info("===== jasync database connected =====")
+            } catch (e: Throwable) {
+                throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to connect database With jasync", e)
+            }
+        }
+
+        private fun closeJasyncConnectionPool() {
+            try {
+                logger.info("close jasync database connection pool...")
+                jasyncConnection.disconnect().get()
+                logger.info("jasync database connection pool closed")
+            } catch (e: Throwable) {
+                logger.error("fail to close jasync database connection pool", e)
+                //throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to close jasync database connection pool", e)
             }
         }
     }
@@ -178,7 +267,8 @@ class DatabaseFeature(configuration: Configuration) {
 data class DatabaseConfig(
     val hikari: HikariConfig,
     val flyway: FlywayConfig,
-    val asyncExecutor: AsyncExecutorConfig? = null
+    val asyncExecutor: AsyncExecutorConfig? = null,
+    val jasync: JasyncConfig? = null
 )
 
 data class HikariConfig(
@@ -196,4 +286,15 @@ data class FlywayConfig(
     val baselineOnMigrate: Boolean = true,
     val validateOnMigrate: Boolean = true,
     val table: String? = null
+)
+
+data class JasyncConfig(
+    val jdbcUrl: String,
+    val username: String,
+    val password: String,
+    val maxActiveConnections: Int,
+    val maxIdleTime: Long,
+    val connectionCreateTimeout: Long,
+    val connectionTestTimeout: Long,
+    val queryTimeout: Long? = null
 )

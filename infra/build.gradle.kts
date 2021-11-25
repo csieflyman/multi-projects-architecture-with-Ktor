@@ -39,6 +39,8 @@ dependencies {
     api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
+    api("com.github.jasync-sql:jasync-postgresql:2.0.2")
+
     // =============== utils - feature ===============
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
     api("io.konform:konform-jvm:0.3.0")

@@ -104,6 +104,7 @@ object InfraResponseCode {
     val NOTIFICATION_ERROR = ResponseCode("NOTIFICATION_ERROR", "9007", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
     val IO_ERROR = ResponseCode("IO_ERROR", "9008", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
     val DB_ASYNC_TASK_ERROR = ResponseCode("DB_ASYNC_TASK_ERROR", "9009", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
+    val DB_JASYNC_ERROR = ResponseCode("DB_JASYNC_ERROR", "9010", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
 
     // Data Processing Error
     val DATA_JSON_INVALID = ResponseCode("DATA_JSON_INVALID", "9100", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
