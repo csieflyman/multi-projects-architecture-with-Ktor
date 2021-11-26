@@ -8,16 +8,17 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import fanpoll.infra.base.entity.EntityDTO
+import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.response.InfraResponseCode
+import fanpoll.infra.database.sql.propName
 import fanpoll.infra.database.util.toDTO
 import fanpoll.infra.database.util.toSingleDTO
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.future.asDeferred
 import mu.KotlinLogging
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.JavaInstantColumnType
+import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
@@ -27,21 +28,33 @@ import java.time.ZoneId
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.full.memberProperties
 
 class JasyncExposedAdapter {
 
     companion object {
 
-        private val bindConnections = ConcurrentHashMap<Database, Connection>()
+        private val connectionMap = ConcurrentHashMap<Database, Connection>()
+
+        lateinit var defaultDatabase: Database
+        lateinit var defaultAsyncConnection: Connection
 
         fun bind(database: Database, connection: Connection) {
-            bindConnections[database] = connection
+            if (connectionMap.isEmpty()) {
+                defaultDatabase = database
+                defaultAsyncConnection = connection
+            }
+            connectionMap[database] = connection
         }
 
-        fun current(): Connection = connection(TransactionManager.current().db)
+        fun currentTransaction() = TransactionManager.current()
 
-        fun connection(database: Database): Connection = database.let {
-            bindConnections[it] ?: error("No jasync connection bind with ${it.name}.")
+        private fun currentDatabase() = currentTransaction().db
+
+        fun currentAsyncConnection() = asyncConnection(currentDatabase())
+
+        fun asyncConnection(database: Database): Connection = database.let {
+            connectionMap[it] ?: error("No jasync connection bind with ${it.name}.")
         }
     }
 }
@@ -50,36 +63,49 @@ private val logger = KotlinLogging.logger {}
 
 private val profilingLogger = KotlinLogging.logger("fanpoll.infra.database.jasync.Profiling")
 
-fun <T> dbQueryAsync(db: Database? = null, statement: Transaction.(Connection) -> CompletableFuture<T>): Deferred<T> =
-    dbExecuteAsync(db, false, statement)
-
-fun <T> dbTransactionAsync(db: Database? = null, statement: Transaction.(Connection) -> CompletableFuture<T>): Deferred<T> =
-    dbExecuteAsync(db, true, statement)
-
-private fun <T> dbExecuteAsync(
-    db: Database? = null,
-    inTransaction: Boolean,
+fun <T> dbQueryAsync(
+    db: Database = JasyncExposedAdapter.defaultDatabase,
     statement: Transaction.(Connection) -> CompletableFuture<T>
-): Deferred<T> {
+): CompletableFuture<T> {
     return transaction(db) {
         val begin = Instant.now()
-        profilingLogger.debug { "===== Transaction Profiling Begin ($id) ===== " }
+        profilingLogger.debug { "===== dbQueryAsync Profiling Begin ($id) ===== " }
         try {
-            val connection = JasyncExposedAdapter.connection(db ?: TransactionManager.current().db)
-            if (inTransaction)
-                connection.inTransaction { statement(connection) }
-            else
-                statement(connection)
+            statement(JasyncExposedAdapter.asyncConnection(db))
         } catch (e: ExposedSQLException) {
             throw InternalServerException(InfraResponseCode.DB_SQL_ERROR, e.toString(), e) // include caused SQL
         } catch (e: DatabaseException) {
             throw InternalServerException(InfraResponseCode.DB_JASYNC_ERROR, cause = e)
         } finally {
             profilingLogger.debug {
-                "===== Transaction execution time: ${Duration.between(begin, Instant.now()).toMillis()} millis ($id) ====="
+                "===== dbQueryAsync execution time: ${Duration.between(begin, Instant.now()).toMillis()} millis ($id) ====="
             }
         }
-    }.asDeferred()
+    }
+}
+
+fun <T> dbTransactionAsync(
+    db: Database = JasyncExposedAdapter.defaultDatabase,
+    statement: Transaction.(Connection) -> CompletableFuture<T>
+): CompletableFuture<T> {
+    return JasyncExposedAdapter.asyncConnection(db).inTransaction {
+        val connection = it
+        transaction(db) {
+            val begin = Instant.now()
+            profilingLogger.debug { "===== dbTransactionAsync Profiling Begin ($id) ===== " }
+            try {
+                statement(connection)
+            } catch (e: ExposedSQLException) {
+                throw InternalServerException(InfraResponseCode.DB_SQL_ERROR, e.toString(), e) // include caused SQL
+            } catch (e: DatabaseException) {
+                throw InternalServerException(InfraResponseCode.DB_JASYNC_ERROR, cause = e)
+            } finally {
+                profilingLogger.debug {
+                    "===== dbTransactionAsync execution time: ${Duration.between(begin, Instant.now()).toMillis()} millis ($id) ====="
+                }
+            }
+        }
+    }
 }
 
 inline fun <reified T : EntityDTO<*>> Query.toSingleDTOFuture(): CompletableFuture<T?> =
@@ -91,8 +117,8 @@ inline fun <reified T : EntityDTO<*>> Query.toDTOFuture(): CompletableFuture<Lis
 fun Query.toFuture(): CompletableFuture<QueryResult> {
     val sql = prepareSQL(QueryBuilder(true))
     val args = arguments().takeIf { it.isNotEmpty() }?.let { it[0] }?.map { it.second }?.toList() ?: emptyList()
-    logger.debug { "[jasync] $sql => args = $args" }
-    return JasyncExposedAdapter.current().sendPreparedStatement(sql, args)
+    logger.debug { "[jasync query] $sql => args = $args" }
+    return JasyncExposedAdapter.currentAsyncConnection().sendPreparedStatement(sql, args)
 }
 
 fun <T : EntityDTO<*>> QueryResult.toSingleDTOOrNull(query: Query, dtoClass: KClass<T>): T? =
@@ -118,4 +144,28 @@ private fun convertValue(field: Expression<*>, value: Any?): Any? {
             else -> value
         }
     } else value
+}
+
+fun <T> T.insertAsync(
+    form: EntityForm<*, *, *>,
+    body: (T.(InsertStatement<Number>) -> Unit)? = null
+): CompletableFuture<Any?> where T : Table, T : fanpoll.infra.database.sql.Table<*> {
+    val connection = JasyncExposedAdapter.currentAsyncConnection()
+    val transaction = JasyncExposedAdapter.currentTransaction()
+    val table = this
+    val statement = InsertStatement<Number>(table).apply {
+        val dtoProps = form::class.memberProperties
+        (columns as List<Column<Any>>).forEach { column ->
+            dtoProps.find { dtoProp -> autoIncColumn != column && dtoProp.name == column.propName }
+                ?.let { dtoProp -> dtoProp.getter.call(form)?.let { this[column] = it } }
+        }
+        body?.invoke(table, this)
+    }
+    val sql = statement.prepareSQL(transaction)
+    val args = statement.arguments().takeIf { it.isNotEmpty() }?.let { it[0] }?.map { it.second }?.toList() ?: emptyList()
+    logger.debug { "[jasync insert] $sql => args = $args" }
+    return connection.sendPreparedStatement(sql, args).thenApply { resultSet ->
+        resultSet.rows.takeIf { it.isNotEmpty() }?.let { it[0][0] }
+            ?.also { logger.debug { "resultSet value = $it" } }
+    }
 }
