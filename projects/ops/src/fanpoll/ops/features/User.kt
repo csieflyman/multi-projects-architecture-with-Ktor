@@ -45,8 +45,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.route
+import kotlinx.coroutines.future.await
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.timestamp
@@ -101,6 +103,8 @@ fun Routing.opsUser() {
 }
 
 class OpsUserService {
+
+    val logger = KotlinLogging.logger {}
 
     fun createUser(form: CreateUserForm): UUID {
         form.password = UserPasswordUtils.hashPassword(form.password)

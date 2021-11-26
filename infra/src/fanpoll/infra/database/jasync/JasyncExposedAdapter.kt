@@ -11,6 +11,7 @@ import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.response.InfraResponseCode
+import fanpoll.infra.database.sql.entityEq
 import fanpoll.infra.database.sql.propName
 import fanpoll.infra.database.util.toDTO
 import fanpoll.infra.database.util.toSingleDTO
@@ -19,6 +20,7 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.JavaInstantColumnType
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
@@ -164,6 +166,37 @@ fun <T> T.insertAsync(
     val sql = statement.prepareSQL(transaction)
     val args = statement.arguments().takeIf { it.isNotEmpty() }?.let { it[0] }?.map { it.second }?.toList() ?: emptyList()
     logger.debug { "[jasync insert] $sql => args = $args" }
+    return connection.sendPreparedStatement(sql, args).thenApply { resultSet ->
+        resultSet.rows.takeIf { it.isNotEmpty() }?.let { it[0][0] }
+            ?.also { logger.debug { "resultSet value = $it" } }
+    }
+}
+
+fun <T> T.updateAsync(
+    form: EntityForm<*, *, *>,
+    body: (T.(UpdateStatement) -> Unit)? = null
+): CompletableFuture<Any?> where T : Table, T : fanpoll.infra.database.sql.Table<*> {
+    val connection = JasyncExposedAdapter.currentAsyncConnection()
+    val transaction = JasyncExposedAdapter.currentTransaction()
+
+    val pkColumns = primaryKey!!.columns.toList() as List<Column<Any>>
+    val columnMap = columns.associateBy { it.propName } as Map<String, Column<Any>>
+    val updateColumnMap = columnMap.filterKeys { it != "createdAt" && it != "updatedAt" }
+        .filterValues { !pkColumns.contains(it) }
+
+    val table = this
+    val statement = UpdateStatement(table, null, SqlExpressionBuilder.entityEq(table, form)).apply {
+        form::class.memberProperties.forEach { dtoProp ->
+            updateColumnMap[dtoProp.name]?.let { column ->
+                dtoProp.getter.call(form)?.let { dtoPropValue -> this[column] = dtoPropValue }
+            }
+        }
+        body?.invoke(table, this)
+    }
+
+    val sql = statement.prepareSQL(transaction)
+    val args = statement.arguments().takeIf { it.any() }?.first()?.map { it.second }?.toList() ?: emptyList()
+    logger.debug { "[jasync update] $sql => args = $args" }
     return connection.sendPreparedStatement(sql, args).thenApply { resultSet ->
         resultSet.rows.takeIf { it.isNotEmpty() }?.let { it[0][0] }
             ?.also { logger.debug { "resultSet value = $it" } }
