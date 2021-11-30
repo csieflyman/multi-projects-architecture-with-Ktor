@@ -66,14 +66,9 @@ fun <T> T.update(
     form: EntityForm<*, *, *>,
     body: (T.(UpdateStatement) -> Unit)? = null
 ): Int where T : org.jetbrains.exposed.sql.Table, T : Table<*> {
-    val pkColumns = primaryKey!!.columns.toList() as List<Column<Any>>
-    val columnMap = columns.associateBy { it.propName } as Map<String, Column<Any>>
-    val updateColumnMap = columnMap.filterKeys { it != "createdAt" && it != "updatedAt" }
-        .filterValues { !pkColumns.contains(it) }
-
     val table = this
     val where: (SqlExpressionBuilder.() -> Op<Boolean>) = { entityEq(table, form) }
-
+    val updateColumnMap = updateColumnMap()
     val myBody: T.(UpdateStatement) -> Unit = { updateStatement ->
         form::class.memberProperties.forEach { dtoProp ->
             updateColumnMap[dtoProp.name]?.let { column ->
@@ -87,6 +82,13 @@ fun <T> T.update(
     if (size == 0)
         throw EntityException(InfraResponseCode.ENTITY_NOT_FOUND, entityId = form.getId())
     return size
+}
+
+fun <T> T.updateColumnMap(): Map<String, Column<Any>> where T : org.jetbrains.exposed.sql.Table, T : Table<*> {
+    val pkColumns = primaryKey!!.columns.toList() as List<Column<Any>>
+    return columns.filter { it.name != "createdAt" && it.name != "updatedAt" }
+        .filter { !pkColumns.contains(it) }
+        .associateBy { it.propName } as Map<String, Column<Any>>
 }
 
 fun <T> T.insertOrUpdate(

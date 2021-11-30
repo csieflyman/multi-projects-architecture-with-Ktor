@@ -21,14 +21,12 @@ import fanpoll.infra.base.response.DataResponseDTO
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.respond
 import fanpoll.infra.database.custom.lang
-import fanpoll.infra.database.jasync.dbQueryAsync
-import fanpoll.infra.database.jasync.toDTOFuture
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.sql.insert
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.database.sql.update
 import fanpoll.infra.database.util.ResultRowDTOMapper
-import fanpoll.infra.database.util.toDBQuery
+import fanpoll.infra.database.util.queryDB
 import fanpoll.infra.database.util.toDTO
 import fanpoll.infra.notification.senders.NotificationSender
 import fanpoll.infra.notification.util.SendNotificationForm
@@ -45,7 +43,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.route
-import kotlinx.coroutines.future.await
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import mu.KotlinLogging
@@ -78,10 +75,7 @@ fun Routing.opsUser() {
             }
 
             dynamicQuery<UserDTO>(OpsOpenApi.FindUsers) { dynamicQuery ->
-                val result = dbQueryAsync {
-                    dynamicQuery.toDBQuery<UserDTO>().query.toDTOFuture<UserDTO>()
-                }
-                call.respond(DataResponseDTO(result.await()))
+                call.respond(dynamicQuery.queryDB<UserDTO>())
             }
 
             post<SendNotificationForm, UUID>("/sendNotification", OpsOpenApi.SendNotification) { form ->

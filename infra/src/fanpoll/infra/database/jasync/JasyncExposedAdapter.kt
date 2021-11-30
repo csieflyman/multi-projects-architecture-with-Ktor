@@ -13,13 +13,16 @@ import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.entityEq
 import fanpoll.infra.database.sql.propName
+import fanpoll.infra.database.sql.updateColumnMap
 import fanpoll.infra.database.util.toDTO
 import fanpoll.infra.database.util.toSingleDTO
 import mu.KotlinLogging
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.JavaInstantColumnType
+import org.jetbrains.exposed.sql.statements.DeleteStatement
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.statements.Statement
 import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -118,7 +121,7 @@ inline fun <reified T : EntityDTO<*>> Query.toDTOFuture(): CompletableFuture<Lis
 
 fun Query.toFuture(): CompletableFuture<QueryResult> {
     val sql = prepareSQL(QueryBuilder(true))
-    val args = arguments().takeIf { it.isNotEmpty() }?.let { it[0] }?.map { it.second }?.toList() ?: emptyList()
+    val args = getStatementArgs(this)
     logger.debug { "[jasync query] $sql => args = $args" }
     return JasyncExposedAdapter.currentAsyncConnection().sendPreparedStatement(sql, args)
 }
@@ -154,6 +157,7 @@ fun <T> T.insertAsync(
 ): CompletableFuture<Any?> where T : Table, T : fanpoll.infra.database.sql.Table<*> {
     val connection = JasyncExposedAdapter.currentAsyncConnection()
     val transaction = JasyncExposedAdapter.currentTransaction()
+
     val table = this
     val statement = InsertStatement<Number>(table).apply {
         val dtoProps = form::class.memberProperties
@@ -163,13 +167,8 @@ fun <T> T.insertAsync(
         }
         body?.invoke(table, this)
     }
-    val sql = statement.prepareSQL(transaction)
-    val args = statement.arguments().takeIf { it.isNotEmpty() }?.let { it[0] }?.map { it.second }?.toList() ?: emptyList()
-    logger.debug { "[jasync insert] $sql => args = $args" }
-    return connection.sendPreparedStatement(sql, args).thenApply { resultSet ->
-        resultSet.rows.takeIf { it.isNotEmpty() }?.let { it[0][0] }
-            ?.also { logger.debug { "resultSet value = $it" } }
-    }
+
+    return executeNonQueryAsync(connection, transaction, statement)
 }
 
 fun <T> T.updateAsync(
@@ -179,12 +178,8 @@ fun <T> T.updateAsync(
     val connection = JasyncExposedAdapter.currentAsyncConnection()
     val transaction = JasyncExposedAdapter.currentTransaction()
 
-    val pkColumns = primaryKey!!.columns.toList() as List<Column<Any>>
-    val columnMap = columns.associateBy { it.propName } as Map<String, Column<Any>>
-    val updateColumnMap = columnMap.filterKeys { it != "createdAt" && it != "updatedAt" }
-        .filterValues { !pkColumns.contains(it) }
-
     val table = this
+    val updateColumnMap = updateColumnMap()
     val statement = UpdateStatement(table, null, SqlExpressionBuilder.entityEq(table, form)).apply {
         form::class.memberProperties.forEach { dtoProp ->
             updateColumnMap[dtoProp.name]?.let { column ->
@@ -194,11 +189,32 @@ fun <T> T.updateAsync(
         body?.invoke(table, this)
     }
 
+    return executeNonQueryAsync(connection, transaction, statement)
+}
+
+fun <T> T.deleteAsync(
+    op: SqlExpressionBuilder.() -> Op<Boolean>
+): CompletableFuture<Any?> where T : Table, T : fanpoll.infra.database.sql.Table<*> {
+    val connection = JasyncExposedAdapter.currentAsyncConnection()
+    val transaction = JasyncExposedAdapter.currentTransaction()
+
+    val table = this
+    val statement = DeleteStatement(table, SqlExpressionBuilder.op())
+
+    return executeNonQueryAsync(connection, transaction, statement)
+}
+
+private fun executeNonQueryAsync(connection: Connection, transaction: Transaction, statement: Statement<*>): CompletableFuture<Any?> {
     val sql = statement.prepareSQL(transaction)
-    val args = statement.arguments().takeIf { it.any() }?.first()?.map { it.second }?.toList() ?: emptyList()
-    logger.debug { "[jasync update] $sql => args = $args" }
+    val args = getStatementArgs(statement)
+    logger.debug { "[jasync ${statement.type.name}] $sql => args = $args" }
     return connection.sendPreparedStatement(sql, args).thenApply { resultSet ->
         resultSet.rows.takeIf { it.isNotEmpty() }?.let { it[0][0] }
             ?.also { logger.debug { "resultSet value = $it" } }
     }
 }
+
+private fun getStatementArgs(statement: Statement<*>): List<Any?> = when (statement) {
+    is InsertStatement<*> -> statement.arguments().takeIf { it.isNotEmpty() }?.let { it[0] }
+    else -> statement.arguments().takeIf { it.any() }?.first()
+}?.map { it.second }?.toList() ?: emptyList()
