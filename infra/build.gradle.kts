@@ -4,17 +4,17 @@ plugins {
 }
 
 dependencies {
-    val kotlinVersion = "1.5.31"
-    val ktorVersion = "1.6.4"
-    val koinVersion = "3.1.2"
-    val exposedVersion = "0.35.2"
+    val kotlinVersion = "1.6.0"
+    val ktorVersion = "1.6.6"
+    val koinVersion = "3.1.4"
+    val exposedVersion = "0.36.2"
     val jacksonVersion = "2.13.0"
 
     // =============== kotlin, kotlinx ===============
     implementation(kotlin("stdlib", kotlinVersion))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
 
     // ===============  ktor ===============
     api("io.ktor:ktor-server-core:$ktorVersion")
@@ -75,7 +75,7 @@ dependencies {
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
     implementation("com.zaxxer:HikariCP:5.0.0")
-    implementation("org.flywaydb:flyway-core:8.0.1")
+    implementation("org.flywaydb:flyway-core:8.2.0")
 
     runtimeOnly("org.postgresql:postgresql:42.2.24")
 

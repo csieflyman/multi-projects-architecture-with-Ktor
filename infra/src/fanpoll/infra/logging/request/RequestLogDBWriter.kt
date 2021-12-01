@@ -11,8 +11,8 @@ import fanpoll.infra.logging.LogMessage
 import fanpoll.infra.logging.writers.LogWriter
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.`java-time`.timestamp
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.timestamp
 import java.util.*
 
 class RequestLogDBWriter : LogWriter {

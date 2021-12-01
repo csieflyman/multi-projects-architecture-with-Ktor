@@ -245,9 +245,9 @@ object OpsUserTable : UUIDTable(name = "ops_user") {
 
     val password = varchar("password", 1000)
     val createdAt = timestamp("created_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
     val updatedAt = timestamp("updated_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
 
     override val naturalKeys: List<Column<out Any>> = listOf(account)
     override val surrogateKey: Column<EntityID<UUID>> = id

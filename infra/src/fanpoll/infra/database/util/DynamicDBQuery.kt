@@ -242,7 +242,7 @@ class DynamicDBQuery<T : EntityDTO<*>>(dtoClass: KClass<T>, dynamicQuery: Dynami
             }
         }
 
-        // IDateColumnType subclass is internal (see org.jetbrains.exposed.sql.`java-time`.JavaDateColumnType)
+        // IDateColumnType subclass is internal (see org.jetbrains.exposed.sql.javatime.JavaDateColumnType)
         private fun convertToDateTime(field: String, value: Any, columnType: IColumnType): Any {
             return when (value) {
                 is String -> columnType.valueFromDB(Result.of<TemporalAccessor, DateTimeParseException> {

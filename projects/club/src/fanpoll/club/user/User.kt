@@ -50,7 +50,7 @@ import kotlinx.serialization.Transient
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.`java-time`.timestamp
+import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import org.koin.ktor.ext.inject
@@ -262,9 +262,9 @@ object ClubUserTable : UUIDTable(name = "club_user") {
 
     val password = varchar("password", 1000)
     val createdAt = timestamp("created_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
     val updatedAt = timestamp("updated_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
 
     override val naturalKeys: List<Column<out Any>> = listOf(account)
     override val surrogateKey: Column<EntityID<UUID>> = id

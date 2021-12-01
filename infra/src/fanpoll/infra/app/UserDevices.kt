@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.`java-time`.timestamp
+import org.jetbrains.exposed.sql.javatime.timestamp
 import java.time.Instant
 import java.util.*
 
@@ -94,9 +94,9 @@ object UserDeviceTable : UUIDTable(name = "infra_user_device") {
 
     val enabledAt = timestamp("enabled_at")
     val createdAt = timestamp("created_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
     val updatedAt = timestamp("updated_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
 
     override val naturalKeys: List<Column<out Any>> = listOf(id)
     override val surrogateKey: Column<EntityID<UUID>> = id

@@ -70,7 +70,7 @@ fun Application.main() {
     install(Compression)
 
     install(Koin) {
-        logger(KoinLogger(Level.INFO))
+        logger(KoinLogger(Level.ERROR)) // set Level.ERROR as a workaround => https://github.com/InsertKoinIO/koin/issues/1188
 
         modules(
             module(createdAtStart = true) {

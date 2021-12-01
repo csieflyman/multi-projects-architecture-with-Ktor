@@ -32,7 +32,7 @@ import kotlinx.serialization.Transient
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.`java-time`.timestamp
+import org.jetbrains.exposed.sql.javatime.timestamp
 import java.time.Instant
 
 class AppReleaseService {
@@ -213,9 +213,9 @@ object AppReleaseTable : LongIdTable(name = "infra_app_release") {
     val forceUpdate = bool("force_update")
 
     val createdAt = timestamp("created_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
     val updatedAt = timestamp("updated_at")
-        .defaultExpression(org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp())
+        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
 
     override val naturalKeys: List<Column<out Any>> = listOf(appId, verName)
     override val surrogateKey: Column<EntityID<Long>> = id

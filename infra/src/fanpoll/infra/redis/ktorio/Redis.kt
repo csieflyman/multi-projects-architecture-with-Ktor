@@ -98,7 +98,7 @@ class RedisClient(
         dispatcher + context
     ) {
         channel.consumeEach {
-            if (requestQueue.offer(it)) return@consumeEach
+            if (requestQueue.trySend(it).isSuccess) return@consumeEach
 
             while (true) {
                 val current = runningPipelines.get()
