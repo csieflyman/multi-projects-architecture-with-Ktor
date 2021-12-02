@@ -7,7 +7,7 @@ package fanpoll.infra.base.tenant
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.form.Form
 
-abstract class TenantForm<Self> : Form<Self>() {
+abstract class TenantForm<Self : TenantForm<Self>> : Form<Self>() {
 
     abstract val tenantId: TenantId
 

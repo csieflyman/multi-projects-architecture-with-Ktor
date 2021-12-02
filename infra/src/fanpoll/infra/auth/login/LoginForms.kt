@@ -26,7 +26,7 @@ import kotlinx.serialization.Transient
 import java.util.*
 
 @Serializable
-abstract class LoginForm<T> : Form<T>() {
+abstract class LoginForm<Self : LoginForm<Self>> : Form<Self>() {
 
     abstract val account: String
     abstract val password: String

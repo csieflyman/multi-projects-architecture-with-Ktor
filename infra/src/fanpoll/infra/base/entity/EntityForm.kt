@@ -6,7 +6,7 @@ package fanpoll.infra.base.entity
 
 import fanpoll.infra.base.form.Form
 
-abstract class EntityForm<Self, DID : Any, EID : Comparable<EID>> : Form<Self>() {
+abstract class EntityForm<Self : EntityForm<Self, DID, EID>, DID : Any, EID : Comparable<EID>> : Form<Self>() {
 
     open fun getDtoId(): DID? = null
 
