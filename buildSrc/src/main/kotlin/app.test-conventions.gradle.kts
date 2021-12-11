@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2021. fanpoll All rights reserved.
- */
-
 import java.io.FileInputStream
 import java.util.*
 
