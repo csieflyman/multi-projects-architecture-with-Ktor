@@ -1,0 +1,25 @@
+#
+# Copyright (c) 2021. fanpoll All rights reserved.
+#
+jvm.minHeapSize=128m
+jvm.maxHeapSize=256m
+env.APP_LOG_HOME=F:/temp/fanpoll
+env.PORT=8080
+env.SERVER_SHUTDOWN_KEY=
+env.DB_URL=jdbc:postgresql://localhost:5432/fanpoll
+env.DB_USER=fanpoll
+env.DB_PASSWORD=fanpoll
+env.REDIS_HOST=localhost
+env.REDIS_PORT=6379
+env.SWAGGER_UI_PATH=
+env.SWAGGER_UI_AUTH_USER=fanpoll
+env.SWAGGER_UI_AUTH_PASSWORD=fanpoll
+env.GOOGLE_APPLICATION_CREDENTIALS=
+env.OPS_AUTH_ROOT_API_KEY=ops_root
+env.OPS_AUTH_MONITOR_API_KEY=ops_monitor
+env.OPS_AUTH_USER_API_KEY=ops_user
+env.CLUB_AUTH_ROOT_API_KEY=club_root
+env.CLUB_AUTH_ANDROID_API_KEY=club_android
+env.CLUB_AUTH_ANDROID_RUNAS_KEY=club_android_runas
+env.CLUB_AUTH_IOS_API_KEY=club_ios
+env.CLUB_AUTH_IOS_RUNAS_KEY=club_ios_runas

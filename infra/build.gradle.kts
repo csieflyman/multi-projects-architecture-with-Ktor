@@ -1,5 +1,6 @@
 plugins {
     id("app.java-conventions")
+    id("app.test-conventions")
     `java-library`
 }
 
@@ -31,7 +32,6 @@ dependencies {
     api("io.insert-koin:koin-core:$koinVersion")
     api("io.insert-koin:koin-core-ext:3.0.2")
     api("io.insert-koin:koin-ktor:$koinVersion")
-    //api("io.insert-koin:koin-test-junit5:$koinVersion")
 
     // =============== database ===============
     api("org.jetbrains.exposed:exposed-core:$exposedVersion")

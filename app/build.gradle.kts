@@ -11,10 +11,10 @@ import java.time.format.DateTimeFormatter
 plugins {
     application
     id("com.github.johnrengelman.shadow")
-    id("org.flywaydb.flyway") version "8.2.0"
     id("org.unbroken-dome.gitversion") version "0.10.0"
-    //id("org.barfuin.gradle.taskinfo") version "1.3.0"
     id("com.github.node-gradle.node") version "3.1.0"
+    //id("org.flywaydb.flyway") version "8.2.0"
+    //id("org.barfuin.gradle.taskinfo") version "1.3.0"
 }
 
 val appName = "app"
@@ -33,72 +33,12 @@ dependencies {
 
 application {
     mainClass.set("fanpoll.infra.ApplicationKt")
-    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
-    // -Xms128m -Xmx256m
-    // -Duser.timezone=UTC -Dkotlinx.coroutines.debug
-    // -Dconfig.file=$APP_HOME/application.conf -Dlogback.configurationFile=$APP_HOME/logback.xml
-    // -Dproject.config.dir=$APP_HOME -Dswagger-ui.dir=$APP_HOME/swagger-ui
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8", "-Duser.timezone=UTC")
 }
 
-// =============================== Flyway Plugin ===============================
-
-flyway {
-    driver = "org.postgresql.Driver"
-    url = "jdbc:postgresql://localhost:5432/fanpoll"
-    user = "fanpoll"
-    password = "fanpoll"
-    defaultSchema = "fanpoll"
-}
-
-// =============================== Git Plugin ===============================
-// https://github.com/unbroken-dome/gradle-gitversion-plugin
-
-tasks.determineGitVersion {
-    outputs.upToDateWhen { false }
-}
-
-// my git branch naming convention
-val devBranchName = "dev"
-val testBranchName = "test"
-val releaseBranchName = "main"
-val branchToEnvMap: Map<String, String> = mapOf(
-    devBranchName to "dev",
-    testBranchName to "test",
-    releaseBranchName to "prod"
-)
-
-gitVersion {
-    rules {
-        val branches = branchToEnvMap.keys.toList()
-        branches.forEach { branch ->
-            onBranch(branch) {
-                setVersionByTag(this, branch)
-            }
-        }
-    }
-}
-
-fun setVersionByTag(ruleContext: RuleContext, branch: String) {
-    val tagPrefix = if (branch == releaseBranchName) "" else "$branch-" // my git tag naming convention
-    val tag = ruleContext.findLatestTag("""${tagPrefix}(\d+)\.(\d+)\.(\d+)""".toPattern())
-    if (tag != null) {
-        with(ruleContext.version) {
-            major = tag.matches.getAt(1).toInt()
-            minor = tag.matches.getAt(2).toInt()
-            patch = tag.matches.getAt(3).toInt()
-            setPrereleaseTag(branch)
-            setBuildMetadata("${ruleContext.countCommitsSince(tag)}-${tag.commit.id}")
-        }
-    } else {
-        ruleContext.version.set(1, 0, 0, branch, ruleContext.repository.head!!.id)
-    }
-}
-
-project.version = gitVersion.determineVersion()
-val semVersion = (project.version as SemVersion)
-val tagVersion = "${semVersion.major}.${semVersion.minor}.${semVersion.patch}"
-val branch = semVersion.prereleaseTag!!
-val env = branchToEnvMap[branch]
+val semVersion = determineVersion()
+val tagVersion = semVersion.tagVersion()
+val env = semVersion.env()
 
 // =============================== Shadow ===============================
 
@@ -115,34 +55,13 @@ tasks.withType<Jar> {
 }
 
 tasks.shadowJar {
-    archiveBaseName.set(appName)
-    archiveVersion.set(tagVersion)
-    archiveClassifier.set(env)
-
     mergeServiceFiles()
-}
 
-tasks.installShadowDist {
-    dependsOn(shadowDistConfigFiles)
-}
-
-tasks.shadowDistZip {
-    dependsOn(shadowDistConfigFiles)
-    outputs.upToDateWhen { false }
     archiveBaseName.set(appName)
     archiveVersion.set(tagVersion)
     archiveClassifier.set(env)
-}
 
-val shadowDistConfigFiles by tasks.register("shadowDistConfigFiles") {
-    group = "distribution"
-
-    doLast {
-        println("========================================")
-        println("semVersion = $semVersion")
-        println("env = $env")
-        println("========================================")
-
+    doFirst {
         // Don't need to copy swagger-ui every build
         delete(fileTree("src/dist").matching {
             exclude("swagger-ui/**")
@@ -161,7 +80,6 @@ val shadowDistConfigFiles by tasks.register("shadowDistConfigFiles") {
             filter<ReplaceTokens>(
                 "tokens" to mapOf(
                     "env" to env,
-
                     "gitTagVersion" to tagVersion,
                     "gitCommitVersion" to semVersion.toString(),
                     "buildTime" to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())
@@ -175,6 +93,109 @@ val shadowDistConfigFiles by tasks.register("shadowDistConfigFiles") {
         }
     }
 }
+
+tasks.shadowDistZip {
+    outputs.upToDateWhen { false }
+
+    archiveBaseName.set(appName)
+    archiveVersion.set(tagVersion)
+    archiveClassifier.set(env)
+}
+
+tasks.runShadow {
+
+    minHeapSize = "128m"
+    maxHeapSize = "256m"
+
+    doFirst {
+        val appPath = "${project.rootDir.absolutePath}/app"
+        val configPath = "$appPath/src/dist"
+        val swaggerUIPath = "$appPath/src/dist/swagger-ui"
+        val firebaseKeyFilePath = "$configPath/firebase-key.json"
+
+        systemProperties(
+            "file.encoding" to "UTF-8",
+            "user.timezone" to "UTC",
+            "config.file" to "$configPath/application.conf",
+            "logback.configurationFile" to "$configPath/logback.xml",
+            "project.config.dir" to configPath
+        )
+
+        val properties = loadProperties("local-dev.properties")
+        if (properties != null) {
+            properties["jvm.minHeapSize"]?.takeIf { it.isNotEmpty() }?.also { minHeapSize = it }
+            properties["jvm.maxHeapSize"]?.takeIf { it.isNotEmpty() }?.also { maxHeapSize = it }
+
+            val envProps = properties.filter { it.key.startsWith("env.") }
+                .mapKeys { it.key.substring("env.".length) }.toMutableMap()
+            if (envProps["SWAGGER_UI_PATH"].isNullOrBlank())
+                envProps["SWAGGER_UI_PATH"] = swaggerUIPath
+            if (envProps["GOOGLE_APPLICATION_CREDENTIALS"].isNullOrBlank())
+                envProps["GOOGLE_APPLICATION_CREDENTIALS"] = firebaseKeyFilePath
+            environment(envProps)
+            println("========== environment variables ==========")
+            println(envProps)
+        }
+    }
+}
+
+// =============================== Utilities ===============================
+fun loadProperties(path: String, keyPrefix: String? = null): Map<String, String>? {
+    val propertiesFilePath = "${project.rootDir.absolutePath}/$path"
+    val properties = File(propertiesFilePath).takeIf { it.exists() }
+        ?.let { file -> Properties().also { props -> FileInputStream(file).use { props.load(it) } } }
+        ?.map { it.key as String to it.value as String }?.toMap()
+    return if (properties != null && keyPrefix != null)
+        properties.filter { it.key.startsWith(keyPrefix) }.mapKeys { it.key.substring(keyPrefix.length) }.toMutableMap()
+    else properties
+}
+
+// =============================== Git Plugin ===============================
+// https://github.com/unbroken-dome/gradle-gitversion-plugin
+// base on my git branch/tag naming convention
+fun determineVersion(): SemVersion {
+    if (project.version is SemVersion)
+        return project.version as SemVersion
+
+    val branchEnvProps = loadProperties("branch-env.properties") ?: error("branch-env.properties is missing")
+    val releaseBranch = branchEnvProps["releaseBranch"] ?: error("releaseBranch should be specified")
+    val branchToEnvMap = branchEnvProps.filter { it.key.startsWith("branch.") }
+        .mapKeys { it.key.substring("branch.".length) }.toMutableMap()
+
+    gitVersion {
+        rules {
+            val branchPatternStrings = branchToEnvMap.keys.toList()
+            branchPatternStrings.forEach { patternStr ->
+                onBranch(patternStr.toPattern()) {
+                    val currentBranch = branchName!!
+                    val tagPrefix = if (currentBranch == releaseBranch) "" else "$currentBranch-"
+                    val tag = findLatestTag("""${tagPrefix}(\d+)\.(\d+)\.(\d+)""".toPattern())
+                    val versionNumber = tag?.matches?.toList()?.apply { subList(1, size) }?.map { it.toInt() } ?: listOf(1, 0, 0)
+                    val preReleaseTag =
+                        (tag?.let { "${countCommitsSince(it)}-${it.commit.id}" } ?: repository.head!!.id) + "_$currentBranch"
+                    val env = branchToEnvMap[patternStr]!!
+                    version.set(versionNumber[0], versionNumber[1], versionNumber[2], preReleaseTag, env)
+                    println("========== determineVersion ==========")
+                    println("semVersion = $version")
+                    println("tagVersion = ${version.tagVersion()}")
+                    println("currentBranch = ${version.currentBranch()}")
+                    println("env = ${version.env()}")
+                }
+            }
+        }
+    }
+
+    tasks.determineGitVersion {
+        outputs.upToDateWhen { false }
+    }
+
+    project.version = gitVersion.determineVersion()
+    return project.version as SemVersion
+}
+
+fun SemVersion.tagVersion(): String = "${major}.${minor}.${patch}"
+fun SemVersion.currentBranch(): String = prereleaseTag!!.substringAfter("_")
+fun SemVersion.env(): String = buildMetadata!!
 
 // =============================== Postman ===============================
 

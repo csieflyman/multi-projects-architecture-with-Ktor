@@ -1,5 +1,6 @@
 plugins {
     id("app.java-conventions")
+    id("app.test-conventions")
 }
 
 dependencies {

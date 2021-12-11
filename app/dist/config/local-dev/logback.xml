@@ -1,7 +1,11 @@
+<!--
+  ~ Copyright (c) 2021. fanpoll All rights reserved.
+  -->
+
 <configuration debug="false">
 
     <property name="LOG_FILE_PATH" value="${APP_LOG_HOME}"/>
-    <property name="LOG_FILE_NAME" value="app"/>
+    <property name="LOG_FILE_NAME" value="fanpoll"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE_PATH}/${LOG_FILE_NAME}.log</file>
@@ -46,7 +50,7 @@
     -->
     <logger name="[Koin]" level="INFO"/>
 
-    <logger name="fanpoll.infra.database" level="INFO"/>
+    <logger name="fanpoll.infra.database" level="DEBUG"/>
     <logger name="fanpoll.infra.base.async.CoroutineUtils" level="WARN"/>
     <logger name="fanpoll.infra.openapi" level="WARN"/>
     <logger name="fanpoll.infra.app" level="WARN"/>

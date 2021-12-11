@@ -22,7 +22,7 @@ export APP_LOG_HOME="$APP_HOME/log"
 
 # run kill -3 $pid to print jvm thread dump and memory usage to jvm.log
 export JAVA_OPTS="-Xms128m -Xmx256m -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=$APP_HOME/jvm.log"
-export APP_OPTS=-Dconfig.file="$APP_HOME/application.conf -Dlogback.configurationFile=$APP_HOME/logback.xml -Dproject.config.dir=$APP_HOME -Dswaggerui.dir=$APP_HOME/swagger-ui -Duser.timezone=UTC -Dkotlinx.coroutines.debug"
+export APP_OPTS=-Dconfig.file="$APP_HOME/application.conf -Dlogback.configurationFile=$APP_HOME/logback.xml -Dproject.config.dir=$APP_HOME -Dswaggerui.dir=$APP_HOME/swagger-ui -Dkotlinx.coroutines.debug"
 
 export PORT="8080"
 export SERVER_SHUTDOWN_KEY="changeit"
