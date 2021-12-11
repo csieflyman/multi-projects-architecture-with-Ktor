@@ -2,11 +2,12 @@ import com.github.gradle.node.npm.proxy.ProxySettings
 import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.task.NodeTask
 import org.apache.tools.ant.filters.ReplaceTokens
-import org.unbrokendome.gradle.plugins.gitversion.core.RuleContext
 import org.unbrokendome.gradle.plugins.gitversion.version.SemVersion
+import java.io.FileInputStream
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 plugins {
     application
