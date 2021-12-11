@@ -2,6 +2,7 @@
 /.idea
 local-dev.properties
 local-test.properties
+/build
 /buildSrc/build
 /buildSrc/.gradle
 /app/out
@@ -15,6 +16,7 @@ local-test.properties
 /app/postman/**/report
 /infra/build
 /infra/out
+/projects/build
 /projects/ops/build
 /projects/club/build
 /projects/ops/out

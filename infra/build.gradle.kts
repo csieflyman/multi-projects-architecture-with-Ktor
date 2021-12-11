@@ -109,3 +109,12 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-blackbird:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 }
+
+tasks.test {
+    extensions.configure(kotlinx.kover.api.KoverTaskExtension::class) {
+        excludes = listOf(
+            // ignore library code => https://github.com/ktorio/ktor-clients/tree/main/ktor-client-redis/src/io/ktor/experimental/client/redis
+            "fanpoll.infra.redis.ktorio.*"
+        )
+    }
+}
