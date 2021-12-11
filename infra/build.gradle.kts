@@ -39,7 +39,7 @@ dependencies {
     api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
-    api("com.github.jasync-sql:jasync-postgresql:2.0.2")
+    api("com.github.jasync-sql:jasync-postgresql:2.0.4")
 
     // =============== utils - feature ===============
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
@@ -63,8 +63,8 @@ dependencies {
     //api("com.bennyhuo.kotlin:deepcopy-runtime:1.3.72")
 
     // =============== utils - logging ===============
-    api("io.github.microutils:kotlin-logging-jvm:2.0.11")
-    runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
+    api("io.github.microutils:kotlin-logging-jvm:2.1.0")
+    runtimeOnly("ch.qos.logback:logback-classic:1.2.6")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.2.0")
@@ -77,7 +77,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.0")
     implementation("org.flywaydb:flyway-core:8.2.0")
 
-    runtimeOnly("org.postgresql:postgresql:42.2.24")
+    runtimeOnly("org.postgresql:postgresql:42.3.1")
 
     // ===============  AWS Java SDK Version 2 ===============
     implementation(platform("software.amazon.awssdk:bom:2.16.34"))
