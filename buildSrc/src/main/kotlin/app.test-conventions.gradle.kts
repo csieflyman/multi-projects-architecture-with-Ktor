@@ -39,8 +39,8 @@ tasks.withType<Test> {
             //excludeTags("")
         }
         reports {
-            junitXml.required.set(true)
-            html.required.set(false)
+            junitXml.required.set(false) // CI Server => true
+            html.required.set(false) // CI Server => true
         }
     }
 
@@ -49,7 +49,7 @@ tasks.withType<Test> {
 
     // https://docs.gradle.org/current/userguide/performance.html#parallel_test_execution
     maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
-    failFast = false
+    failFast = false // CI Server => true
     ignoreFailures = false
 
     // default value
