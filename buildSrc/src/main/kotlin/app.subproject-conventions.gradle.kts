@@ -16,6 +16,3 @@ tasks.shadowJar {
         exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk8:.*"))
     }
 }
-
-// https://github.com/gradle/gradle/issues/14889
-tasks.register("prepareKotlinBuildScriptModel") {}
