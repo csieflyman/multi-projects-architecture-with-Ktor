@@ -1,5 +1,6 @@
 jvm.minHeapSize=256m
 jvm.maxHeapSize=512m
+sysProperty.testcontainers.image.postgres=postgres:13.4
 env.APP_LOG_HOME=F:/temp/fanpoll
 env.PORT=8080
 env.SERVER_SHUTDOWN_KEY=

@@ -45,9 +45,13 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 private val logger = KotlinLogging.logger {}
 
-fun Application.main() {
+fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = null) {
 
     val appConfig = ApplicationConfigLoader.load()
+
+    if (configureAppConfig != null) {
+        configureAppConfig(appConfig)
+    }
 
     // =============== Install Plugins ===============
 

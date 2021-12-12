@@ -20,9 +20,13 @@ sourceSets["test"].resources.srcDirs("testresources")
 // =============================== Compile ===============================
 
 tasks {
+
+    // https://kotlinlang.org/docs/whatsnew1530.html#improvements-to-type-inference-for-recursive-generic-types
+    // COMPATIBILITY => update intellij kotlin plugin to early access preview 1.6.x
+
     compileKotlin {
         kotlinOptions.jvmTarget = "11"
-        kotlinOptions.languageVersion = "1.5"
+        kotlinOptions.languageVersion = "1.6"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
@@ -31,7 +35,7 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "11"
-        kotlinOptions.languageVersion = "1.5"
+        kotlinOptions.languageVersion = "1.6"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
     }

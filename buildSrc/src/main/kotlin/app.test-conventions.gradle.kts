@@ -72,6 +72,12 @@ tasks.withType<Test> {
             properties["jvm.minHeapSize"]?.takeIf { it.isNotEmpty() }?.also { minHeapSize = it }
             properties["jvm.maxHeapSize"]?.takeIf { it.isNotEmpty() }?.also { maxHeapSize = it }
 
+            val sysProps = properties.filter { it.key.startsWith("sysProperty.") }
+                .mapKeys { it.key.substring("sysProperty.".length) }.toMutableMap()
+            systemProperties(sysProps)
+            println("========== test system properties ==========")
+            println(sysProps)
+
             val envProps = properties.filter { it.key.startsWith("env.") }
                 .mapKeys { it.key.substring("env.".length) }.toMutableMap()
             if (envProps["SWAGGER_UI_PATH"].isNullOrBlank())

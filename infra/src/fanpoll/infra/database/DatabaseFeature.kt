@@ -271,11 +271,12 @@ data class DatabaseConfig(
     val jasync: JasyncConfig? = null
 )
 
+// jdbcUrl, username, password are mutable for integration test by TestContainers
 data class HikariConfig(
     val driverClassName: String,
-    val jdbcUrl: String,
-    val username: String,
-    val password: String,
+    var jdbcUrl: String,
+    var username: String,
+    var password: String,
     val minimumIdle: Int,
     val maximumPoolSize: Int,
     val idleTimeout: Long,

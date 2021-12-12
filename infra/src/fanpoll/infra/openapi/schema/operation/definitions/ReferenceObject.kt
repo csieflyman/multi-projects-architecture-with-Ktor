@@ -11,7 +11,8 @@ import fanpoll.infra.openapi.schema.operation.support.*
 
 class ReferenceObject(
     override val name: String,
-    @JvmField private val definition: Definition
+    // @JvmField LIB_ISSUE => https://youtrack.jetbrains.com/issue/KT-41088
+    private val definition: Definition
 ) : Element, Header, Parameter, RequestBody, Response, Schema, Example {
 
     val `$ref` = "#/components/${definition.componentsFieldName()}/${definition.name}"
