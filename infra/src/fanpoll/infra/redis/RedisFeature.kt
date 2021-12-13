@@ -206,8 +206,9 @@ class RedisFeature(configuration: Configuration) {
     }
 }
 
+// host, port are mutable for integration test by TestContainers
 data class RedisConfig(
-    val host: String, val port: Int = 6379, val password: String?, val rootKeyPrefix: String,
+    var host: String, var port: Int = 6379, val password: String?, val rootKeyPrefix: String,
     val client: CoroutineActorConfig,
     val subscribe: SubscribeConfig?
 ) {

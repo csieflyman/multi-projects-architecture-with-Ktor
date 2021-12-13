@@ -22,6 +22,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.*
 import mu.KotlinLogging
 import org.koin.test.KoinTest
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import kotlin.test.assertEquals
@@ -33,19 +34,26 @@ class ApiTest : KoinTest, FunSpec({
     val postgresImageName = System.getProperty("testcontainers.image.postgres", "postgres")
     // https://kotlinlang.org/docs/whatsnew1530.html#improvements-to-type-inference-for-recursive-generic-types
     // COMPATIBILITY => update intellij kotlin plugin to early access preview 1.6.x
-    val container = PostgreSQLContainer(DockerImageName.parse(postgresImageName))
+    val postgresContainer = PostgreSQLContainer(DockerImageName.parse(postgresImageName))
         .withDatabaseName("test-db")
         .withUsername("tester")
         .withPassword("test")
 
+    val redisImageName = System.getProperty("testcontainers.image.redis", "redis")
+    val redisContainer = GenericContainer(DockerImageName.parse(redisImageName)).withExposedPorts(6379)
+
     beforeSpec {
-        logger.info { "========== PostgreSQLContainer Start ==========" }
-        container.start()
+        logger.info { "========== PostgreSQL Container Start ==========" }
+        postgresContainer.start()
+        logger.info { "========== Redis Container Start ==========" }
+        redisContainer.start()
     }
 
     afterSpec {
-        logger.info { "========== PostgreSQLContainer Stop ==========" }
-        container.stop()
+        logger.info { "========== PostgreSQL Container Stop ==========" }
+        postgresContainer.stop()
+        logger.info { "========== Redis Container Stop ==========" }
+        redisContainer.stop()
     }
 
     test("Api") {
@@ -54,9 +62,13 @@ class ApiTest : KoinTest, FunSpec({
         val ktorTestModule: Application.() -> Unit = {
             main {
                 with(infra.database!!.hikari) {
-                    jdbcUrl = container.jdbcUrl
-                    username = container.username
-                    password = container.password
+                    jdbcUrl = postgresContainer.jdbcUrl
+                    username = postgresContainer.username
+                    password = postgresContainer.password
+                }
+                with(infra.redis!!) {
+                    host = redisContainer.host
+                    port = redisContainer.firstMappedPort
                 }
             }
             clubMain()
