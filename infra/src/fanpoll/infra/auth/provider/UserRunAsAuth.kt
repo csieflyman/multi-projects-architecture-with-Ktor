@@ -19,11 +19,21 @@ import fanpoll.infra.base.util.IdentifiableObject
 import io.ktor.application.call
 import io.ktor.auth.*
 import io.ktor.request.header
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import java.util.*
 
 data class UserRunAsAuthCredential(val runAsKey: String, val runAsToken: String) : Credential
+
+data class UserRunAsToken(
+    val userType: UserType,
+    val userId: UUID,
+    val clientId: String? = null,
+    val sessionData: JsonObject? = null
+) {
+    val value = "${userType.id}:$userId:${clientId ?: "?"}${sessionData?.let { ":${json.encodeToString(it)}" } ?: ""}"
+}
 
 data class UserRunAsAuthConfig(
     val principalSource: PrincipalSource,
@@ -34,7 +44,7 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
 
     companion object {
         const val RUN_AS_TOKEN_HEADER_NAME = "runAs"
-        const val tokenPatternDescription = "userType-userId-clientId-sessionData(jsonObjectString)"
+        const val tokenPatternDescription = "userType:userId:clientId:sessionData(jsonObjectString)"
     }
 
     private val authConfigs: List<UserRunAsAuthConfig> = config.authConfigs
@@ -64,9 +74,9 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
         principal
     }
 
-    private fun parseRunAsToken(text: String): RunAsToken {
+    private fun parseRunAsToken(text: String): UserRunAsToken {
         return try {
-            val segments = text.split("-")
+            val segments = text.split(":")
             require(segments.size in 2..3)
 
             val userType = UserType.lookup(segments[0])
@@ -75,18 +85,11 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
             val sessionData = if (segments.size >= 4)
                 json.parseToJsonElement(text.substring((0..2)
                     .sumOf { index -> segments[index].length } + 3)).jsonObject else null
-            RunAsToken(userType, userId, clientId, sessionData)
+            UserRunAsToken(userType, userId, clientId, sessionData)
         } catch (e: Exception) {
             throw RequestException(InfraResponseCode.BAD_REQUEST_HEADER, "invalid runAs token value format => $tokenPatternDescription")
         }
     }
-
-    private class RunAsToken(
-        val userType: UserType,
-        val userId: UUID,
-        val clientId: String?,
-        val sessionData: JsonObject? = null
-    )
 
     class Configuration constructor(providerName: String, val authConfigs: List<UserRunAsAuthConfig>) :
         AuthenticationProvider.Configuration(providerName) {
