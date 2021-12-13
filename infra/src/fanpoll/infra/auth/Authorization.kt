@@ -29,11 +29,12 @@ fun Route.authorize(
     optional: Boolean = false,
     build: Route.() -> Unit
 ): Route {
+    // authProviders order: runas -> service -> user
     val configurationNames = principalAuths.map { it.id }.toMutableList()
     val runAsProviderNames = principalAuths.mapNotNull {
         if (it is PrincipalAuth.User && it.runAsAuthProviderName != null) it.runAsAuthProviderName else null
     }
-    configurationNames.plus(runAsProviderNames)
+    configurationNames.addAll(0, runAsProviderNames)
 
     val authenticatedRoute = createChild(AuthorizationRouteSelector(configurationNames, principalAuths.toList()))
 
