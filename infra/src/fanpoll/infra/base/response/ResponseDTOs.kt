@@ -47,39 +47,34 @@ class CodeResponseDTO(override val code: ResponseCode) : ResponseDTO() {
 @Serializable
 @SerialName("data")
 class DataResponseDTO(
-    override val code: ResponseCode = InfraResponseCode.OK,
+    override val code: ResponseCode,
     override val message: String? = null,
     override val data: JsonElement
 ) : ResponseDTO() {
 
     companion object {
 
-        inline operator fun <reified T : Any> invoke(data: T, message: String? = null): DataResponseDTO {
-            return DataResponseDTO(data = json.encodeToJsonElement(T::class.serializer(), data), message = message)
-        }
+        inline operator fun <reified T : Any> invoke(data: T, message: String? = null): DataResponseDTO =
+            DataResponseDTO(InfraResponseCode.OK, message, json.encodeToJsonElement(T::class.serializer(), data))
 
-        inline operator fun <reified T : Any> invoke(data: List<T>, message: String? = null): DataResponseDTO {
-            return DataResponseDTO(data = JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }), message = message)
-        }
+        inline operator fun <reified T : Any> invoke(data: List<T>, message: String? = null): DataResponseDTO =
+            DataResponseDTO(InfraResponseCode.OK, message, JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
 
-        fun longId(id: Long): DataResponseDTO {
-            return DataResponseDTO(data = JsonObject(mapOf("id" to JsonPrimitive(id))))
-        }
+        fun longId(id: Long): DataResponseDTO =
+            DataResponseDTO(InfraResponseCode.OK, data = JsonObject(mapOf("id" to JsonPrimitive(id))))
 
-        fun stringId(id: String): DataResponseDTO {
-            return DataResponseDTO(data = JsonObject(mapOf("id" to JsonPrimitive(id))))
-        }
+        fun stringId(id: String): DataResponseDTO =
+            DataResponseDTO(InfraResponseCode.OK, data = JsonObject(mapOf("id" to JsonPrimitive(id))))
 
-        fun uuid(id: UUID): DataResponseDTO {
-            return DataResponseDTO(data = JsonObject(mapOf("id" to JsonPrimitive(id.toString()))))
-        }
+        fun uuid(id: UUID): DataResponseDTO =
+            DataResponseDTO(InfraResponseCode.OK, data = JsonObject(mapOf("id" to JsonPrimitive(id.toString()))))
     }
 }
 
 @Serializable
 @SerialName("paging")
 class PagingDataResponseDTO(
-    override val code: ResponseCode = InfraResponseCode.OK,
+    override val code: ResponseCode,
     override val message: String? = null,
     override val data: JsonElement
 ) : ResponseDTO() {
@@ -117,6 +112,7 @@ class PagingDataResponseDTO(
                 }
             }
             return PagingDataResponseDTO(
+                InfraResponseCode.OK,
                 data = json.encodeToJsonElement(
                     PagingData.serializer(),
                     PagingData(total, totalPages, offsetLimit.itemsPerPage, offsetLimit.pageIndex, finalItems)
