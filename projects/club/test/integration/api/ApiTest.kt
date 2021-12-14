@@ -6,8 +6,7 @@ package integration.api
 
 import fanpoll.club.clubMain
 import fanpoll.infra.main
-import integration.util.createPostgresContainer
-import integration.util.createRedisContainer
+import integration.util.TestContainerUtils
 import integration.util.withApplicationSuspend
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.Application
@@ -18,37 +17,29 @@ class ApiTest : KoinTest, FunSpec({
 
     val logger = KotlinLogging.logger {}
 
-    val postgresContainer = createPostgresContainer()
-    val redisContainer = createRedisContainer()
+    val postgresContainer = TestContainerUtils.createPostgresContainer()
+    val redisContainer = TestContainerUtils.createRedisContainer()
 
     val ktorTestModule: Application.() -> Unit = {
         main {
-            with(infra.database!!.hikari) {
-                jdbcUrl = postgresContainer.jdbcUrl
-                username = postgresContainer.username
-                password = postgresContainer.password
-            }
-            with(infra.redis!!) {
-                host = redisContainer.host
-                port = redisContainer.firstMappedPort
-            }
+            TestContainerUtils.replacePostgresConfig(postgresContainer, infra.database!!.hikari)
+            TestContainerUtils.replaceRedisConfig(redisContainer, infra.redis!!)
         }
         clubMain()
     }
 
     beforeSpec {
-        logger.info { "========== PostgreSQL Container Start ==========" }
+        logger.info { "========== PostgresSQL Container Start ==========" }
         postgresContainer.start()
         logger.info { "========== Redis Container Start ==========" }
         redisContainer.start()
     }
 
     afterSpec {
-        logger.info { "========== PostgreSQL Container Stop ==========" }
+        logger.info { "========== PostgresSQL Container Stop ==========" }
         postgresContainer.stop()
         logger.info { "========== Redis Container Stop ==========" }
         redisContainer.stop()
-        logger.info { "========== Redis Container Stop2 ==========" }
     }
 
     context("Api") {
