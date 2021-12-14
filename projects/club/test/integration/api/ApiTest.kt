@@ -8,9 +8,9 @@ import fanpoll.club.clubMain
 import fanpoll.infra.main
 import integration.util.createPostgresContainer
 import integration.util.createRedisContainer
+import integration.util.withApplicationSuspend
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.Application
-import io.ktor.server.testing.withTestApplication
 import mu.KotlinLogging
 import org.koin.test.KoinTest
 
@@ -48,17 +48,16 @@ class ApiTest : KoinTest, FunSpec({
         postgresContainer.stop()
         logger.info { "========== Redis Container Stop ==========" }
         redisContainer.stop()
+        logger.info { "========== Redis Container Stop2 ==========" }
     }
 
-    logger.info { "========== Api Test Begin ==========" }
-
     context("Api") {
-        test("user") {
-            withTestApplication(ktorTestModule) {
+        logger.info { "========== Api Test Begin ==========" }
+        withApplicationSuspend(ktorTestModule) {
+            test("user") {
                 userApiTest()
             }
         }
+        logger.info { "========== Api Test End ==========" }
     }
-
-    logger.info { "========== Api Test End ==========" }
 })

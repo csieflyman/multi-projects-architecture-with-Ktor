@@ -6,7 +6,11 @@ package integration.util
 
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.response.*
+import io.ktor.application.Application
+import io.ktor.server.engine.ApplicationEngineEnvironment
+import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationResponse
+import io.ktor.server.testing.createTestEnvironment
 import kotlinx.serialization.json.*
 
 fun TestApplicationResponse.jsonObject(): JsonObject = content?.let { json.parseToJsonElement(it).jsonObject }
@@ -36,3 +40,24 @@ fun TestApplicationResponse.dataResponse(): DataResponseDTO = json.decodeFromJso
 fun TestApplicationResponse.pagingDataResponse(): PagingDataResponseDTO = json.decodeFromJsonElement(jsonObject())
 
 fun TestApplicationResponse.errorResponse(): ErrorResponseDTO = json.decodeFromJsonElement(jsonObject())
+
+suspend fun <R> withApplicationSuspend(moduleFunction: Application.() -> Unit, test: suspend TestApplicationEngine.() -> R): R {
+    return withApplicationSuspend(createTestEnvironment()) {
+        moduleFunction(application)
+        test()
+    }
+}
+
+suspend fun <R> withApplicationSuspend(
+    environment: ApplicationEngineEnvironment = createTestEnvironment(),
+    configure: TestApplicationEngine.Configuration.() -> Unit = {},
+    test: suspend TestApplicationEngine.() -> R
+): R {
+    val engine = TestApplicationEngine(environment, configure)
+    engine.start()
+    try {
+        return engine.test()
+    } finally {
+        engine.stop(0L, 0L)
+    }
+}
