@@ -7,17 +7,13 @@ package integration.api
 import fanpoll.club.ClubAuth
 import fanpoll.club.ClubUserRole
 import fanpoll.club.ClubUserType
-import fanpoll.club.user.CreateUserForm
-import fanpoll.club.user.Gender
-import fanpoll.club.user.UpdateUserForm
-import fanpoll.club.user.UserDTO
+import fanpoll.club.user.*
 import fanpoll.infra.auth.provider.UserRunAsToken
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.json.toJsonString
-import integration.util.clubHandleSecuredRequest
-import integration.util.dataJsonArray
-import integration.util.dataJsonObject
-import integration.util.dataList
+import fanpoll.infra.base.response.InfraResponseCode
+import integration.util.*
+import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
@@ -27,55 +23,92 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val userApiTest: TestApplicationEngine.() -> Unit = {
-    val userForm = CreateUserForm(
-        "clubUser1@test.com", "123456",
-        true, ClubUserRole.Admin, "clubUser100",
-        Gender.Male, 2000, "clubUser1@test.com", "0987654321", Lang.zh_TW
+val userApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit = { context ->
+
+    lateinit var userId: UUID
+    lateinit var runAsToken: UserRunAsToken
+
+    val admin1Form = CreateUserForm(
+        "admin_1@test.com", "123456",
+        true, ClubUserRole.Admin, "admin_1",
+        Gender.Male, 2000, "admin_1@test.com", "0987654321", Lang.zh_TW
     )
 
-    val userId = with(clubHandleSecuredRequest(
-        HttpMethod.Post, "/users", ClubAuth.RootSource
-    ) {
-        setBody(userForm.toJsonString())
-    }) {
-        assertEquals(HttpStatusCode.OK, response.status())
-        val userId = response.dataJsonObject()["id"]?.jsonPrimitive?.content
-        assertNotNull(userId)
-        UUID.fromString(userId)
+    context.test("create admin user") {
+        with(clubHandleSecuredRequest(
+            HttpMethod.Post, "/users", ClubAuth.RootSource
+        ) {
+            setBody(admin1Form.toJsonString())
+        }) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val userIdStr = response.dataJsonObject()["id"]?.jsonPrimitive?.content
+            assertNotNull(userIdStr)
+
+            userId = UUID.fromString(userIdStr)
+            runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
+        }
+
+        with(clubHandleSecuredRequest(
+            HttpMethod.Get, "/users", ClubAuth.Android, runAsToken
+        ) {
+        }) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(1, response.dataJsonArray().size)
+            val userDTO = response.dataList<UserDTO>().first()
+            assertEquals(admin1Form.account, userDTO.account)
+        }
     }
 
-    with(clubHandleSecuredRequest(
-        HttpMethod.Get, "/users", ClubAuth.Android,
-        UserRunAsToken(ClubUserType.User.value, userId)
-    ) {
-    }) {
-        assertEquals(HttpStatusCode.OK, response.status())
-        assertEquals(1, response.dataJsonArray().size)
-        val userDTO = response.dataList<UserDTO>().first()
-        assertEquals(userForm.account, userDTO.account)
+    context.test("create user with duplicated account") {
+        with(clubHandleSecuredRequest(
+            HttpMethod.Post, "/users", ClubAuth.RootSource
+        ) {
+            setBody(admin1Form.toJsonString())
+        }) {
+            assertEquals(HttpStatusCode.UnprocessableEntity, response.status())
+            assertEquals(InfraResponseCode.ENTITY_ALREADY_EXISTS, response.code())
+        }
     }
 
-    with(clubHandleSecuredRequest(
-        HttpMethod.Put, "/users/$userId", ClubAuth.Android,
-        UserRunAsToken(ClubUserType.User.value, userId)
-    ) {
-        setBody(
-            UpdateUserForm(userId, enabled = false).toJsonString()
-        )
-    }) {
-        assertEquals(HttpStatusCode.OK, response.status())
+    context.test("update user data") {
+        with(clubHandleSecuredRequest(
+            HttpMethod.Put, "/users/$userId", ClubAuth.Android, runAsToken
+        ) {
+            setBody(UpdateUserForm(userId, enabled = false).toJsonString())
+        }) {
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+
+        with(clubHandleSecuredRequest(
+            HttpMethod.Get, "/users?q_filter=[enabled = false]", ClubAuth.Android, runAsToken
+        ) {
+        }) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(1, response.dataJsonArray().size)
+            val userDTO = response.dataList<UserDTO>().first()
+            assertEquals(admin1Form.account, userDTO.account)
+            assertEquals(false, userDTO.enabled)
+        }
     }
 
-    with(clubHandleSecuredRequest(
-        HttpMethod.Get, "/users?q_filter=[enabled = false]", ClubAuth.Android,
-        UserRunAsToken(ClubUserType.User.value, userId)
-    ) {
-    }) {
-        assertEquals(HttpStatusCode.OK, response.status())
-        assertEquals(1, response.dataJsonArray().size)
-        val userDTO = response.dataList<UserDTO>().first()
-        assertEquals(userForm.account, userDTO.account)
-        assertEquals(false, userDTO.enabled)
+    context.test("update my password with incorrect old password") {
+        with(clubHandleSecuredRequest(
+            HttpMethod.Put, "/users/myPassword", ClubAuth.Android, runAsToken
+        ) {
+            setBody(UpdateUserPasswordForm("incorrectOldPassword", "newPassword").toJsonString())
+        }) {
+            assertEquals(HttpStatusCode.Unauthorized, response.status())
+            assertEquals(InfraResponseCode.AUTH_BAD_PASSWORD, response.code())
+        }
+    }
+
+    context.test("update my password with correct old password") {
+        with(clubHandleSecuredRequest(
+            HttpMethod.Put, "/users/myPassword", ClubAuth.Android, runAsToken
+        ) {
+            setBody(UpdateUserPasswordForm(admin1Form.password, "newPassword").toJsonString())
+        }) {
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
     }
 }

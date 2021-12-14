@@ -7,7 +7,7 @@ package integration.api
 import fanpoll.club.clubMain
 import fanpoll.infra.main
 import integration.util.TestContainerUtils
-import integration.util.withApplicationSuspend
+import integration.util.withTestApplicationInKotestContext
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.Application
 import mu.KotlinLogging
@@ -44,10 +44,9 @@ class ApiTest : KoinTest, FunSpec({
 
     context("Api") {
         logger.info { "========== Api Test Begin ==========" }
-        withApplicationSuspend(ktorTestModule) {
-            test("user") {
-                userApiTest()
-            }
+        withTestApplicationInKotestContext(ktorTestModule) { context ->
+            userApiTest(context)
+            loginApiTest(context)
         }
         logger.info { "========== Api Test End ==========" }
     }

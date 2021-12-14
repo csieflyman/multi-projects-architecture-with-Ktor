@@ -6,6 +6,7 @@ package integration.util
 
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.response.*
+import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.ktor.application.Application
 import io.ktor.server.engine.ApplicationEngineEnvironment
 import io.ktor.server.testing.TestApplicationEngine
@@ -41,22 +42,27 @@ fun TestApplicationResponse.pagingDataResponse(): PagingDataResponseDTO = json.d
 
 fun TestApplicationResponse.errorResponse(): ErrorResponseDTO = json.decodeFromJsonElement(jsonObject())
 
-suspend fun <R> withApplicationSuspend(moduleFunction: Application.() -> Unit, test: suspend TestApplicationEngine.() -> R): R {
-    return withApplicationSuspend(createTestEnvironment()) {
+suspend fun <R> FunSpecContainerScope.withTestApplicationInKotestContext(
+    moduleFunction: Application.() -> Unit,
+    test: suspend TestApplicationEngine.(FunSpecContainerScope) -> R
+): R {
+    val context = this
+    return withTestApplicationInKotestContext(createTestEnvironment()) {
         moduleFunction(application)
-        test()
+        test(context)
     }
 }
 
-suspend fun <R> withApplicationSuspend(
+suspend fun <R> FunSpecContainerScope.withTestApplicationInKotestContext(
     environment: ApplicationEngineEnvironment = createTestEnvironment(),
     configure: TestApplicationEngine.Configuration.() -> Unit = {},
-    test: suspend TestApplicationEngine.() -> R
+    test: suspend TestApplicationEngine.(FunSpecContainerScope) -> R
 ): R {
+    val context = this
     val engine = TestApplicationEngine(environment, configure)
     engine.start()
     try {
-        return engine.test()
+        return engine.test(context)
     } finally {
         engine.stop(0L, 0L)
     }
