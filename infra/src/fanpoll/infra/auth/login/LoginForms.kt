@@ -94,7 +94,7 @@ class WebLoginForm(
 }
 
 @Serializable
-class AppLoginForm(
+data class AppLoginForm(
     override val account: String, override val password: String,
     override val tenantId: TenantId? = null,
     @Serializable(with = UUIDSerializer::class) override val deviceId: UUID,
