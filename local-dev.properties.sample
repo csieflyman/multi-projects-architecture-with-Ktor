@@ -1,5 +1,7 @@
-jvm.minHeapSize=128m
-jvm.maxHeapSize=256m
+# ========== Gradle Properties ==========
+gradle.run.minHeapSize=128m
+gradle.run.maxHeapSize=256m
+# ========== Environment Variables ==========
 env.APP_LOG_HOME=F:/temp/fanpoll
 env.PORT=8080
 env.SERVER_SHUTDOWN_KEY=

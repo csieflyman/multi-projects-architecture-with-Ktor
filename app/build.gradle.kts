@@ -122,20 +122,27 @@ tasks.runShadow {
             "project.config.dir" to configPath
         )
 
-        val properties = loadProperties("local-dev.properties")
+        val env = "local-dev"
+        val properties = loadProperties("$env.properties")
         if (properties != null) {
-            properties["jvm.minHeapSize"]?.takeIf { it.isNotEmpty() }?.also { minHeapSize = it }
-            properties["jvm.maxHeapSize"]?.takeIf { it.isNotEmpty() }?.also { maxHeapSize = it }
+            val gradleProps = properties.filter { it.key.startsWith("gradle.") }
+                .mapKeys { it.key.substring("gradle.".length) }.toMutableMap()
+            println("========== Dev Gradle Properties ==========")
+            println(gradleProps)
+
+            gradleProps["run.minHeapSize"]?.takeIf { it.isNotEmpty() }?.also { minHeapSize = it }
+            gradleProps["run.maxHeapSize"]?.takeIf { it.isNotEmpty() }?.also { maxHeapSize = it }
 
             val envProps = properties.filter { it.key.startsWith("env.") }
                 .mapKeys { it.key.substring("env.".length) }.toMutableMap()
+            println("========== Dev Environment variables ==========")
+            println(envProps)
+
             if (envProps["SWAGGER_UI_PATH"].isNullOrBlank())
                 envProps["SWAGGER_UI_PATH"] = swaggerUIPath
             if (envProps["GOOGLE_APPLICATION_CREDENTIALS"].isNullOrBlank())
                 envProps["GOOGLE_APPLICATION_CREDENTIALS"] = firebaseKeyFilePath
             environment(envProps)
-            println("========== environment variables ==========")
-            println(envProps)
         }
     }
 }
