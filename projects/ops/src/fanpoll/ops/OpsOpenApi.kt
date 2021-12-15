@@ -68,6 +68,9 @@ object OpsOpenApi {
 
     val HealthCheck = OpenApiOperation("HealthCheck", listOf(MonitorTag))
 
+    val QueryRequestLog = OpenApiOperation("QueryRequestLog", listOf(queryLogTag))
+    val QueryErrorLog = OpenApiOperation("QueryErrorLog", listOf(queryLogTag))
+    val QueryLoginLog = OpenApiOperation("QueryLoginLog", listOf(queryLogTag))
     val QueryNotificationMessageLog = OpenApiOperation("QueryNotificationMessageLog", listOf(queryLogTag))
 
     val DataReport = OpenApiOperation("DataReport", listOf(DataTag))
