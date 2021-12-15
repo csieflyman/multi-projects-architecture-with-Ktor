@@ -14,7 +14,10 @@ dependencies {
 
     constraints {
         implementation("org.apache.logging.log4j:log4j-core:2.16.0") {
-            because("Log4jShell security vulnerability")
+            because(
+                "upgrade log4j-core from 2.14.1 to 2.16.0 required by shadow jar gradle plugin " +
+                        "due to Log4jShell security vulnerability. Although it would not affect server at runtime"
+            )
         }
     }
 }
