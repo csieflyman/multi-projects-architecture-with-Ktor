@@ -31,6 +31,7 @@ object OpsOpenApi {
     private val AuthTag = Tag("auth")
     private val UserTag = Tag("user")
     private val MonitorTag = Tag("monitor")
+    private val queryLogTag = Tag("queryLog")
     private val DataTag = Tag("data")
     private val AppReleaseTag = Tag("appRelease")
 
@@ -66,6 +67,8 @@ object OpsOpenApi {
     val Logout = OpenApiOperation("Logout", listOf(AuthTag))
 
     val HealthCheck = OpenApiOperation("HealthCheck", listOf(MonitorTag))
+
+    val QueryNotificationMessageLog = OpenApiOperation("QueryNotificationMessageLog", listOf(queryLogTag))
 
     val DataReport = OpenApiOperation("DataReport", listOf(DataTag))
 
