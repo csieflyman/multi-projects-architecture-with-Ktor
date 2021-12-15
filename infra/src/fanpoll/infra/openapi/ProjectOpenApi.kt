@@ -40,7 +40,7 @@ class ProjectOpenApi(
                 version = config.info.gitTagVersion
             ),
             servers = listOf(Server(url = urlRootPath)),
-            tags = operations.flatMap { it.tags }.toSet().toList()
+            tags = operations.flatMap { it.tags }.toSet().toMutableList()
         )
         configure?.invoke(openAPIObject)
 

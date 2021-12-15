@@ -14,7 +14,7 @@ class OpenAPIObject(
     val openapi: String = "3.0.3",
     val info: Info,
     val servers: List<Server>,
-    val tags: List<Tag>
+    val tags: MutableList<Tag>
 ) {
     lateinit var components: ComponentsObject
         private set
@@ -28,6 +28,11 @@ class OpenAPIObject(
 
     fun addPath(path: String, method: HttpMethod, operation: OperationObject) {
         paths.getOrPut(path) { mutableMapOf() }[method.value.toLowerCase()] = operation
+    }
+
+    fun complete() {
+        val usedTags = paths.values.flatMap { it.values.flatMap { operation -> operation.tags } }.toSet()
+        tags.removeIf { !usedTags.contains(it.name) }
     }
 }
 

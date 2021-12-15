@@ -26,6 +26,7 @@ class ProjectOpenApiManager(val config: OpenApiConfig) {
         return openApiJsonMap.getOrPut(projectId) {
             val openAPIObject = openApiMap[projectId]?.openAPIObject
                 ?: throw RequestException(InfraResponseCode.ENTITY_NOT_FOUND, "$projectId openapi json not found")
+            openAPIObject.complete()
             Jackson.toJsonString(openAPIObject)
         }
     }
