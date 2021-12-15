@@ -92,7 +92,8 @@ class OpsNotificationType(
     name: String,
     @Transient @OpenApiIgnore private val lazyLoadBlock: (NotificationType.(Notification) -> Unit)? = null
 ) : NotificationType(
-    OpsConst.projectId, name, setOf(NotificationChannel.Email),
+    OpsConst.projectId, name,
+    setOf(NotificationChannel.Email, NotificationChannel.SMS),
     NotificationCategory.System, null, Lang.SystemDefault, lazyLoadBlock
 ) {
 

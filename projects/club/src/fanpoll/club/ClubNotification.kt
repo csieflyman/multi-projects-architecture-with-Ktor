@@ -28,7 +28,8 @@ object ClubNotification {
 
     val SendNotification = ClubNotificationType(
         "sendNotification",
-        setOf(NotificationChannel.Push, NotificationChannel.Email), NotificationCategory.System
+        setOf(NotificationChannel.Email, NotificationChannel.Push, NotificationChannel.SMS),
+        NotificationCategory.System
     )
 
     private val notificationType = typeOf<ClubNotificationType>()
