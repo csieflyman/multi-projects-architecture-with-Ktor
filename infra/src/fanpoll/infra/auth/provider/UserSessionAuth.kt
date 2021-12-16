@@ -55,7 +55,7 @@ class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConf
                 call.respond(CodeResponseDTO(errorCode))
             } else {
                 if (call.request.path().endsWith("/logout"))
-                    call.respond(CodeResponseDTO.OK)
+                    call.respond(CodeResponseDTO(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED))
                 else
                     call.respond(CodeResponseDTO(InfraResponseCode.AUTH_SESSION_NOT_FOUND))
             }

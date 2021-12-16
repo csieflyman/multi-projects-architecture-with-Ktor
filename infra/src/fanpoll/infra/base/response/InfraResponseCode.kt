@@ -69,6 +69,8 @@ object InfraResponseCode {
     val AUTH_SESSION_INVALID = ResponseCode("AUTH_SESSION_INVALID", "2010", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Unauthorized)
     val AUTH_TENANT_FORBIDDEN = ResponseCode("AUTH_TENANT_FORBIDDEN", "2011", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Forbidden)
     val AUTH_BAD_HOST = ResponseCode("AUTH_BAD_HOST", "2012", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.Unauthorized)
+    val AUTH_SESSION_NOT_FOUND_OR_EXPIRED =
+        ResponseCode("AUTH_SESSION_NOT_FOUND_OR_EXPIRED", "2013", ResponseCodeType.CLIENT_INFO, HttpStatusCode.OK)
 
     // ========== Business Logic ==========
 
