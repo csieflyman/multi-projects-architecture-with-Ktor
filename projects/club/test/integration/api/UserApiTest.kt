@@ -7,7 +7,7 @@ package integration.api
 import fanpoll.club.ClubAuth
 import fanpoll.club.ClubUserRole
 import fanpoll.club.ClubUserType
-import fanpoll.club.user.*
+import fanpoll.club.features.*
 import fanpoll.infra.auth.provider.UserRunAsToken
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.json.toJsonString
@@ -19,26 +19,29 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.setBody
 import kotlinx.serialization.json.jsonPrimitive
+import mu.KotlinLogging
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 val userApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit = { context ->
 
+    val logger = KotlinLogging.logger {}
+
     lateinit var userId: UUID
     lateinit var runAsToken: UserRunAsToken
 
-    val admin1Form = CreateUserForm(
-        "admin_1@test.com", "123456",
-        true, ClubUserRole.Admin, "admin_1",
-        Gender.Male, 2000, "admin_1@test.com", "0987654321", Lang.zh_TW
+    val userAdmin1Form = CreateUserForm(
+        "user-admin_1@test.com", "123456",
+        true, ClubUserRole.Admin, "user-admin_1",
+        Gender.Male, 2000, "user-admin_1@test.com", "0987654321", Lang.zh_TW
     )
 
     context.test("create admin user") {
         with(clubHandleSecuredRequest(
             HttpMethod.Post, "/users", ClubAuth.RootSource
         ) {
-            setBody(admin1Form.toJsonString())
+            setBody(userAdmin1Form.toJsonString())
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
             val userIdStr = response.dataJsonObject()["id"]?.jsonPrimitive?.content
@@ -55,7 +58,7 @@ val userApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit =
             assertEquals(HttpStatusCode.OK, response.status())
             assertEquals(1, response.dataJsonArray().size)
             val userDTO = response.dataList<UserDTO>().first()
-            assertEquals(admin1Form.account, userDTO.account)
+            assertEquals(userAdmin1Form.account, userDTO.account)
         }
     }
 
@@ -63,7 +66,7 @@ val userApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit =
         with(clubHandleSecuredRequest(
             HttpMethod.Post, "/users", ClubAuth.RootSource
         ) {
-            setBody(admin1Form.toJsonString())
+            setBody(userAdmin1Form.toJsonString())
         }) {
             assertEquals(HttpStatusCode.UnprocessableEntity, response.status())
             assertEquals(InfraResponseCode.ENTITY_ALREADY_EXISTS, response.code())
@@ -86,7 +89,7 @@ val userApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit =
             assertEquals(HttpStatusCode.OK, response.status())
             assertEquals(1, response.dataJsonArray().size)
             val userDTO = response.dataList<UserDTO>().first()
-            assertEquals(admin1Form.account, userDTO.account)
+            assertEquals(userAdmin1Form.account, userDTO.account)
             assertEquals(false, userDTO.enabled)
         }
     }
@@ -106,7 +109,7 @@ val userApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit =
         with(clubHandleSecuredRequest(
             HttpMethod.Put, "/users/myPassword", ClubAuth.Android, runAsToken
         ) {
-            setBody(UpdateUserPasswordForm(admin1Form.password, "newPassword").toJsonString())
+            setBody(UpdateUserPasswordForm(userAdmin1Form.password, "newPassword").toJsonString())
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
         }

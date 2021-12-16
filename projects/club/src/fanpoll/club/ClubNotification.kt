@@ -4,8 +4,8 @@
 
 package fanpoll.club
 
-import fanpoll.club.user.ClubUserTable
-import fanpoll.club.user.UserDTO
+import fanpoll.club.features.ClubUserTable
+import fanpoll.club.features.UserDTO
 import fanpoll.infra.app.UserDeviceTable
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.query.DynamicQuery

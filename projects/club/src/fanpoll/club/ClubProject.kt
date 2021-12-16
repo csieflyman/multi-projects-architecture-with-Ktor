@@ -4,8 +4,8 @@
 
 package fanpoll.club
 
-import fanpoll.club.user.ClubLoginService
-import fanpoll.club.user.ClubUserService
+import fanpoll.club.features.ClubLoginService
+import fanpoll.club.features.ClubUserService
 import fanpoll.infra.Project
 import fanpoll.infra.ProjectManager
 import fanpoll.infra.auth.provider.UserSessionAuthValidator

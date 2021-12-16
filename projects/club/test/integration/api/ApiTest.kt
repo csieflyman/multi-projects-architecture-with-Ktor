@@ -45,8 +45,12 @@ class ApiTest : KoinTest, FunSpec({
     context("Api") {
         logger.info { "========== Api Test Begin ==========" }
         withTestApplicationInKotestContext(ktorTestModule) { context ->
+            logger.info { "========== User API Test ==========" }
             userApiTest(context)
+            logger.info { "========== Login API Test ==========" }
             loginApiTest(context)
+            logger.info { "========== Notification API Test ==========" }
+            notificationApiTest(context)
         }
         logger.info { "========== Api Test End ==========" }
     }

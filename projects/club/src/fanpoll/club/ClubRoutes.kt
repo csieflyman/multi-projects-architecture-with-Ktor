@@ -4,12 +4,14 @@
 
 package fanpoll.club
 
-import fanpoll.club.user.clubLogin
-import fanpoll.club.user.clubUser
+import fanpoll.club.features.clubLogin
+import fanpoll.club.features.clubNotification
+import fanpoll.club.features.clubUser
 import io.ktor.routing.Routing
 
 fun Routing.club() {
 
     clubUser()
     clubLogin()
+    clubNotification()
 }

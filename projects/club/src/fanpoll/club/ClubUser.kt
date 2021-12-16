@@ -4,7 +4,7 @@
 
 package fanpoll.club
 
-import fanpoll.club.user.ClubUserTable
+import fanpoll.club.features.ClubUserTable
 import fanpoll.infra.auth.principal.UserRole
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.auth.provider.RunAsUser

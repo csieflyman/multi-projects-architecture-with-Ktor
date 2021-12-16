@@ -7,9 +7,9 @@ package integration.api
 import fanpoll.club.ClubAuth
 import fanpoll.club.ClubUserRole
 import fanpoll.club.ClubUserType
-import fanpoll.club.user.CreateUserForm
-import fanpoll.club.user.Gender
-import fanpoll.club.user.UpdateUserForm
+import fanpoll.club.features.CreateUserForm
+import fanpoll.club.features.Gender
+import fanpoll.club.features.UpdateUserForm
 import fanpoll.infra.auth.AuthConst
 import fanpoll.infra.auth.login.AppLoginForm
 import fanpoll.infra.auth.login.AppLoginResponse
@@ -37,23 +37,24 @@ val loginApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit 
     lateinit var runAsToken: UserRunAsToken
     lateinit var sessionId: String
 
-    val userForm = CreateUserForm(
-        "loginUser@test.com", "123456",
-        true, ClubUserRole.Admin, "loginUser",
-        Gender.Male, 2000, "loginUser@test.com", "0987654321", Lang.zh_TW
+    val loginUser1Form = CreateUserForm(
+        "login-user_1@test.com", "123456",
+        true, ClubUserRole.Admin, "login-user_1",
+        Gender.Male, 2000, "login-user_1@test.com", "0987654321", Lang.zh_TW
     )
 
-    val deviceId1 = UUID.randomUUID()
+    val loginUser1DeviceId1 = UUID.randomUUID()
     val loginForm = AppLoginForm(
-        userForm.account, userForm.password, null,
-        deviceId1, "pushToken", "Android 9.0"
+        loginUser1Form.account, loginUser1Form.password, null,
+        loginUser1DeviceId1, "pushToken", "Android 9.0"
     )
 
     context.test("user login success") {
-        with(clubHandleSecuredRequest(
+        with(
+            clubHandleSecuredRequest(
             HttpMethod.Post, "/users", ClubAuth.RootSource
         ) {
-            setBody(userForm.toJsonString())
+                setBody(loginUser1Form.toJsonString())
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
             val userIdStr = response.dataJsonObject()["id"]?.jsonPrimitive?.content
@@ -131,7 +132,6 @@ val loginApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit 
     }
 
     context.test("disabled account should login failed") {
-
         with(clubHandleSecuredRequest(
             HttpMethod.Put, "/users/$userId", ClubAuth.Android, runAsToken
         ) {

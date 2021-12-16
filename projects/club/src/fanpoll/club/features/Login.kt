@@ -2,7 +2,7 @@
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-package fanpoll.club.user
+package fanpoll.club.features
 
 import fanpoll.club.ClubAuth
 import fanpoll.club.ClubConst

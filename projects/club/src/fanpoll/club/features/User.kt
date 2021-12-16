@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 2020. fanpoll All rights reserved.
+ * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-package fanpoll.club.user
+package fanpoll.club.features
 
-import fanpoll.club.*
+import fanpoll.club.ClubAuth
+import fanpoll.club.ClubConst
+import fanpoll.club.ClubOpenApi
+import fanpoll.club.ClubUserRole
 import fanpoll.infra.app.UserDeviceDTO
 import fanpoll.infra.app.UserDeviceTable
 import fanpoll.infra.auth.authorize
@@ -31,8 +34,6 @@ import fanpoll.infra.database.sql.update
 import fanpoll.infra.database.util.DynamicDBJoinPart
 import fanpoll.infra.database.util.ResultRowDTOMapper
 import fanpoll.infra.database.util.queryDB
-import fanpoll.infra.notification.senders.NotificationSender
-import fanpoll.infra.notification.util.SendNotificationForm
 import fanpoll.infra.openapi.dynamicQuery
 import fanpoll.infra.openapi.post
 import fanpoll.infra.openapi.put
@@ -60,7 +61,6 @@ import java.util.*
 fun Routing.clubUser() {
 
     val clubUserService by inject<ClubUserService>()
-    val notificationSender by inject<NotificationSender>()
 
     route("${ClubConst.urlRootPath}/users") {
 
@@ -81,12 +81,6 @@ fun Routing.clubUser() {
 
             dynamicQuery<UserDTO>(ClubOpenApi.FindUsers) { dynamicQuery ->
                 call.respond(dynamicQuery.queryDB<UserDTO>())
-            }
-
-            post<SendNotificationForm, UUID>("/sendNotification", ClubOpenApi.SendNotification) { form ->
-                val notification = form.toNotification(ClubNotification.SendNotification)
-                notificationSender.send(notification)
-                call.respond(DataResponseDTO.uuid(notification.id))
             }
         }
 
