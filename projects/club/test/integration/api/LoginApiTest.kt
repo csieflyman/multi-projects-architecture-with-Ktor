@@ -50,11 +50,10 @@ val loginApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit 
     )
 
     context.test("user login success") {
-        with(
-            clubHandleSecuredRequest(
+        with(clubHandleSecuredRequest(
             HttpMethod.Post, "/users", ClubAuth.RootSource
         ) {
-                setBody(loginUser1Form.toJsonString())
+            setBody(loginUser1Form.toJsonString())
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
             val userIdStr = response.dataJsonObject()["id"]?.jsonPrimitive?.content
@@ -101,31 +100,30 @@ val loginApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit 
 
     context.test("user logout without sessionId") {
         with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
+            HttpMethod.Post, "/logout", ClubAuth.Android
         ) {
-            setBody(loginForm.toJsonString())
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED, response.code())
         }
     }
 
-    context.test("user logout with invalid sessionId") {
+    context.test("user logout with wrong sessionId") {
         with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
+            HttpMethod.Post, "/logout", ClubAuth.Android
         ) {
-            addHeader(AuthConst.SESSION_ID_HEADER_NAME, "invalid sessionId")
-            setBody(loginForm.toJsonString())
+            addHeader(AuthConst.SESSION_ID_HEADER_NAME, "wrong sessionId")
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED, response.code())
         }
     }
 
     context.test("user logout success") {
         with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
+            HttpMethod.Post, "/logout", ClubAuth.Android
         ) {
             addHeader(AuthConst.SESSION_ID_HEADER_NAME, sessionId)
-            setBody(loginForm.toJsonString())
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
         }
