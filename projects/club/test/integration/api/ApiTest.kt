@@ -8,11 +8,14 @@ import fanpoll.club.clubMain
 import fanpoll.infra.main
 import integration.util.TestContainerUtils
 import integration.util.withTestApplicationInKotestContext
+import io.kotest.common.ExperimentalKotest
+import io.kotest.core.NamedTag
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.Application
 import mu.KotlinLogging
 import org.koin.test.KoinTest
 
+@OptIn(ExperimentalKotest::class)
 class ApiTest : KoinTest, FunSpec({
 
     val logger = KotlinLogging.logger {}
@@ -36,22 +39,27 @@ class ApiTest : KoinTest, FunSpec({
     }
 
     afterSpec {
-        logger.info { "========== PostgresSQL Container Stop ==========" }
-        postgresContainer.stop()
         logger.info { "========== Redis Container Stop ==========" }
         redisContainer.stop()
+        logger.info { "========== PostgresSQL Container Stop ==========" }
+        postgresContainer.stop()
     }
 
-    context("Api") {
-        logger.info { "========== Api Test Begin ==========" }
+    context("api").config(tags = setOf(NamedTag("api"))) {
+        logger.info { "========== API Test Begin ==========" }
         withTestApplicationInKotestContext(ktorTestModule) { context ->
-            logger.info { "========== User API Test ==========" }
+            logger.info { "========== User API Test Begin ==========" }
             userApiTest(context)
+            logger.info { "========== User API Test End ==========" }
+
             logger.info { "========== Login API Test ==========" }
             loginApiTest(context)
+            logger.info { "========== Login API Test End ==========" }
+
             logger.info { "========== Notification API Test ==========" }
             notificationApiTest(context)
+            logger.info { "========== Notification API Test End ==========" }
         }
-        logger.info { "========== Api Test End ==========" }
+        logger.info { "========== API Test End ==========" }
     }
 })

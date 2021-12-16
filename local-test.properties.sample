@@ -8,6 +8,8 @@ gradle.report.junit.html=false
 # ========== System Properties ==========
 sysProperty.testcontainers.image.postgres=postgres:13.4
 sysProperty.testcontainers.image.redis=redis:6.2.1
+# https://kotest.io/docs/framework/tags.html
+sysProperty.kotest.tags=
 # ========== Environment Variables ==========
 env.APP_LOG_HOME=F:/temp/fanpoll
 env.PORT=8080
