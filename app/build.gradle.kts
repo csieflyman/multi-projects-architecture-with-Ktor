@@ -126,7 +126,8 @@ tasks.runShadow {
         val properties = loadProperties("$env.properties")
         if (properties != null) {
             val gradleProps = properties.filter { it.key.startsWith("gradle.") }
-                .mapKeys { it.key.substring("gradle.".length) }.toMutableMap()
+                .mapKeys { it.key.substring("gradle.".length) }
+                .filterValues { it.isNotBlank() }.toMutableMap()
             println("========== Dev Gradle Properties ==========")
             println(gradleProps)
 

@@ -28,6 +28,8 @@ dependencies {
 
 tasks.withType<Test> {
 
+    useJUnitPlatform {}
+
     val env = "local-test"
     val properties = loadProperties("$env.properties")
 
@@ -61,14 +63,6 @@ tasks.withType<Test> {
         html.required.set(reportJunitHtmlEnabled)
     }
 
-    useJUnitPlatform {}
-
-    filter {
-        //setIncludePatterns("")
-        //includeTags("")
-        //excludeTags("")
-    }
-
     // see org.gradle.api.internal.tasks.testing.logging.DefaultTestLoggingContainer
     //testLogging {}
 
@@ -88,7 +82,8 @@ tasks.withType<Test> {
 
         if (properties != null) {
             val sysProps = properties.filter { it.key.startsWith("sysProperty.") }
-                .mapKeys { it.key.substring("sysProperty.".length) }.toMutableMap()
+                .mapKeys { it.key.substring("sysProperty.".length) }
+                .filterValues { it.isNotBlank() }.toMutableMap()
             println("========== Testing System Properties ==========")
             println(sysProps)
 
