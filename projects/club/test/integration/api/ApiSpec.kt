@@ -17,7 +17,7 @@ import mu.KotlinLogging
 import org.koin.test.KoinTest
 
 @OptIn(ExperimentalKotest::class)
-class ApiTest : KoinTest, FunSpec({
+class ApiSpec : KoinTest, FunSpec({
 
     val logger = KotlinLogging.logger {}
 
