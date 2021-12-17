@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
 
-    val kotestVersion = "5.0.1"
+    val kotestVersion = "5.0.2"
     val testContainerVersion = "1.16.2"
 
     val kotlinVersion = "1.6.0"
