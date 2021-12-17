@@ -12,6 +12,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-serialization:1.6.0")
     implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
 
+    // https://github.com/kotest/kotest-gradle-plugin
+    // get NPE when run gradle task 'kotest'. It may be incompatible with kotest 5.0.2
+    //implementation("io.kotest:kotest-gradle-plugin:0.3.9")
+
     constraints {
         implementation("org.apache.logging.log4j:log4j-core:2.16.0") {
             because(
