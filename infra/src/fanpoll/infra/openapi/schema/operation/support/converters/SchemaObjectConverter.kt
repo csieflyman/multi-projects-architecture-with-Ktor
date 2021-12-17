@@ -217,9 +217,9 @@ object SchemaObjectConverter {
             is ReferenceObject -> 0
             is ModelDef -> 1
             is ArrayModelDef -> 2
+            is DictionaryPropertyDef -> 5
             is PropertyDef -> 3
             is ArrayPropertyDef -> 4
-            is DictionaryPropertyDef -> 5
             else -> 6
         }
     }
