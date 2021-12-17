@@ -164,7 +164,6 @@ class DatabaseFeature(configuration: Configuration) {
             try {
                 logger.info("===== connect database ${config.jdbcUrl}... =====")
                 dataSource = HikariDataSource(config)
-                defaultDatabase = ExposedDatabase.connect(dataSource)
                 logger.info("===== database connected =====")
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to connect database: ${config.jdbcUrl}", e)
