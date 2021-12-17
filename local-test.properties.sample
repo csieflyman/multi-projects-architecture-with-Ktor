@@ -8,6 +8,8 @@ gradle.report.junit.html=false
 # ========== System Properties ==========
 sysProperty.testcontainers.image.postgres=postgres:13.4
 sysProperty.testcontainers.image.redis=redis:6.2.1
+sysProperty.kotest.filter.specs=
+sysProperty.kotest.filter.tests=
 # https://kotest.io/docs/framework/tags.html
 sysProperty.kotest.tags=
 # ========== Environment Variables ==========
