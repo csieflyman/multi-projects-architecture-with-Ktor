@@ -7,11 +7,12 @@ package integration.api
 import fanpoll.club.clubMain
 import fanpoll.infra.main
 import integration.util.TestContainerUtils
-import integration.util.withTestApplicationInKotestContext
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.NamedTag
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.Application
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.createTestEnvironment
 import mu.KotlinLogging
 import org.koin.test.KoinTest
 
@@ -23,7 +24,8 @@ class ApiTest : KoinTest, FunSpec({
     val postgresContainer = TestContainerUtils.createPostgresContainer()
     val redisContainer = TestContainerUtils.createRedisContainer()
 
-    val ktorTestModule: Application.() -> Unit = {
+    val ktorEngine = TestApplicationEngine(createTestEnvironment()) {}
+    val installKtorTestModules: Application.() -> Unit = {
         main {
             TestContainerUtils.replacePostgresConfig(postgresContainer, infra.database!!.hikari)
             TestContainerUtils.replaceRedisConfig(redisContainer, infra.redis!!)
@@ -34,32 +36,47 @@ class ApiTest : KoinTest, FunSpec({
     beforeSpec {
         logger.info { "========== PostgresSQL Container Start ==========" }
         postgresContainer.start()
+
         logger.info { "========== Redis Container Start ==========" }
         redisContainer.start()
+
+        logger.info { "========== Ktor Server Start ==========" }
+        ktorEngine.start()
+        installKtorTestModules(ktorEngine.application)
+
+        logger.info { "========== API Test Begin ==========" }
     }
 
     afterSpec {
+        logger.info { "========== API Test End ==========" }
+
+        logger.info { "========== Ktor Server Stop ==========" }
+        ktorEngine.stop(0L, 0L)
+
         logger.info { "========== Redis Container Stop ==========" }
         redisContainer.stop()
+
         logger.info { "========== PostgresSQL Container Stop ==========" }
         postgresContainer.stop()
     }
 
-    context("api").config(tags = setOf(NamedTag("api"))) {
-        logger.info { "========== API Test Begin ==========" }
-        withTestApplicationInKotestContext(ktorTestModule) { context ->
-            logger.info { "========== User API Test Begin ==========" }
-            userApiTest(context)
-            logger.info { "========== User API Test End ==========" }
+    tags(NamedTag("api"))
 
-            logger.info { "========== Login API Test ==========" }
-            loginApiTest(context)
-            logger.info { "========== Login API Test End ==========" }
+    context("api_user").config(tags = setOf(NamedTag("api_user"))) {
+        logger.info { "========== User API Test Begin ==========" }
+        ktorEngine.userApiTest(this)
+        logger.info { "========== User API Test End ==========" }
+    }
 
-            logger.info { "========== Notification API Test ==========" }
-            notificationApiTest(context)
-            logger.info { "========== Notification API Test End ==========" }
-        }
-        logger.info { "========== API Test End ==========" }
+    context("api_login").config(tags = setOf(NamedTag("api_login"))) {
+        logger.info { "========== Login API Test Begin ==========" }
+        ktorEngine.loginApiTest(this)
+        logger.info { "========== Login API Test End ==========" }
+    }
+
+    context("api_notification").config(tags = setOf(NamedTag("api_notification"))) {
+        logger.info { "========== Notification API Test Begin ==========" }
+        ktorEngine.notificationApiTest(this)
+        logger.info { "========== Notification API Test End ==========" }
     }
 })
