@@ -40,5 +40,17 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
+    <!-- test -->
+    <logger name="integration" level="INFO"/>
+
+    <!-- main -->
     <logger name="fanpoll" level="INFO"/>
+
+    <!-- library -->
+    <!--
+    <logger name="o.testcontainers" level="INFO"/>
+    <logger name="Exposed" level="DEBUG"/>
+    <logger name="com.zaxxer.hikari" level="DEBUG"/>
+    <logger name="com.github.jasync" level="DEBUG"/>
+    -->
 </configuration>
