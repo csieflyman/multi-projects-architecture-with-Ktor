@@ -17,6 +17,7 @@ object SinglePostgreSQLContainer {
         // https://kotlinlang.org/docs/whatsnew1530.html#improvements-to-type-inference-for-recursive-generic-types
         // COMPATIBILITY => update intellij kotlin plugin to early access preview 1.6.x
         PostgreSQLContainer(DockerImageName.parse(postgresImageName))
+            .withReuse(true)
             .withUsername("tester")
             .withPassword("test")
             .withDatabaseName("test-default") // only one database now
@@ -36,7 +37,9 @@ object SingleRedisContainer {
 
     val instance: GenericContainer<*> by lazy {
         val redisImageName = System.getProperty("testcontainers.image.redis", "redis")
-        GenericContainer(DockerImageName.parse(redisImageName)).withExposedPorts(6379)
+        GenericContainer(DockerImageName.parse(redisImageName))
+            .withReuse(true)
+            .withExposedPorts(6379)
     }
 
     fun configureConnectionProperties(config: RedisConfig) {
