@@ -10,6 +10,15 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
+/**
+references
+1. https://www.testcontainers.org/features/configuration/
+2. https://rieckpil.de/reuse-containers-with-testcontainers-for-fast-integration-tests/
+3. https://github.com/testcontainers/testcontainers-java/issues/3780
+※ checks.disable=true and testcontainers.reuse.enable=true is not work at .testcontainers.properties in the classpath.
+only accept at $HOME/.testcontainers.properties
+ */
+
 object SinglePostgreSQLContainer {
 
     val instance: PostgreSQLContainer<*> by lazy {
