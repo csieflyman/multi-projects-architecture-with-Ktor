@@ -10,35 +10,39 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
-object TestContainerUtils {
+object SinglePostgreSQLContainer {
 
-    fun createPostgresContainer(): PostgreSQLContainer<*> {
+    val instance: PostgreSQLContainer<*> by lazy {
         val postgresImageName = System.getProperty("testcontainers.image.postgres", "postgres")
         // https://kotlinlang.org/docs/whatsnew1530.html#improvements-to-type-inference-for-recursive-generic-types
         // COMPATIBILITY => update intellij kotlin plugin to early access preview 1.6.x
-        return PostgreSQLContainer(DockerImageName.parse(postgresImageName))
-            .withDatabaseName("test-db")
+        PostgreSQLContainer(DockerImageName.parse(postgresImageName))
             .withUsername("tester")
             .withPassword("test")
+            .withDatabaseName("test-default") // only one database now
+        //.withInitScript("init_test_db_container.sql") // script for creating multiple databases in a container
     }
 
-    fun replacePostgresConfig(container: PostgreSQLContainer<*>, config: HikariConfig) {
+    fun configureConnectionProperties(config: HikariConfig) {
         with(config) {
-            jdbcUrl = container.jdbcUrl
-            username = container.username
-            password = container.password
+            jdbcUrl = instance.jdbcUrl
+            username = instance.username
+            password = instance.password
         }
     }
+}
 
-    fun createRedisContainer(): GenericContainer<*> {
+object SingleRedisContainer {
+
+    val instance: GenericContainer<*> by lazy {
         val redisImageName = System.getProperty("testcontainers.image.redis", "redis")
-        return GenericContainer(DockerImageName.parse(redisImageName)).withExposedPorts(6379)
+        GenericContainer(DockerImageName.parse(redisImageName)).withExposedPorts(6379)
     }
 
-    fun replaceRedisConfig(container: GenericContainer<*>, config: RedisConfig) {
+    fun configureConnectionProperties(config: RedisConfig) {
         with(config) {
-            host = container.host
-            port = container.firstMappedPort
+            host = instance.host
+            port = instance.firstMappedPort
         }
     }
 }

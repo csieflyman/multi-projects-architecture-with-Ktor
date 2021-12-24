@@ -14,6 +14,13 @@ import io.ktor.server.testing.TestApplicationResponse
 import io.ktor.server.testing.createTestEnvironment
 import kotlinx.serialization.json.*
 
+object SingleKtorTestApplicationEngine {
+
+    val instance: TestApplicationEngine by lazy {
+        TestApplicationEngine(createTestEnvironment()) {}
+    }
+}
+
 fun TestApplicationResponse.jsonObject(): JsonObject = content?.let { json.parseToJsonElement(it).jsonObject }
     ?: error("response content is empty or not a json object")
 
