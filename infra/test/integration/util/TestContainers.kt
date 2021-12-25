@@ -4,8 +4,8 @@
 
 package integration.util
 
-import fanpoll.infra.database.HikariConfig
-import fanpoll.infra.redis.RedisConfig
+import fanpoll.infra.MyApplicationConfig
+import integration.util.SingleTestContainer.Companion.PROJECT_LABELS
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
@@ -15,26 +15,37 @@ references
 1. https://www.testcontainers.org/features/configuration/
 2. https://rieckpil.de/reuse-containers-with-testcontainers-for-fast-integration-tests/
 3. https://github.com/testcontainers/testcontainers-java/issues/3780
-※ checks.disable=true and testcontainers.reuse.enable=true is not work at .testcontainers.properties in the classpath.
-only accept at $HOME/.testcontainers.properties
+※ set checks.disable=true and testcontainers.reuse.enable=true in $HOME/.testcontainers.properties
  */
 
-object SinglePostgreSQLContainer {
+interface SingleTestContainer {
 
-    val instance: PostgreSQLContainer<*> by lazy {
+    val instance: GenericContainer<*>
+
+    fun configure(appConfig: MyApplicationConfig)
+
+    companion object {
+        val PROJECT_LABELS = mapOf("project" to "infra")
+    }
+}
+
+object SinglePostgreSQLContainer : SingleTestContainer {
+
+    override val instance: PostgreSQLContainer<*> by lazy {
         val postgresImageName = System.getProperty("testcontainers.image.postgres", "postgres")
         // https://kotlinlang.org/docs/whatsnew1530.html#improvements-to-type-inference-for-recursive-generic-types
         // COMPATIBILITY => update intellij kotlin plugin to early access preview 1.6.x
         PostgreSQLContainer(DockerImageName.parse(postgresImageName))
-            .withReuse(true)
+            .withReuse(true).withLabels(PROJECT_LABELS)
             .withUsername("tester")
             .withPassword("test")
             .withDatabaseName("test-default") // only one database now
-        //.withInitScript("init_test_db_container.sql") // script for creating multiple databases in a container
+            //.withInitScript("init_test_db_container.sql") // script for creating multiple databases in a container
+            .apply { start() }
     }
 
-    fun configureConnectionProperties(config: HikariConfig) {
-        with(config) {
+    override fun configure(appConfig: MyApplicationConfig) {
+        with(appConfig.infra.database!!.hikari) {
             jdbcUrl = instance.jdbcUrl
             username = instance.username
             password = instance.password
@@ -42,17 +53,18 @@ object SinglePostgreSQLContainer {
     }
 }
 
-object SingleRedisContainer {
+object SingleRedisContainer : SingleTestContainer {
 
-    val instance: GenericContainer<*> by lazy {
+    override val instance: GenericContainer<*> by lazy {
         val redisImageName = System.getProperty("testcontainers.image.redis", "redis")
         GenericContainer(DockerImageName.parse(redisImageName))
-            .withReuse(true)
+            .withReuse(true).withLabels(PROJECT_LABELS)
             .withExposedPorts(6379)
+            .apply { start() }
     }
 
-    fun configureConnectionProperties(config: RedisConfig) {
-        with(config) {
+    override fun configure(appConfig: MyApplicationConfig) {
+        with(appConfig.infra.redis!!) {
             host = instance.host
             port = instance.firstMappedPort
         }

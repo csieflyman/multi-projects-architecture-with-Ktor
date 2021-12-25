@@ -15,7 +15,7 @@ import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.database.jasync.*
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.util.ResultRowDTOMapper
-import integration.util.TestContainerUtils
+import integration.util.SinglePostgreSQLContainer
 import io.kotest.core.spec.style.FunSpec
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
@@ -36,15 +36,12 @@ class R2DBCSpec : FunSpec({
 
     val logger = KotlinLogging.logger {}
 
-    val postgresContainer = TestContainerUtils.createPostgresContainer("r2dbc-spec")
+    val postgresContainer = SinglePostgreSQLContainer.instance
 
     lateinit var dataSource: HikariDataSource
     lateinit var jasyncConnection: Connection
 
     beforeSpec {
-        logger.info { "========== PostgresSQL Container Start ==========" }
-        postgresContainer.start()
-
         logger.info("========== Exposed Init ==========")
         dataSource = HikariDataSource(HikariConfig().apply {
             isAutoCommit = false
@@ -81,9 +78,6 @@ class R2DBCSpec : FunSpec({
 
         logger.info("========== Datasource Close ==========")
         dataSource.close()
-
-        logger.info { "========== PostgresSQL Container Stop ==========" }
-        postgresContainer.stop()
     }
 
     test("R2DBC CRUD") {
