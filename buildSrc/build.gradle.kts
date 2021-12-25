@@ -11,6 +11,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0")
     implementation("org.jetbrains.kotlin:kotlin-serialization:1.6.0")
     implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
+    implementation("com.bmuschko:gradle-docker-plugin:7.1.0")
 
     // https://github.com/kotest/kotest-gradle-plugin
     // get NPE when run gradle task 'kotest'. It may be incompatible with kotest 5.0.2

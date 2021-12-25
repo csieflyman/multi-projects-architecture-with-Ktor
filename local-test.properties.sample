@@ -5,14 +5,17 @@ gradle.failFast=false
 gradle.ignoreFailures=false
 gradle.report.junit.xml=false
 gradle.report.junit.html=false
-# ========== System Properties ==========
+# ========== TestContainers ==========
+env.TESTCONTAINERS_RYUK_DISABLED=true
 sysProperty.testcontainers.image.postgres=postgres:13.4
 sysProperty.testcontainers.image.redis=redis:6.2.1
+# ========== Kotest ==========
+# https://kotest.io/docs/framework/framework-config-props.html
+sysProperty.kotest.framework.parallelism=1
 sysProperty.kotest.filter.specs=
 sysProperty.kotest.filter.tests=
-# https://kotest.io/docs/framework/tags.html
 sysProperty.kotest.tags=
-# ========== Environment Variables ==========
+# ========== Application Config ==========
 env.APP_LOG_HOME=F:/temp/fanpoll
 env.PORT=8080
 env.SERVER_SHUTDOWN_KEY=

@@ -4,8 +4,10 @@
 
 package integration.util
 
+import fanpoll.club.clubMain
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.response.*
+import fanpoll.infra.main
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.ktor.application.Application
 import io.ktor.server.engine.ApplicationEngineEnvironment
@@ -17,7 +19,15 @@ import kotlinx.serialization.json.*
 object SingleKtorTestApplicationEngine {
 
     val instance: TestApplicationEngine by lazy {
-        TestApplicationEngine(createTestEnvironment()) {}
+        TestApplicationEngine(createTestEnvironment()) {}.apply {
+            start()
+            application.main {
+                listOf(SinglePostgreSQLContainer, SingleRedisContainer).forEach {
+                    it.configure(this)
+                }
+            }
+            application.clubMain()
+        }
     }
 }
 

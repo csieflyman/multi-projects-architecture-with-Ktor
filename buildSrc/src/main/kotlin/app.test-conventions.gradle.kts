@@ -1,7 +1,9 @@
+import com.bmuschko.gradle.docker.tasks.AbstractDockerRemoteApiTask
 import java.io.FileInputStream
 import java.util.*
 
 plugins {
+    id("com.bmuschko.docker-remote-api")
     id("app.java-conventions")
 }
 
@@ -24,6 +26,21 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
+}
+
+val removeTestContainers by tasks.register<RemoveTestContainersTask>("removeTestContainers")
+
+open class RemoveTestContainersTask : AbstractDockerRemoteApiTask() {
+
+    override fun runRemoteCommand() {
+        val containers = dockerClient.listContainersCmd()
+            .withLabelFilter(mapOf("org.testcontainers" to "true", "project" to project.name))
+            .exec()
+        containers.forEach { container ->
+            println("remove container ${container.id} from image ${container.image}")
+            dockerClient.removeContainerCmd(container.id).withRemoveVolumes(true).withForce(true).exec()
+        }
+    }
 }
 
 tasks.withType<Test> {
@@ -101,6 +118,8 @@ tasks.withType<Test> {
             environment(envProps)
         }
     }
+
+    finalizedBy(removeTestContainers)
 }
 
 fun loadProperties(path: String, keyPrefix: String? = null): Map<String, String>? {
