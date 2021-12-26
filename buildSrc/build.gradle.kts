@@ -18,11 +18,35 @@ dependencies {
     //implementation("io.kotest:kotest-gradle-plugin:0.3.9")
 
     constraints {
-        implementation("org.apache.logging.log4j:log4j-core:2.16.0") {
+        implementation("org.apache.logging.log4j:log4j-core:2.17.0") {
             because(
                 "upgrade log4j-core from 2.14.1 to 2.16.0 required by shadow jar gradle plugin " +
                         "due to Log4jShell security vulnerability. Although it would not affect server at runtime"
             )
         }
     }
+}
+
+// =============================== Compile ===============================
+
+tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.languageVersion = "1.6"
+        kotlinOptions.javaParameters = true
+        kotlinOptions.suppressWarnings = true
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalStdlibApi"
+        //kotlinOptions.useIR = true (1.4 in Alpha)
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.languageVersion = "1.6"
+        kotlinOptions.javaParameters = true
+        kotlinOptions.suppressWarnings = true
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.isFork = true
 }

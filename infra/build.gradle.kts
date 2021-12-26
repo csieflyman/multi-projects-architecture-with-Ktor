@@ -6,16 +6,16 @@ plugins {
 
 dependencies {
     val kotlinVersion = "1.6.0"
-    val ktorVersion = "1.6.6"
+    val ktorVersion = "1.6.7"
     val koinVersion = "3.1.4"
     val exposedVersion = "0.36.2"
-    val jacksonVersion = "2.13.0"
+    val jacksonVersion = "2.13.1"
 
     // =============== kotlin, kotlinx ===============
     implementation(kotlin("stdlib", kotlinVersion))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
 
     // ===============  ktor ===============
     api("io.ktor:ktor-server-core:$ktorVersion")
@@ -63,8 +63,8 @@ dependencies {
     //api("com.bennyhuo.kotlin:deepcopy-runtime:1.3.72")
 
     // =============== utils - logging ===============
-    api("io.github.microutils:kotlin-logging-jvm:2.1.0")
-    runtimeOnly("ch.qos.logback:logback-classic:1.2.6")
+    api("io.github.microutils:kotlin-logging-jvm:2.1.21")
+    runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.2.0")
@@ -75,12 +75,12 @@ dependencies {
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
     implementation("com.zaxxer:HikariCP:5.0.0")
-    implementation("org.flywaydb:flyway-core:8.2.0")
+    implementation("org.flywaydb:flyway-core:8.3.0")
 
     runtimeOnly("org.postgresql:postgresql:42.3.1")
 
     // ===============  AWS Java SDK Version 2 ===============
-    implementation(platform("software.amazon.awssdk:bom:2.16.34"))
+    implementation(platform("software.amazon.awssdk:bom:2.17.102"))
 
     implementation("software.amazon.awssdk:netty-nio-client")
 
@@ -91,17 +91,15 @@ dependencies {
     implementation("com.sun.mail:javax.mail:1.6.2")
 
     // ===============  third-party service ===============
-    implementation("com.google.firebase:firebase-admin:7.1.1")
+    implementation("com.google.firebase:firebase-admin:8.1.0")
 
     // =============== utils - feature ===============
     implementation("org.freemarker:freemarker:2.3.31")
 
-    implementation("org.apache.poi:poi:5.0.0")
-    implementation("org.apache.poi:poi-ooxml:5.0.0")
+    implementation("org.apache.poi:poi:5.1.0")
+    implementation("org.apache.poi:poi-ooxml:5.1.0")
     implementation("org.apache.commons:commons-csv:1.9.0")
 
-    // jackson only used for openapi
-    // maybe need in the future https://github.com/FasterXML/jackson-modules-java8
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")

@@ -33,8 +33,6 @@ object SinglePostgreSQLContainer : SingleTestContainer {
 
     override val instance: PostgreSQLContainer<*> by lazy {
         val postgresImageName = System.getProperty("testcontainers.image.postgres", "postgres")
-        // https://kotlinlang.org/docs/whatsnew1530.html#improvements-to-type-inference-for-recursive-generic-types
-        // COMPATIBILITY => update intellij kotlin plugin to early access preview 1.6.x
         PostgreSQLContainer(DockerImageName.parse(postgresImageName))
             .withReuse(true).withLabels(PROJECT_LABELS)
             .withUsername("tester")
