@@ -76,6 +76,7 @@ class LoggingFeature(configuration: Configuration) {
             val feature = LoggingFeature(configuration)
 
             val appConfig = pipeline.get<MyApplicationConfig>()
+            val appInfoConfig = appConfig.info
             val serverConfig = appConfig.server
             val loggingConfig = appConfig.infra.logging ?: configuration.build()
 
@@ -91,7 +92,7 @@ class LoggingFeature(configuration: Configuration) {
                         single { logMessageDispatcher }
 
                         val awsKinesisLogWriter = loggingConfig.writer?.awsKinesis?.let {
-                            AwsKinesisLogWriter(it, serverConfig)
+                            AwsKinesisLogWriter(it, appInfoConfig, serverConfig)
                         }
                         if (awsKinesisLogWriter != null)
                             single { awsKinesisLogWriter }

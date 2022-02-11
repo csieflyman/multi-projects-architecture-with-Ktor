@@ -4,7 +4,9 @@
 
 package fanpoll.infra.openapi
 
+import fanpoll.infra.AppInfoConfig
 import fanpoll.infra.MyApplicationConfig
+import fanpoll.infra.ServerConfig
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.i18n.Lang
@@ -68,6 +70,8 @@ class OpenApiFeature(configuration: Configuration) {
 
             val appConfig = pipeline.get<MyApplicationConfig>()
             val openApiConfig = appConfig.infra.openApi ?: configuration.build()
+            openApiConfig.appInfo = appConfig.info
+            openApiConfig.server = appConfig.server
             val projectOpenApiManager = ProjectOpenApiManager(openApiConfig)
 
             pipeline.koin {
@@ -153,27 +157,21 @@ class OpenApiFeature(configuration: Configuration) {
 
 data class OpenApiConfig(
     val info: OpenApiInfoConfig,
-    val swaggerUI: SwaggerUIConfig? = null
-)
+    val swaggerUI: SwaggerUIConfig? = null,
+) {
+    lateinit var appInfo: AppInfoConfig
+    lateinit var server: ServerConfig
+}
 
 data class OpenApiInfoConfig(
-    val env: String,
-    val gitTagVersion: String,
-    val gitCommitVersion: String,
-    val buildTime: String,
     val description: String = ""
 ) {
 
     class Builder {
-
-        lateinit var env: String
-        lateinit var gitTagVersion: String
-        lateinit var gitCommitVersion: String
-        lateinit var buildTime: String
         var description: String = ""
 
         fun build(): OpenApiInfoConfig {
-            return OpenApiInfoConfig(env, gitTagVersion, gitCommitVersion, buildTime, description)
+            return OpenApiInfoConfig(description)
         }
     }
 }

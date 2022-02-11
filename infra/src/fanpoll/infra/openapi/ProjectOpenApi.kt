@@ -36,8 +36,8 @@ class ProjectOpenApi(
     fun init(config: OpenApiConfig) {
         openAPIObject = OpenAPIObject(
             info = Info(
-                title = "$projectId API (${config.info.env})", description = buildInfoDescription(config),
-                version = config.info.gitTagVersion
+                title = "$projectId API (${config.server.env})", description = buildInfoDescription(config),
+                version = config.appInfo.git.tag
             ),
             servers = listOf(Server(url = urlRootPath)),
             tags = operations.flatMap { it.tags }.toSet().toMutableList()
@@ -62,8 +62,10 @@ class ProjectOpenApi(
                             DateTimeUtils.LOCAL_DATE_TIME_FORMATTER.format(LocalDateTime.now(DateTimeUtils.TAIWAN_ZONE_ID))
                         }"
                     }
-                    li { +"Build Time: ${config.info.buildTime}" }
-                    li { +"Git Commit Version: ${config.info.gitCommitVersion}" }
+                    li { +"Build Time: ${config.appInfo.buildTime}" }
+                    li { +"Git Branch: ${config.appInfo.git.branch}" }
+                    li { +"Git Tag Name: ${config.appInfo.git.tagName}" }
+                    li { +"Git CommitId: ${config.appInfo.git.commitId}" }
                 }
             }
         }

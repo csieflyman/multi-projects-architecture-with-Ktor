@@ -18,14 +18,29 @@ import io.github.config4k.extract
 import mu.KotlinLogging
 
 data class MyApplicationConfig(
+    val info: AppInfoConfig,
     val server: ServerConfig,
     val infra: InfraConfig
 )
 
-data class ServerConfig(
+data class AppInfoConfig(
     val project: String,
+    val buildTime: String,
+    val git: GitInfo
+)
+
+data class GitInfo(
+    val semVer: String,
+    val branch: String,
+    val commitId: String,
+    val abbrevCommitId: String,
+    val tag: String,
+    val tagName: String
+)
+
+data class ServerConfig(
     val env: EnvMode,
-    val instance: String,
+    val instanceId: String,
     val shutDownUrl: String
 )
 

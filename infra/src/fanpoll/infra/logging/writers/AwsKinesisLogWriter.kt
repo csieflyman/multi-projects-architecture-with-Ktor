@@ -4,6 +4,7 @@
 
 package fanpoll.infra.logging.writers
 
+import fanpoll.infra.AppInfoConfig
 import fanpoll.infra.ServerConfig
 import fanpoll.infra.base.aws.NettyHttpClientConfig
 import fanpoll.infra.base.aws.configure
@@ -41,6 +42,7 @@ data class AwsKinesisConfig(
 
 class AwsKinesisLogWriter(
     private val awsKinesisConfig: AwsKinesisConfig,
+    private val appInfoConfig: AppInfoConfig,
     private val serverConfig: ServerConfig
 ) : LogWriter {
 
@@ -64,9 +66,10 @@ class AwsKinesisLogWriter(
 
     override fun write(message: LogMessage) {
         val dataMap = mutableMapOf(
-            "project" to JsonPrimitive(serverConfig.project),
+            "project" to JsonPrimitive(appInfoConfig.project),
+            "tagVersion" to JsonPrimitive(appInfoConfig.git.tag),
             "env" to JsonPrimitive(serverConfig.env.name),
-            "instance" to JsonPrimitive(serverConfig.instance),
+            "instanceId" to JsonPrimitive(serverConfig.instanceId),
             "logType" to JsonPrimitive(message.logType),
             "logLevel" to JsonPrimitive(message.logLevel.name),
             "occurAt" to JsonPrimitive(DateTimeUtils.UTC_DATE_TIME_PATTERN.format(message.occurAt)),

@@ -45,6 +45,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
     api("io.konform:konform-jvm:0.3.0")
     implementation("at.favre.lib:bcrypt:0.9.0")
+    implementation("com.vdurmont:semver4j:3.1.0")
 
     // =============== utils - config file parser ===============
     implementation("com.ufoscout.properlty:properlty-kotlin:1.9.0")
@@ -65,6 +66,7 @@ dependencies {
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:2.1.21")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
+    implementation("io.sentry:sentry:5.5.2")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.2.0")

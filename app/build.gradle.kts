@@ -38,8 +38,7 @@ application {
 }
 
 val semVersion = determineVersion()
-val tagVersion = semVersion.tagVersion()
-val env = semVersion.env()
+val gitProps: Map<String, String> = project.ext["gitProps"] as Map<String, String>
 
 // =============================== Shadow ===============================
 
@@ -59,8 +58,8 @@ tasks.shadowJar {
     mergeServiceFiles()
 
     archiveBaseName.set(appName)
-    archiveVersion.set(tagVersion)
-    archiveClassifier.set(env)
+    archiveVersion.set(gitProps["gitTag"])
+    archiveClassifier.set(gitProps["env"])
 
     doFirst {
         // Don't need to copy swagger-ui every build
@@ -76,15 +75,12 @@ tasks.shadowJar {
         }
 
         copy {
-            from("dist/config/$env")
+            from("dist/config/${gitProps["env"]}")
             into("src/dist")
             filter<ReplaceTokens>(
-                "tokens" to mapOf(
-                    "env" to env,
-                    "gitTagVersion" to tagVersion,
-                    "gitCommitVersion" to semVersion.toString(),
+                "tokens" to mutableMapOf(
                     "buildTime" to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())
-                )
+                ).apply { putAll(gitProps) }
             )
         }
 
@@ -99,8 +95,8 @@ tasks.shadowDistZip {
     outputs.upToDateWhen { false }
 
     archiveBaseName.set(appName)
-    archiveVersion.set(tagVersion)
-    archiveClassifier.set(env)
+    archiveVersion.set(gitProps["gitTag"])
+    archiveClassifier.set(gitProps["env"])
 }
 
 tasks.runShadow {
@@ -167,7 +163,7 @@ fun determineVersion(): SemVersion {
         return project.version as SemVersion
 
     val branchEnvProps = loadProperties("branch-env.properties") ?: error("branch-env.properties is missing")
-    val releaseBranch = branchEnvProps["releaseBranch"] ?: error("releaseBranch should be specified")
+    //val releaseBranch = branchEnvProps["releaseBranch"] ?: error("releaseBranch should be specified")
     val branchToEnvMap = branchEnvProps.filter { it.key.startsWith("branch.") }
         .mapKeys { it.key.substring("branch.".length) }.toMutableMap()
 
@@ -176,19 +172,34 @@ fun determineVersion(): SemVersion {
             val branchPatternStrings = branchToEnvMap.keys.toList()
             branchPatternStrings.forEach { patternStr ->
                 onBranch(patternStr.toPattern()) {
-                    val currentBranch = branchName!!
-                    val tagPrefix = if (currentBranch == releaseBranch) "" else "$currentBranch-"
-                    val tag = findLatestTag("""${tagPrefix}(\d+)\.(\d+)\.(\d+)""".toPattern())
-                    val versionNumber = tag?.matches?.toList()?.apply { subList(1, size) }?.map { it.toInt() } ?: listOf(1, 0, 0)
-                    val preReleaseTag =
-                        (tag?.let { "${countCommitsSince(it)}-${it.commit.id}" } ?: repository.head!!.id) + "_$currentBranch"
                     val env = branchToEnvMap[patternStr]!!
-                    version.set(versionNumber[0], versionNumber[1], versionNumber[2], preReleaseTag, env)
+                    val currentBranch = branchName!!
+                    val tag = findLatestTag("""(\d+)\.(\d+)\.(\d+)(-(\.[0-9A-Za-z-]+))?""".toPattern())
+                    val tagVersion = tag?.matches?.toList()?.apply { subList(1, 4) }?.map { it.toInt() }
+                        ?: listOf(0, 1, 0) // alpha, beta...
+
+                    val commitId = tag?.commit?.id ?: repository.head?.id ?: error("git commit not found!")
+                    val abbrevCommitId = commitId.substring(0, 8)
+                    val countCommitSince = tag?.let { countCommitsSince(it) } ?: 0
+
+                    val preReleaseTag = env
+                    val buildMetadata = listOf(currentBranch, countCommitSince, abbrevCommitId).joinToString("-")
+
+                    version.set(tagVersion[0], tagVersion[1], tagVersion[2], preReleaseTag, buildMetadata)
+
+                    val gitProps = mapOf(
+                        "env" to env,
+                        "gitSemVer" to version.toString(),
+                        "gitBranch" to currentBranch,
+                        "gitCommitId" to commitId,
+                        "gitAbbrevCommitId" to abbrevCommitId,
+                        "gitTag" to tagVersion.joinToString("."),
+                        "gitTagName" to (tag?.tagName ?: "")
+                    )
+                    project.ext["gitProps"] = gitProps
+
                     println("========== determineVersion ==========")
-                    println("semVersion = $version")
-                    println("tagVersion = ${version.tagVersion()}")
-                    println("currentBranch = ${version.currentBranch()}")
-                    println("env = ${version.env()}")
+                    println(gitProps)
                 }
             }
         }
@@ -201,10 +212,6 @@ fun determineVersion(): SemVersion {
     project.version = gitVersion.determineVersion()
     return project.version as SemVersion
 }
-
-fun SemVersion.tagVersion(): String = "${major}.${minor}.${patch}"
-fun SemVersion.currentBranch(): String = prereleaseTag!!.substringAfter("_")
-fun SemVersion.env(): String = buildMetadata!!
 
 // =============================== Postman ===============================
 
