@@ -9,12 +9,12 @@ plugins {
 
 dependencies {
 
-    val kotestVersion = "5.0.2"
-    val testContainerVersion = "1.16.2"
+    val kotestVersion = "5.1.0"
+    val testContainerVersion = "1.16.3"
 
-    val kotlinVersion = "1.6.0"
-    val ktorVersion = "1.6.6"
-    val koinVersion = "3.1.4"
+    val kotlinVersion = "1.6.10"
+    val ktorVersion = "1.6.7"
+    val koinVersion = "3.1.5"
 
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")

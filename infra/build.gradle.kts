@@ -5,10 +5,10 @@ plugins {
 }
 
 dependencies {
-    val kotlinVersion = "1.6.0"
+    val kotlinVersion = "1.6.10"
     val ktorVersion = "1.6.7"
-    val koinVersion = "3.1.4"
-    val exposedVersion = "0.36.2"
+    val koinVersion = "3.1.5"
+    val exposedVersion = "0.37.3"
     val jacksonVersion = "2.13.1"
 
     // =============== kotlin, kotlinx ===============
@@ -39,7 +39,7 @@ dependencies {
     api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
-    api("com.github.jasync-sql:jasync-postgresql:2.0.4")
+    api("com.github.jasync-sql:jasync-postgresql:2.0.6")
 
     // =============== utils - feature ===============
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
@@ -65,21 +65,21 @@ dependencies {
 
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:2.1.21")
-    runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
+    runtimeOnly("ch.qos.logback:logback-classic:1.2.10")
     implementation("io.sentry:sentry:5.6.1")
 
     // =============== utils - general ===============
-    implementation("com.github.kittinunf.result:result:5.2.0")
+    implementation("com.github.kittinunf.result:result:5.2.1")
     implementation("com.github.kittinunf.result:result-coroutines:4.0.0")
     implementation("org.apache.commons:commons-text:1.9")
 
     // =============== test ===============
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
-    implementation("com.zaxxer:HikariCP:5.0.0")
-    implementation("org.flywaydb:flyway-core:8.3.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("org.flywaydb:flyway-core:8.5.0")
 
-    runtimeOnly("org.postgresql:postgresql:42.3.1")
+    runtimeOnly("org.postgresql:postgresql:42.3.2")
 
     // ===============  AWS Java SDK Version 2 ===============
     implementation(platform("software.amazon.awssdk:bom:2.17.102"))

@@ -8,8 +8,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0")
-    implementation("org.jetbrains.kotlin:kotlin-serialization:1.6.0")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
+    implementation("org.jetbrains.kotlin:kotlin-serialization:1.6.10")
     implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
     implementation("com.bmuschko:gradle-docker-plugin:7.1.0")
 
@@ -18,7 +18,7 @@ dependencies {
     //implementation("io.kotest:kotest-gradle-plugin:0.3.9")
 
     constraints {
-        implementation("org.apache.logging.log4j:log4j-core:2.17.0") {
+        implementation("org.apache.logging.log4j:log4j-core:2.17.1") {
             because(
                 "upgrade log4j-core from 2.14.1 to 2.16.0 required by shadow jar gradle plugin " +
                         "due to Log4jShell security vulnerability. Although it would not affect server at runtime"
