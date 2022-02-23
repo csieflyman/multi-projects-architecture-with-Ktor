@@ -66,7 +66,7 @@ dependencies {
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:2.1.21")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.9")
-    implementation("io.sentry:sentry:5.5.2")
+    implementation("io.sentry:sentry:5.6.1")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.2.0")

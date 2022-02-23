@@ -6,7 +6,7 @@ package fanpoll.infra.base.exception
 
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCodeType
-import fanpoll.infra.logging.toLogString
+import fanpoll.infra.logging.logString
 import io.ktor.application.ApplicationCall
 import io.ktor.features.BadRequestException
 import io.ktor.features.MissingRequestParameterException
@@ -34,7 +34,7 @@ object ExceptionUtils {
 
     fun writeLogToFile(e: Throwable, call: ApplicationCall? = null) {
         val ee = wrapException(e)
-        val message = "${call?.toLogString()} => "
+        val message = "${call?.logString()} => "
         when (ee.code.type) {
             ResponseCodeType.SUCCESS -> logger.debug("$message${ee.message}")
             ResponseCodeType.CLIENT_INFO -> logger.info("$message${ee.message}")

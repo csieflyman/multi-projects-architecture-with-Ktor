@@ -5,15 +5,18 @@
 package fanpoll.infra.base.exception
 
 import fanpoll.infra.base.entity.Entity
+import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.tenant.TenantEntity
 import fanpoll.infra.base.tenant.TenantId
+import fanpoll.infra.base.util.DateTimeUtils
 import io.konform.validation.Invalid
+import kotlinx.serialization.Serializable
 import java.time.Instant
 
 abstract class BaseException(
     val code: ResponseCode,
-    message: String? = null,
+    message: String? = code.name,
     cause: Throwable? = null,
     val dataMap: Map<String, Any>? = null,
     var tenantId: TenantId? = null
@@ -31,7 +34,7 @@ class RequestException : BaseException {
 
     constructor(
         code: ResponseCode,
-        message: String? = "",
+        message: String? = null,
         cause: Throwable? = null,
         dataMap: Map<String, Any>? = null,
         tenantId: TenantId? = null
@@ -78,12 +81,27 @@ open class RemoteServiceException(
     cause: Throwable? = null,
     dataMap: Map<String, Any>? = null,
     tenantId: TenantId? = null,
-    val name: String, val api: String,
-    val rspCode: String? = null,
-    val reqBody: String? = null,
-    val rspBody: String? = null
+    val name: String,
+    val api: String,
+    val reqId: String?,
+    val reqBody: String?,
+    @Serializable(with = InstantSerializer::class) val reqAt: Instant?,
+    val rspCode: String?,
+    val rspBody: String?,
+    @Serializable(with = InstantSerializer::class) val rspAt: Instant?,
+    val rspTime: Long?
 ) : BaseException(
     code,
-    "${message ?: ""} => name = [$name] api = [$api], rspCode = [$rspCode], reqBody = [$reqBody], rspBody = [$rspBody]",
+    """${message ?: ""} => 
+        name = [$name] 
+        api = [$api], 
+        reqId = [$reqId], 
+        rspCode = [$rspCode], 
+        reqAt = [${DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(reqAt)}], 
+        rspAt = [${DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(rspAt)}], 
+        rspTime = [$rspTime],
+        reqBody = [$reqBody],
+        rspBody = [$rspBody]
+    """,
     cause, dataMap, tenantId
 )

@@ -8,6 +8,7 @@ import fanpoll.infra.app.AppOs
 import fanpoll.infra.app.CreateUserDeviceForm
 import fanpoll.infra.app.UpdateUserDeviceForm
 import fanpoll.infra.app.UserDeviceDTO
+import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_ID
 import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.ServicePrincipal
@@ -58,6 +59,10 @@ abstract class LoginForm<Self : LoginForm<Self>> : Form<Self>() {
     open fun populateRequest(call: ApplicationCall) {
         source = call.principal<ServicePrincipal>()!!.source
         ip = call.request.publicRemoteHost
+
+        if (deviceId != null) {
+            call.attributes.put(ATTRIBUTE_KEY_CLIENT_ID, deviceId.toString())
+        }
 
         if (clientVersion != null) {
             call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION, clientVersion!!)

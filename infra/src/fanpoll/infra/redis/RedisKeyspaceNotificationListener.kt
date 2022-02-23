@@ -50,7 +50,7 @@ class RedisKeyspaceNotificationListener(
                         logWriter.write(
                             ErrorLog.internal(
                                 InternalServerException(InfraResponseCode.REDIS_ERROR, errorMsg, e, mapOf("message" to message)),
-                                actorName, message.id
+                                actorName, mapOf("redisPubSubMessageId" to message.id)
                             )
                         )
                         // TODO: persistence unDeliveredMessage and retry later

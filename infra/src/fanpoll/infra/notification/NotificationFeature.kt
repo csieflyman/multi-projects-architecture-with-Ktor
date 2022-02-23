@@ -12,10 +12,7 @@ import fanpoll.infra.base.i18n.AvailableLangs
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogDestination
-import fanpoll.infra.logging.writers.AwsKinesisLogWriter
-import fanpoll.infra.logging.writers.FileLogWriter
-import fanpoll.infra.logging.writers.LogMessageDispatcher
-import fanpoll.infra.logging.writers.LogWriter
+import fanpoll.infra.logging.writers.*
 import fanpoll.infra.notification.channel.MockNotificationChannelSender
 import fanpoll.infra.notification.channel.NotificationChannelConfig
 import fanpoll.infra.notification.channel.NotificationChannelSender
@@ -88,6 +85,7 @@ class NotificationFeature(configuration: Configuration) {
                             LogDestination.File -> pipeline.get<FileLogWriter>()
                             LogDestination.Database -> NotificationMessageLogDBWriter()
                             LogDestination.AwsKinesis -> pipeline.get<AwsKinesisLogWriter>()
+                            LogDestination.Sentry -> pipeline.get<SentryLogWriter>()
                         }
                         val logMessageDispatcher = pipeline.get<LogMessageDispatcher>()
                         logMessageDispatcher.register(NotificationMessageLog.LOG_TYPE, notificationMessageLogWriter)

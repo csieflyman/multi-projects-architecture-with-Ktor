@@ -46,9 +46,12 @@ class NotificationCoroutineActor(
                 ErrorLog.internal(
                     InternalServerException(
                         InfraResponseCode.NOTIFICATION_ERROR, errorMsg, e,
-                        mapOf("id" to notification.id, "type" to notification.type, "eventId" to notification.eventId)
+                        mapOf(
+                            "notificationId" to notification.id, "notificationType" to notification.type,
+                            "eventId" to notification.eventId
+                        )
                     ),
-                    actorName, notification.id.toString()
+                    actorName, mapOf("notificationId" to notification.id.toString())
                 )
             )
         }

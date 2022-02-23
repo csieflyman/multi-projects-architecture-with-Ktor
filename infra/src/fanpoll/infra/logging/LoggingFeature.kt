@@ -97,12 +97,21 @@ class LoggingFeature(configuration: Configuration) {
                         if (awsKinesisLogWriter != null)
                             single { awsKinesisLogWriter }
 
+                        val sentryLogWriter = loggingConfig.writer?.sentry?.let {
+                            SentryLogWriter(it, appInfoConfig, serverConfig)
+                        }
+                        if (sentryLogWriter != null)
+                            single { sentryLogWriter }
+
                         if (loggingConfig.request.enabled) {
                             val requestLogWriter = when (loggingConfig.request.destination) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> RequestLogDBWriter()
                                 LogDestination.AwsKinesis -> awsKinesisLogWriter ?: throw InternalServerException(
                                     InfraResponseCode.SERVER_CONFIG_ERROR, "AwsKinesisLogWriter is not configured"
+                                )
+                                LogDestination.Sentry -> sentryLogWriter ?: throw InternalServerException(
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "SentryLogWriter is not configured"
                                 )
                             }
                             logMessageDispatcher.register(RequestLog.LOG_TYPE, requestLogWriter)
@@ -113,6 +122,9 @@ class LoggingFeature(configuration: Configuration) {
                                 LogDestination.Database -> ErrorLogDBWriter()
                                 LogDestination.AwsKinesis -> awsKinesisLogWriter ?: throw InternalServerException(
                                     InfraResponseCode.SERVER_CONFIG_ERROR, "kinesisLogWriter is not configured"
+                                )
+                                LogDestination.Sentry -> sentryLogWriter ?: throw InternalServerException(
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "SentryLogWriter is not configured"
                                 )
                             }
                             logMessageDispatcher.register(ErrorLog.LOG_TYPE, errorLogWriter)
@@ -152,7 +164,7 @@ class LoggingFeature(configuration: Configuration) {
 }
 
 enum class LogDestination {
-    File, Database, AwsKinesis
+    File, Database, AwsKinesis, Sentry
 }
 
 data class LoggingConfig(
@@ -163,7 +175,8 @@ data class LoggingConfig(
 )
 
 data class LogWriterConfig(
-    val awsKinesis: AwsKinesisConfig? = null
+    val awsKinesis: AwsKinesisConfig? = null,
+    val sentry: SentryConfig? = null
 ) {
 
     class Builder {
@@ -174,8 +187,14 @@ data class LogWriterConfig(
             awsKinesis = AwsKinesisConfig.Builder().apply(block).build()
         }
 
+        private var sentry: SentryConfig? = null
+
+        fun sentry(block: SentryConfig.Builder.() -> Unit) {
+            sentry = SentryConfig.Builder().apply(block).build()
+        }
+
         fun build(): LogWriterConfig {
-            return LogWriterConfig(awsKinesis)
+            return LogWriterConfig(awsKinesis, sentry)
         }
     }
 }

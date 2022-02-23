@@ -27,7 +27,7 @@ class PushTokenStorage(private val logWriter: LogWriter) {
             logWriter.write(
                 ErrorLog.internal(
                     InternalServerException(InfraResponseCode.NOTIFICATION_ERROR, errorMsg, e, mapOf("tokens" to tokens)),
-                    "PushTokenStorage", "deleteUnRegisteredTokens"
+                    "PushTokenStorage", null
                 )
             )
         }

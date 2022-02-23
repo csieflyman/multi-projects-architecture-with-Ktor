@@ -9,12 +9,19 @@ import io.ktor.application.ApplicationCall
 import io.ktor.auth.Principal
 import io.ktor.auth.principal
 import io.ktor.features.callId
-import io.ktor.request.ApplicationRequest
-import io.ktor.request.httpMethod
-import io.ktor.request.queryString
-import io.ktor.request.uri
+import io.ktor.request.*
+import io.ktor.util.AttributeKey
+import java.time.Instant
 
-fun ApplicationCall?.toCallerLogString(): String {
+object RequestAttribute {
+
+    val REQ_AT = AttributeKey<Instant>("reqAt")
+    val TAGS = AttributeKey<Map<String, String>>("tags")
+
+    val CLIENT_REQ_ID = AttributeKey<String>("clientReqId")
+}
+
+fun ApplicationCall?.logCaller(): String {
     return this?.let {
         "($callId) - " +
                 (attributes.getOrNull(PrincipalSource.ATTRIBUTE_KEY)?.id ?: "Unknown-Source") + " - " +
@@ -22,11 +29,14 @@ fun ApplicationCall?.toCallerLogString(): String {
     } ?: "Internal"
 }
 
-fun ApplicationCall?.toLogString(): String = this?.toCallerLogString() + this?.request?.toApiLogString()?.let { " - $it" }
+fun ApplicationCall?.logString(): String = this?.logCaller() + this?.request?.logApi()?.let { " - $it" }
 
-fun ApplicationRequest.toApiLogString(): String = "${httpMethod.value} - $uri"
+fun ApplicationRequest.logApi(): String = "${httpMethod.value} - $uri"
 
-fun ApplicationRequest.toQueryStringLogString(): String? = queryString().let { it.ifEmpty { null } }
+fun ApplicationRequest.logQueryString(): String? = queryString().let { it.ifEmpty { null } }
 
-fun ApplicationRequest.toHeadersLogString(): String? = if (headers.isEmpty()) null
+fun ApplicationRequest.logHeaders(): String? = if (headers.isEmpty()) null
 else headers.entries().joinToString(",") { "${it.key} = ${it.value}" }
+
+// ASSUMPTION: request path format => {host}/{project}/{function}
+fun ApplicationRequest.logFunction(): String = path().split("/")[2]

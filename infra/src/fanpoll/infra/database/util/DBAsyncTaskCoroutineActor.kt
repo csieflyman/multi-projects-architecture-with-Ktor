@@ -53,7 +53,7 @@ class DBAsyncTaskCoroutineActor(
                         InfraResponseCode.DB_ASYNC_TASK_ERROR, errorMsg, e,
                         mapOf("taskId" to task.id, "taskType" to task.type)
                     ),
-                    actorName, task.id.toString()
+                    actorName, mapOf("dbAsyncTaskId" to task.id.toString())
                 )
             )
         }

@@ -5,6 +5,7 @@
 package fanpoll.infra.logging.request
 
 import fanpoll.infra.auth.principal.PrincipalSource
+import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.json.UUIDSerializer
@@ -19,32 +20,36 @@ data class RequestLogDTO(
     @JvmField @Serializable(with = UUIDSerializer::class) val id: UUID
 ) : EntityDTO<UUID> {
 
+    var project: String? = null
+    var function: String? = null
+    var source: PrincipalSource? = null
+    var tenantId: TenantId? = null
+    var principalId: String? = null
+    var tags: String? = null
+
+    var userType: UserType? = null
+
+    @Serializable(with = UUIDSerializer::class)
+    var userId: UUID? = null
+    var runAs: Boolean? = null
+
     var reqId: String? = null
 
     @Serializable(with = InstantSerializer::class)
     var reqAt: Instant? = null
-
     var api: String? = null
     var headers: String? = null
     var querystring: String? = null
     var reqBody: String? = null
-    var project: String? = null
-    var function: String? = null
-    var tag: String? = null
-    var source: PrincipalSource? = null
-    var tenantId: TenantId? = null
-    var principal: String? = null
-    var runAs: Boolean? = null
+    var ip: String? = null
     var clientId: String? = null
     var clientVersion: String? = null
-    var ip: String? = null
 
     @Serializable(with = InstantSerializer::class)
     var rspAt: Instant? = null
-
-    var rspTime: Long? = null
     var rspStatus: Int? = null
     var rspBody: String? = null
+    var rspTime: Long? = null
 
     override fun getId(): UUID = id
 

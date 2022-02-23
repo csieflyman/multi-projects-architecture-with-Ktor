@@ -6,6 +6,8 @@ package fanpoll.infra.auth
 
 import io.ktor.util.AttributeKey
 
+val ATTRIBUTE_KEY_CLIENT_ID = AttributeKey<String>("clientId")
+
 const val HEADER_CLIENT_VERSION = "clientVersion"
 
 const val HEADER_CLIENT_VERSION_CHECK_RESULT = "clientVersionCheckResult"

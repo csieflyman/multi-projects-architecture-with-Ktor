@@ -5,6 +5,7 @@
 package fanpoll.infra.logging.request
 
 import fanpoll.infra.database.custom.principalSource
+import fanpoll.infra.database.custom.userType
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.logging.LogMessage
@@ -18,29 +19,42 @@ import java.util.*
 class RequestLogDBWriter : LogWriter {
 
     override fun write(message: LogMessage) {
-        val dto = message as RequestLog
+        val requestLog = message as RequestLog
         transaction {
             RequestLogTable.insert {
-                it[reqId] = dto.reqId
-                it[reqAt] = dto.reqAt
-                it[api] = dto.api
-                it[headers] = dto.headers
-                it[querystring] = dto.querystring
-                it[reqBody] = dto.reqBody
-                it[project] = dto.project
-                it[function] = dto.function
-                it[tag] = dto.tag
-                it[sourceId] = dto.source
-                it[tenantId] = dto.tenantId?.value
-                it[principal] = dto.principal
-                it[runAs] = dto.runAs
-                it[clientId] = dto.clientId
-                it[clientVersion] = dto.clientVersion
-                it[ip] = dto.ip
-                it[rspAt] = dto.rspAt
-                it[rspTime] = dto.rspTime
-                it[rspStatus] = dto.rspStatus
-                it[rspBody] = dto.rspBody
+                it[id] = requestLog.id
+
+                it[project] = requestLog.project
+                it[function] = requestLog.function
+                it[sourceId] = requestLog.source
+                it[tenantId] = requestLog.tenantId?.value
+                it[principalId] = requestLog.principalId
+                it[tags] = requestLog.tags?.toString()
+
+                requestLog.user?.let { user ->
+                    it[userType] = user.type
+                    it[userId] = user.id
+                    it[runAs] = user.runAs
+                }
+
+                requestLog.request.let { req ->
+                    it[reqId] = req.id
+                    it[reqAt] = req.at
+                    it[api] = "${req.method} ${req.path}"
+                    it[headers] = req.headers?.toString()
+                    it[querystring] = req.querystring
+                    it[reqBody] = req.body
+                    it[ip] = req.ip
+                    it[clientId] = req.clientId
+                    it[clientVersion] = req.clientVersion
+                }
+
+                requestLog.response.let { rsp ->
+                    it[rspAt] = rsp.at
+                    it[rspStatus] = rsp.status
+                    it[rspBody] = rsp.body
+                    it[rspTime] = rsp.time
+                }
             }
         }
     }
@@ -48,29 +62,31 @@ class RequestLogDBWriter : LogWriter {
 
 object RequestLogTable : UUIDTable(name = "infra_request_log") {
 
-    val reqId = varchar("req_id", 32)
-    val reqAt = timestamp("req_at")
-    val api = varchar("api", 255)
+    val project = varchar("project", 20)
+    val function = varchar("function", 30)
+    val sourceId = principalSource("source") // name "source" conflict
+    val tenantId = varchar("tenant_id", 20).nullable()
+    val principalId = varchar("principal_id", 64).nullable()
+    val tags = text("tags").nullable()
+
+    val userType = userType("user_type").nullable()
+    val userId = uuid("user_id").nullable()
+    val runAs = bool("run_as").nullable()
+
+    val reqId = varchar("req_id", 32).nullable()
+    val reqAt = timestamp("req_at").nullable()
+    val api = varchar("api", 255).nullable()
     val headers = text("headers").nullable()
     val querystring = text("querystring").nullable()
     val reqBody = text("req_body").nullable()
-
-    val project = varchar("project", 20)
-    val function = varchar("function", 30)
-    val tag = varchar("tag", 36).nullable()
-    val sourceId = principalSource("source") // name "source" conflict
-    val tenantId = varchar("tenant_id", 20).nullable()
-
-    val principal = varchar("principal", 64).nullable()
-    val runAs = bool("run_as")
-    val clientId = varchar("client_id", 36).nullable()
-    val clientVersion = varchar("client_version", 10).nullable()
     val ip = varchar("ip", 39).nullable()
+    val clientId = varchar("client_id", 36).nullable()
+    val clientVersion = varchar("client_version", 36).nullable()
 
-    val rspAt = timestamp("rsp_at")
-    val rspTime = long("rsp_time")
-    val rspStatus = integer("rsp_status")
+    val rspAt = timestamp("rsp_at").nullable()
+    val rspStatus = integer("rsp_status").nullable()
     val rspBody = text("rsp_body").nullable()
+    val rspTime = long("rsp_time").nullable()
 
     override val naturalKeys: List<Column<out Any>> = listOf(id)
     override val surrogateKey: Column<EntityID<UUID>> = id

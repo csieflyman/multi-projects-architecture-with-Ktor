@@ -7,7 +7,6 @@ package fanpoll.infra.report.util
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.LocalDateRange
 import fanpoll.infra.base.response.InfraResponseCode
-import fanpoll.infra.logging.request.MyCallLoggingFeature.Feature.ATTRIBUTE_KEY_TAG
 import fanpoll.infra.report.Report
 import io.ktor.application.ApplicationCall
 import io.ktor.locations.KtorExperimentalLocationsAPI
@@ -16,7 +15,7 @@ import java.time.ZoneId
 
 interface ReportLocation {
 
-    val reportIds: String
+    val reportIds: List<String>
     val zone: String
     val startTime: String
     val endTime: String
@@ -25,7 +24,7 @@ interface ReportLocation {
     val compareTimeUnit: CompareTimeUnit?
 
     private fun validateQueryParameters() {
-        if (reportIds.isBlank())
+        if (reportIds.isEmpty())
             throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "reportIds can't be blank")
 
         if ((compareStartTime != null).xor(compareEndTime != null))
@@ -44,11 +43,10 @@ interface ReportLocation {
     fun toReportQueryParameters(allReports: List<Report>, call: ApplicationCall): ReportQueryParameters {
         validateQueryParameters()
 
-        val reports = reportIds.split(",").map { reportId ->
+        val reports = reportIds.map { reportId ->
             allReports.find { it.id == reportId }
                 ?: throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid reportId: $reportId")
         }
-        call.attributes.put(ATTRIBUTE_KEY_TAG, reportIds)
 
         val zoneId = try {
             ZoneId.of(zone)
@@ -83,7 +81,7 @@ interface ReportLocation {
 @OptIn(KtorExperimentalLocationsAPI::class)
 @Location("/reports")
 data class DefaultReportLocation(
-    override val reportIds: String,
+    override val reportIds: List<String>,
     override val zone: String,
     override val startTime: String, override val endTime: String,
     override val compareStartTime: String? = null, override val compareEndTime: String? = null,

@@ -113,7 +113,7 @@ class RedisSessionStorage(
                                 InfraResponseCode.REDIS_KEY_NOTIFICATION_ERROR, errorMsg, e,
                                 mapOf("notification" to notification)
                             ),
-                            "SessionService", "subscribeSessionKeyExpired"
+                            "SessionService", mapOf("redisPubSubMessageId" to notification.id)
                         )
                     )
                 }

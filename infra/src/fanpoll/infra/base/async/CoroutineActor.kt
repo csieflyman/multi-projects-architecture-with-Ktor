@@ -60,7 +60,7 @@ class CoroutineActor<T : IdentifiableObject<*>>(
                 logWriter?.write(
                     ErrorLog.internal(
                         InternalServerException(errorCode, errorMsg, e, mapOf("message" to message)),
-                        name, message.id.toString()
+                        name, mapOf("actorMessageId" to message.id.toString())
                     )
                 )
                 // TODO: persistence unDeliveredMessage and retry later

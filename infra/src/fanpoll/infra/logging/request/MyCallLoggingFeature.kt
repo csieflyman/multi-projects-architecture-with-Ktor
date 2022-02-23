@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. fanpoll All rights reserved.
+ * Copyright (c) 2022. fanpoll All rights reserved.
  */
 
 package fanpoll.infra.logging.request
@@ -7,19 +7,12 @@ package fanpoll.infra.logging.request
 import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
 import fanpoll.infra.auth.HEADER_CLIENT_VERSION
 import fanpoll.infra.auth.principal.MyPrincipal
-import fanpoll.infra.auth.principal.UserPrincipal
-import fanpoll.infra.base.extension.bodyString
-import fanpoll.infra.base.extension.publicRemoteHost
-import fanpoll.infra.base.tenant.tenantId
-import fanpoll.infra.logging.LogMessage
 import fanpoll.infra.logging.LoggingConfig
-import fanpoll.infra.logging.toHeadersLogString
-import fanpoll.infra.logging.toQueryStringLogString
+import fanpoll.infra.logging.RequestAttribute.REQ_AT
 import fanpoll.infra.logging.writers.LogWriter
 import io.ktor.application.*
 import io.ktor.auth.principal
 import io.ktor.features.CallLogging
-import io.ktor.features.callId
 import io.ktor.features.toLogString
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -36,7 +29,6 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import org.koin.ktor.ext.get
 import org.slf4j.MDC
-import java.time.Duration
 import java.time.Instant
 import kotlin.coroutines.CoroutineContext
 
@@ -116,9 +108,7 @@ class MyCallLoggingFeature private constructor(
      */
     companion object Feature : ApplicationFeature<Application, Configuration, MyCallLoggingFeature> {
 
-        val ATTRIBUTE_KEY_REQ_AT = AttributeKey<Instant>("reqAt")
         val ATTRIBUTE_KEY_RSP_BODY = AttributeKey<String>("rspBody")
-        val ATTRIBUTE_KEY_TAG = AttributeKey<String>("tag")
 
         private val afterRenderResponsePhase: PipelinePhase = PipelinePhase("AfterRenderResponse")
 
@@ -169,8 +159,8 @@ class MyCallLoggingFeature private constructor(
         }
 
         private fun putAttributes(call: ApplicationCall) {
-            if (!call.attributes.contains(ATTRIBUTE_KEY_REQ_AT))
-                call.attributes.put(ATTRIBUTE_KEY_REQ_AT, Instant.now())
+            if (!call.attributes.contains(REQ_AT))
+                call.attributes.put(REQ_AT, Instant.now())
             if (call.request.headers.contains(HEADER_CLIENT_VERSION))
                 call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION, call.request.header(HEADER_CLIENT_VERSION)!!)
         }
@@ -179,7 +169,7 @@ class MyCallLoggingFeature private constructor(
     private fun logSuccess(call: ApplicationCall) {
         if (config.enabled) {
             if (filter(call)) {
-                logWriter.write(buildLogMessage(call))
+                logWriter.write(RequestLog(config, call))
             }
         }
     }
@@ -189,41 +179,6 @@ class MyCallLoggingFeature private constructor(
         config.excludePaths.any { call.request.path().startsWith(it) } -> false
         call.principal<MyPrincipal>() == null -> false // ASSUMPTION => only log authenticated request to avoid ddos attack
         else -> true
-    }
-
-    private fun buildLogMessage(call: ApplicationCall): LogMessage {
-        // ASSUMPTION => path segments size >= 3
-        val pathSegments = call.request.path().split("/")
-        //val project = pathSegments[1]
-        val function = pathSegments[2]
-
-        val principal = call.principal<MyPrincipal>()!!
-        val userPrincipal = call.principal<UserPrincipal>()
-        val reqAt = call.attributes.getOrNull(ATTRIBUTE_KEY_REQ_AT) ?: Instant.now()
-        val rspAt = Instant.now()
-
-        return RequestLog(
-            call.callId!!,
-            reqAt,
-            call.request.toLogString(),
-            if (config.includeHeaders) call.request.toHeadersLogString() else null,
-            if (config.includeQueryString) call.request.toQueryStringLogString() else null,
-            if (config.excludeRequestBodyPaths.any { call.request.path().endsWith(it) }) null else call.bodyString(),
-            principal.source.projectId,
-            function,
-            call.attributes.getOrNull(ATTRIBUTE_KEY_TAG),
-            principal.source,
-            call.tenantId,
-            principal.id,
-            userPrincipal?.runAs ?: false,
-            userPrincipal?.clientId,
-            call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION),
-            call.request.publicRemoteHost,
-            rspAt,
-            Duration.between(reqAt, rspAt).toMillis(),
-            call.response.status()!!.value,
-            call.attributes.getOrNull(ATTRIBUTE_KEY_RSP_BODY)
-        )
     }
 }
 
