@@ -94,6 +94,7 @@ dependencies {
 
     // ===============  third-party service ===============
     implementation("com.google.firebase:firebase-admin:8.1.0")
+    implementation("com.sendgrid:sendgrid-java:4.8.3")
 
     // =============== utils - feature ===============
     implementation("org.freemarker:freemarker:2.3.31")

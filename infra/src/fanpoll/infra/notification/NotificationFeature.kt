@@ -17,6 +17,7 @@ import fanpoll.infra.notification.channel.MockNotificationChannelSender
 import fanpoll.infra.notification.channel.NotificationChannelConfig
 import fanpoll.infra.notification.channel.NotificationChannelSender
 import fanpoll.infra.notification.channel.email.senders.AwsSESSender
+import fanpoll.infra.notification.channel.email.senders.SendGridSender
 import fanpoll.infra.notification.channel.push.senders.FCMSender
 import fanpoll.infra.notification.channel.sms.senders.MitakeSender
 import fanpoll.infra.notification.i18n.I18nNotificationProjectMessages
@@ -96,6 +97,9 @@ class NotificationFeature(configuration: Configuration) {
                             val loggingConfig = channelConfig.email.logging ?: defaultLoggingConfig
                             emailSender = when {
                                 channelConfig.email.mock == true -> MockNotificationChannelSender(loggingConfig, logWriter)
+                                channelConfig.email.sendgrid != null -> SendGridSender(
+                                    channelConfig.email.sendgrid, loggingConfig, logWriter
+                                )
                                 channelConfig.email.awsSES != null -> AwsSESSender(channelConfig.email.awsSES, loggingConfig, logWriter)
                                 else -> throw InternalServerException(
                                     InfraResponseCode.SERVER_CONFIG_ERROR,
