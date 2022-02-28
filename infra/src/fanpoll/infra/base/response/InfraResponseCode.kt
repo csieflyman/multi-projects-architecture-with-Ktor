@@ -89,7 +89,6 @@ object InfraResponseCode {
         ResponseCode("REMOTE_SERVICE_RESPONSE_BODY_PARSE_ERROR", "8005", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
 
     val REDIS_ERROR = ResponseCode("REDIS_ERROR", "8010", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
-    val AWS_KINESIS_ERROR = ResponseCode("AWS_KINESIS_ERROR", "8011", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
     val SES_ERROR = ResponseCode("SES_ERROR", "8012", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
     val FCM_ERROR = ResponseCode("FCM_ERROR", "8013", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)
     val SMS_MITAKE_ERROR = ResponseCode("SMS_MITAKE_ERROR", "8014", ResponseCodeType.SERVER_ERROR, HttpStatusCode.InternalServerError)

@@ -15,7 +15,10 @@ import fanpoll.infra.base.config.ValidateableConfig
 import fanpoll.infra.base.json.json
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.LogDestination
-import fanpoll.infra.logging.writers.*
+import fanpoll.infra.logging.writers.FileLogWriter
+import fanpoll.infra.logging.writers.LogMessageDispatcher
+import fanpoll.infra.logging.writers.LogWriter
+import fanpoll.infra.logging.writers.SentryLogWriter
 import fanpoll.infra.redis.RedisKeyspaceNotificationListener
 import fanpoll.infra.redis.ktorio.RedisClient
 import io.ktor.application.Application
@@ -104,7 +107,6 @@ class SessionAuthPlugin(configuration: Configuration) {
             val loginLogWriter = when (sessionAuthConfig.logging.destination) {
                 LogDestination.File -> pipeline.get<FileLogWriter>()
                 LogDestination.Database -> LoginLogDBWriter()
-                LogDestination.AwsKinesis -> pipeline.get<AwsKinesisLogWriter>()
                 LogDestination.Sentry -> pipeline.get<SentryLogWriter>()
             }
             val logMessageDispatcher = pipeline.get<LogMessageDispatcher>()

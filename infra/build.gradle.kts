@@ -66,7 +66,6 @@ dependencies {
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:2.1.21")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.10")
-    implementation("io.sentry:sentry:5.6.1")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.2.1")
@@ -81,16 +80,10 @@ dependencies {
 
     runtimeOnly("org.postgresql:postgresql:42.3.2")
 
-    // ===============  AWS Java SDK Version 2 ===============
-    implementation(platform("software.amazon.awssdk:bom:2.17.102"))
-
-    implementation("software.amazon.awssdk:netty-nio-client")
-
-    implementation("software.amazon.awssdk:firehose")
-
     // ===============  third-party service ===============
     implementation("com.google.firebase:firebase-admin:8.1.0")
     implementation("com.sendgrid:sendgrid-java:4.8.3")
+    implementation("io.sentry:sentry:5.6.1")
 
     // =============== utils - feature ===============
     implementation("org.freemarker:freemarker:2.3.31")

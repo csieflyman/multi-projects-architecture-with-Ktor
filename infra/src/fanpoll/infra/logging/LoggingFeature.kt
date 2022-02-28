@@ -91,12 +91,6 @@ class LoggingFeature(configuration: Configuration) {
                         val logMessageDispatcher = LogMessageDispatcher(FileLogWriter())
                         single { logMessageDispatcher }
 
-                        val awsKinesisLogWriter = loggingConfig.writer?.awsKinesis?.let {
-                            AwsKinesisLogWriter(it, appInfoConfig, serverConfig)
-                        }
-                        if (awsKinesisLogWriter != null)
-                            single { awsKinesisLogWriter }
-
                         val sentryLogWriter = loggingConfig.writer?.sentry?.let {
                             SentryLogWriter(it, appInfoConfig, serverConfig)
                         }
@@ -107,9 +101,6 @@ class LoggingFeature(configuration: Configuration) {
                             val requestLogWriter = when (loggingConfig.request.destination) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> RequestLogDBWriter()
-                                LogDestination.AwsKinesis -> awsKinesisLogWriter ?: throw InternalServerException(
-                                    InfraResponseCode.SERVER_CONFIG_ERROR, "AwsKinesisLogWriter is not configured"
-                                )
                                 LogDestination.Sentry -> sentryLogWriter ?: throw InternalServerException(
                                     InfraResponseCode.SERVER_CONFIG_ERROR, "SentryLogWriter is not configured"
                                 )
@@ -120,9 +111,6 @@ class LoggingFeature(configuration: Configuration) {
                             val errorLogWriter = when (loggingConfig.error.destination) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> ErrorLogDBWriter()
-                                LogDestination.AwsKinesis -> awsKinesisLogWriter ?: throw InternalServerException(
-                                    InfraResponseCode.SERVER_CONFIG_ERROR, "kinesisLogWriter is not configured"
-                                )
                                 LogDestination.Sentry -> sentryLogWriter ?: throw InternalServerException(
                                     InfraResponseCode.SERVER_CONFIG_ERROR, "SentryLogWriter is not configured"
                                 )
@@ -164,7 +152,7 @@ class LoggingFeature(configuration: Configuration) {
 }
 
 enum class LogDestination {
-    File, Database, AwsKinesis, Sentry
+    File, Database, Sentry
 }
 
 data class LoggingConfig(
@@ -175,17 +163,10 @@ data class LoggingConfig(
 )
 
 data class LogWriterConfig(
-    val awsKinesis: AwsKinesisConfig? = null,
     val sentry: SentryConfig? = null
 ) {
 
     class Builder {
-
-        private var awsKinesis: AwsKinesisConfig? = null
-
-        fun awsKinesis(block: AwsKinesisConfig.Builder.() -> Unit) {
-            awsKinesis = AwsKinesisConfig.Builder().apply(block).build()
-        }
 
         private var sentry: SentryConfig? = null
 
@@ -194,7 +175,7 @@ data class LogWriterConfig(
         }
 
         fun build(): LogWriterConfig {
-            return LogWriterConfig(awsKinesis, sentry)
+            return LogWriterConfig(sentry)
         }
     }
 }
