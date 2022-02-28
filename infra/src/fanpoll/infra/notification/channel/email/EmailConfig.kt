@@ -6,7 +6,6 @@ package fanpoll.infra.notification.channel.email
 
 import fanpoll.infra.base.config.ValidateableConfig
 import fanpoll.infra.notification.NotificationLogConfig
-import fanpoll.infra.notification.channel.email.senders.AwsSESConfig
 import fanpoll.infra.notification.channel.email.senders.SendGridConfig
 
 data class EmailConfig(
@@ -14,12 +13,11 @@ data class EmailConfig(
     val marketingAddress: String? = null,
     val logging: NotificationLogConfig? = null,
     val mock: Boolean? = false,
-    val sendgrid: SendGridConfig? = null,
-    val awsSES: AwsSESConfig? = null
+    val sendgrid: SendGridConfig? = null
 ) : ValidateableConfig {
 
     override fun validate() {
-        require(mock == true || sendgrid != null || awsSES != null) {
+        require(mock == true || sendgrid != null) {
             "at least one email service provider should be configured"
         }
     }
@@ -32,7 +30,6 @@ data class EmailConfig(
         var mock: Boolean? = false
 
         private var sendgrid: SendGridConfig? = null
-        private var awsSES: AwsSESConfig? = null
 
         fun logging(configure: NotificationLogConfig.Builder.() -> Unit) {
             logging = NotificationLogConfig.Builder().apply(configure).build()
@@ -42,12 +39,8 @@ data class EmailConfig(
             sendgrid = SendGridConfig.Builder().apply(block).build()
         }
 
-        fun awsSES(block: AwsSESConfig.Builder.() -> Unit) {
-            awsSES = AwsSESConfig.Builder().apply(block).build()
-        }
-
         fun build(): EmailConfig {
-            return EmailConfig(noReplyAddress, marketingAddress, logging, mock, sendgrid, awsSES).apply { validate() }
+            return EmailConfig(noReplyAddress, marketingAddress, logging, mock, sendgrid).apply { validate() }
         }
     }
 }

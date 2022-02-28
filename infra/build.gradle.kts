@@ -88,10 +88,6 @@ dependencies {
 
     implementation("software.amazon.awssdk:firehose")
 
-    implementation("software.amazon.awssdk:ses")
-    implementation("javax.mail:javax.mail-api:1.6.2")
-    implementation("com.sun.mail:javax.mail:1.6.2")
-
     // ===============  third-party service ===============
     implementation("com.google.firebase:firebase-admin:8.1.0")
     implementation("com.sendgrid:sendgrid-java:4.8.3")
