@@ -14,11 +14,11 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.error.ErrorLogConfig
 import fanpoll.infra.logging.error.ErrorLogDBWriter
-import fanpoll.infra.logging.request.MyCallLoggingFeature
-import fanpoll.infra.logging.request.RequestLog
-import fanpoll.infra.logging.request.RequestLogConfig
-import fanpoll.infra.logging.request.RequestLogDBWriter
-import fanpoll.infra.logging.writers.*
+import fanpoll.infra.logging.error.SentryLogWriter
+import fanpoll.infra.logging.request.*
+import fanpoll.infra.logging.writers.FileLogWriter
+import fanpoll.infra.logging.writers.LogMessageCoroutineActor
+import fanpoll.infra.logging.writers.LogMessageDispatcher
 import io.ktor.application.Application
 import io.ktor.application.ApplicationFeature
 import io.ktor.application.install
@@ -41,7 +41,6 @@ class LoggingFeature(configuration: Configuration) {
 
         private lateinit var request: RequestLogConfig
         private lateinit var error: ErrorLogConfig
-        private var writer: LogWriterConfig? = null
         private var asyncExecutor: AsyncExecutorConfig? = null
 
         fun request(block: RequestLogConfig.Builder.() -> Unit) {
@@ -52,16 +51,12 @@ class LoggingFeature(configuration: Configuration) {
             error = ErrorLogConfig.Builder().apply(block).build()
         }
 
-        fun writer(block: LogWriterConfig.Builder.() -> Unit) {
-            writer = LogWriterConfig.Builder().apply(block).build()
-        }
-
         fun asyncExecutor(configure: AsyncExecutorConfig.Builder.() -> Unit) {
             asyncExecutor = AsyncExecutorConfig.Builder().apply(configure).build()
         }
 
         fun build(): LoggingConfig {
-            return LoggingConfig(request, error, writer, asyncExecutor)
+            return LoggingConfig(request, error, asyncExecutor)
         }
     }
 
@@ -91,28 +86,41 @@ class LoggingFeature(configuration: Configuration) {
                         val logMessageDispatcher = LogMessageDispatcher(FileLogWriter())
                         single { logMessageDispatcher }
 
-                        val sentryLogWriter = loggingConfig.writer?.sentry?.let {
-                            SentryLogWriter(it, appInfoConfig, serverConfig)
+                        val lokiLogWriter = loggingConfig.request.loki?.let {
+                            LokiLogWriter(it, serverConfig)
                         }
-                        if (sentryLogWriter != null)
-                            single { sentryLogWriter }
+                        if (lokiLogWriter != null)
+                            single { lokiLogWriter }
 
                         if (loggingConfig.request.enabled) {
                             val requestLogWriter = when (loggingConfig.request.destination) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> RequestLogDBWriter()
-                                LogDestination.Sentry -> sentryLogWriter ?: throw InternalServerException(
-                                    InfraResponseCode.SERVER_CONFIG_ERROR, "SentryLogWriter is not configured"
+                                LogDestination.Loki -> lokiLogWriter ?: throw InternalServerException(
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "LokiLogWriter is not configured"
+                                )
+                                else -> throw InternalServerException(
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "RequestLogWriter is not configured"
                                 )
                             }
                             logMessageDispatcher.register(RequestLog.LOG_TYPE, requestLogWriter)
                         }
+
+                        val sentryLogWriter = loggingConfig.error.sentry?.let {
+                            SentryLogWriter(it, appInfoConfig, serverConfig)
+                        }
+                        if (sentryLogWriter != null)
+                            single { sentryLogWriter }
+
                         if (loggingConfig.error.enabled) {
                             val errorLogWriter = when (loggingConfig.error.destination) {
                                 LogDestination.File -> fileLogWriter
                                 LogDestination.Database -> ErrorLogDBWriter()
                                 LogDestination.Sentry -> sentryLogWriter ?: throw InternalServerException(
                                     InfraResponseCode.SERVER_CONFIG_ERROR, "SentryLogWriter is not configured"
+                                )
+                                else -> throw InternalServerException(
+                                    InfraResponseCode.SERVER_CONFIG_ERROR, "ErrorLogWriter is not configured"
                                 )
                             }
                             logMessageDispatcher.register(ErrorLog.LOG_TYPE, errorLogWriter)
@@ -152,30 +160,11 @@ class LoggingFeature(configuration: Configuration) {
 }
 
 enum class LogDestination {
-    File, Database, Sentry
+    File, Database, Loki, Sentry
 }
 
 data class LoggingConfig(
     val request: RequestLogConfig,
     val error: ErrorLogConfig,
-    val writer: LogWriterConfig? = null,
     val asyncExecutor: AsyncExecutorConfig? = null
 )
-
-data class LogWriterConfig(
-    val sentry: SentryConfig? = null
-) {
-
-    class Builder {
-
-        private var sentry: SentryConfig? = null
-
-        fun sentry(block: SentryConfig.Builder.() -> Unit) {
-            sentry = SentryConfig.Builder().apply(block).build()
-        }
-
-        fun build(): LogWriterConfig {
-            return LogWriterConfig(sentry)
-        }
-    }
-}

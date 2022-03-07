@@ -12,13 +12,15 @@ import fanpoll.infra.auth.login.logging.LoginLogDBWriter
 import fanpoll.infra.auth.login.session.*
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.config.ValidateableConfig
+import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.json.json
+import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.LogDestination
+import fanpoll.infra.logging.request.LokiLogWriter
 import fanpoll.infra.logging.writers.FileLogWriter
 import fanpoll.infra.logging.writers.LogMessageDispatcher
 import fanpoll.infra.logging.writers.LogWriter
-import fanpoll.infra.logging.writers.SentryLogWriter
 import fanpoll.infra.redis.RedisKeyspaceNotificationListener
 import fanpoll.infra.redis.ktorio.RedisClient
 import io.ktor.application.Application
@@ -107,7 +109,10 @@ class SessionAuthPlugin(configuration: Configuration) {
             val loginLogWriter = when (sessionAuthConfig.logging.destination) {
                 LogDestination.File -> pipeline.get<FileLogWriter>()
                 LogDestination.Database -> LoginLogDBWriter()
-                LogDestination.Sentry -> pipeline.get<SentryLogWriter>()
+                LogDestination.Loki -> pipeline.get<LokiLogWriter>()
+                else -> throw InternalServerException(
+                    InfraResponseCode.SERVER_CONFIG_ERROR, "${sessionAuthConfig.logging.destination} is invalid"
+                )
             }
             val logMessageDispatcher = pipeline.get<LogMessageDispatcher>()
             logMessageDispatcher.register(LoginLog.LOG_TYPE, loginLogWriter)

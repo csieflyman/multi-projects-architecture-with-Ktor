@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2021. fanpoll All rights reserved.
+ * Copyright (c) 2022. fanpoll All rights reserved.
  */
 
-package fanpoll.infra.logging.writers
+package fanpoll.infra.logging.error
 
 import fanpoll.infra.AppInfoConfig
 import fanpoll.infra.ServerConfig
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.logging.LogLevel
 import fanpoll.infra.logging.LogMessage
-import fanpoll.infra.logging.error.ErrorLog
+import fanpoll.infra.logging.writers.LogWriter
 import io.sentry.Sentry
 import io.sentry.SentryEvent
 import io.sentry.SentryLevel

@@ -14,7 +14,8 @@ data class RequestLogConfig(
     val includeResponseBody: Boolean = false,
     val includeGetMethod: Boolean = false,
     val excludePaths: MutableList<String> = mutableListOf(),
-    val excludeRequestBodyPaths: MutableList<String> = mutableListOf()
+    val excludeRequestBodyPaths: MutableList<String> = mutableListOf(),
+    val loki: LokiLogConfig? = null
 ) {
 
     class Builder {
@@ -27,11 +28,18 @@ data class RequestLogConfig(
         var excludePaths: MutableList<String> = mutableListOf()
         var excludeRequestBodyPaths: MutableList<String> = mutableListOf()
 
+        private var loki: LokiLogConfig? = null
+
+        fun loki(block: LokiLogConfig.Builder.() -> Unit) {
+            loki = LokiLogConfig.Builder().apply(block).build()
+        }
+
         fun build(): RequestLogConfig = RequestLogConfig(
             enabled, destination,
             includeHeaders, includeQuerystring, includeResponseBody,
             includeGetMethod,
-            excludePaths, excludeRequestBodyPaths
+            excludePaths, excludeRequestBodyPaths,
+            loki
         )
     }
 }

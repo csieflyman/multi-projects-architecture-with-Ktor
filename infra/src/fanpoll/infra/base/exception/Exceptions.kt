@@ -5,13 +5,11 @@
 package fanpoll.infra.base.exception
 
 import fanpoll.infra.base.entity.Entity
-import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.tenant.TenantEntity
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.DateTimeUtils
 import io.konform.validation.Invalid
-import kotlinx.serialization.Serializable
 import java.time.Instant
 
 abstract class BaseException(
@@ -85,10 +83,10 @@ open class RemoteServiceException(
     val api: String,
     val reqId: String?,
     val reqBody: String?,
-    @Serializable(with = InstantSerializer::class) val reqAt: Instant?,
+    val reqAt: Instant?,
     val rspCode: String?,
     val rspBody: String?,
-    @Serializable(with = InstantSerializer::class) val rspAt: Instant?,
+    val rspAt: Instant?,
     val rspTime: Long?
 ) : BaseException(
     code,
@@ -97,8 +95,8 @@ open class RemoteServiceException(
         api = [$api], 
         reqId = [$reqId], 
         rspCode = [$rspCode], 
-        reqAt = [${DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(reqAt)}], 
-        rspAt = [${DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(rspAt)}], 
+        reqAt = [${reqAt?.let { DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it) }}], 
+        rspAt = [${rspAt?.let { DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it) }}], 
         rspTime = [$rspTime],
         reqBody = [$reqBody],
         rspBody = [$rspBody]

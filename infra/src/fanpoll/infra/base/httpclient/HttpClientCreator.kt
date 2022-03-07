@@ -9,24 +9,28 @@ import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
-import io.ktor.client.features.*
+import io.ktor.client.features.Charsets
+import io.ktor.client.features.HttpRequestTimeoutException
+import io.ktor.client.features.HttpResponseValidator
+import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.features.logging.DEFAULT
 import io.ktor.client.features.logging.Logger
 import io.ktor.client.features.logging.Logging
-import io.ktor.client.request.HttpRequestBuilder
 import java.net.http.HttpConnectTimeoutException
 
 object HttpClientCreator {
 
     fun create(
         name: String,
-        config: CIOHttpClientConfig,
-        defaultRequest: (HttpRequestBuilder.() -> Unit)? = null
+        config: CIOHttpClientConfig? = null
     ): HttpClient {
 
         return HttpClient(CIO) {
+
+            @Suppress("NAME_SHADOWING")
+            val config = config ?: CIOHttpClientConfig()
 
             engine {
                 threadsCount = config.threadsCount
@@ -35,11 +39,8 @@ object HttpClientCreator {
 
                 endpoint {
                     connectTimeout = config.connectTimeout
-
-                    if (config.connectRetryAttempts != null)
-                        connectAttempts = config.connectRetryAttempts
-                    if (config.keepAliveTime != null)
-                        keepAliveTime = config.keepAliveTime
+                    connectAttempts = config.connectAttempts
+                    keepAliveTime = config.keepAliveTime
                 }
             }
 
@@ -60,8 +61,6 @@ object HttpClientCreator {
             install(JsonFeature) {
                 serializer = KotlinxSerializer(json)
             }
-
-            defaultRequest?.also { defaultRequest(it) }
 
             expectSuccess = false
             HttpResponseValidator {

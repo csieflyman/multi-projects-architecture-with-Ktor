@@ -12,10 +12,10 @@ import fanpoll.infra.base.i18n.AvailableLangs
 import fanpoll.infra.base.koin.KoinApplicationShutdownManager
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogDestination
+import fanpoll.infra.logging.request.LokiLogWriter
 import fanpoll.infra.logging.writers.FileLogWriter
 import fanpoll.infra.logging.writers.LogMessageDispatcher
 import fanpoll.infra.logging.writers.LogWriter
-import fanpoll.infra.logging.writers.SentryLogWriter
 import fanpoll.infra.notification.channel.MockNotificationChannelSender
 import fanpoll.infra.notification.channel.NotificationChannelConfig
 import fanpoll.infra.notification.channel.NotificationChannelSender
@@ -87,7 +87,10 @@ class NotificationFeature(configuration: Configuration) {
                         val notificationMessageLogWriter = when (defaultLoggingConfig.destination) {
                             LogDestination.File -> pipeline.get<FileLogWriter>()
                             LogDestination.Database -> NotificationMessageLogDBWriter()
-                            LogDestination.Sentry -> pipeline.get<SentryLogWriter>()
+                            LogDestination.Loki -> pipeline.get<LokiLogWriter>()
+                            else -> throw InternalServerException(
+                                InfraResponseCode.SERVER_CONFIG_ERROR, "${defaultLoggingConfig.destination} is invalid"
+                            )
                         }
                         val logMessageDispatcher = pipeline.get<LogMessageDispatcher>()
                         logMessageDispatcher.register(NotificationMessageLog.LOG_TYPE, notificationMessageLogWriter)
