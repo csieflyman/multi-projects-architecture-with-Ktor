@@ -48,6 +48,8 @@ class ErrorLogDBWriter : LogWriter {
 
                 errorLog.request?.let { req ->
                     it[reqId] = req.id
+                    it[parentReqId] = req.parentId
+                    it[traceId] = req.traceId
                     it[reqAt] = req.at
                     it[api] = "${req.method} ${req.path}"
                     it[headers] = req.headers?.toString()
@@ -101,7 +103,9 @@ object ErrorLogTable : UUIDTable(name = "infra_error_log") {
     val userId = uuid("user_id").nullable()
     val runAs = bool("run_as").nullable()
 
-    val reqId = varchar("req_id", 32).nullable()
+    val reqId = uuid("req_id").nullable()
+    val parentReqId = uuid("parent_req_id").nullable()
+    val traceId = uuid("trace_id").nullable()
     val reqAt = timestamp("req_at").nullable()
     val api = varchar("api", 255).nullable()
     val headers = text("headers").nullable()

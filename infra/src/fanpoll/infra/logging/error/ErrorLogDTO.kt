@@ -42,7 +42,14 @@ data class ErrorLogDTO(
     var userId: UUID? = null
     var runAs: Boolean? = null
 
-    var reqId: String? = null
+    @Serializable(with = UUIDSerializer::class)
+    var reqId: UUID? = null
+
+    @Serializable(with = UUIDSerializer::class)
+    var parentReqId: UUID? = null
+
+    @Serializable(with = UUIDSerializer::class)
+    var traceId: UUID? = null
 
     @Serializable(with = InstantSerializer::class)
     var reqAt: Instant? = null

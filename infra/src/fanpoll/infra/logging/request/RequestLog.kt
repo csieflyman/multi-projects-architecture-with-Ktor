@@ -20,7 +20,6 @@ import fanpoll.infra.base.tenant.tenantId
 import fanpoll.infra.logging.*
 import io.ktor.application.ApplicationCall
 import io.ktor.auth.principal
-import io.ktor.features.callId
 import io.ktor.request.httpMethod
 import io.ktor.request.path
 import kotlinx.serialization.Serializable
@@ -34,8 +33,8 @@ class RequestLog(
     val tags: Map<String, String>? = null
 ) : LogMessage() {
 
-    override val id: UUID = UUID.randomUUID()
-    override val occurAt: Instant = call.attributes.getOrNull(RequestAttribute.REQ_AT) ?: Instant.now()
+    override val id: UUID = call.attributes[RequestAttribute.REQ_ID]
+    override val occurAt: Instant = call.attributes[RequestAttribute.REQ_AT]
     override val logType: String = LOG_TYPE
     override val logLevel: LogLevel = Log_Level
 
@@ -58,7 +57,9 @@ class RequestLog(
 
 @Serializable
 class ApplicationRequestLog(
-    val id: String,
+    @Serializable(with = UUIDSerializer::class) val id: UUID,
+    @Serializable(with = UUIDSerializer::class) val parentId: UUID?,
+    @Serializable(with = UUIDSerializer::class) val traceId: UUID,
     @Serializable(with = InstantSerializer::class) val at: Instant,
     val method: String?,
     val path: String,
@@ -75,7 +76,9 @@ class ApplicationRequestLog(
         includeQueryString: Boolean,
         excludeRequestBodyPaths: List<String>? = null
     ) : this(
-        call.callId!!,
+        call.attributes[RequestAttribute.REQ_ID],
+        call.attributes.getOrNull(RequestAttribute.PARENT_REQ_ID),
+        call.attributes[RequestAttribute.TRACE_ID],
         call.attributes[RequestAttribute.REQ_AT],
         call.request.httpMethod.value,
         call.request.path(),

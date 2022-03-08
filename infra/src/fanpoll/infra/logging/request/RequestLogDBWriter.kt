@@ -39,6 +39,8 @@ class RequestLogDBWriter : LogWriter {
 
                 requestLog.request.let { req ->
                     it[reqId] = req.id
+                    it[parentReqId] = req.parentId
+                    it[traceId] = req.traceId
                     it[reqAt] = req.at
                     it[api] = "${req.method} ${req.path}"
                     it[headers] = req.headers?.toString()
@@ -73,9 +75,11 @@ object RequestLogTable : UUIDTable(name = "infra_request_log") {
     val userId = uuid("user_id").nullable()
     val runAs = bool("run_as").nullable()
 
-    val reqId = varchar("req_id", 32).nullable()
-    val reqAt = timestamp("req_at").nullable()
-    val api = varchar("api", 255).nullable()
+    val reqId = uuid("req_id").nullable()
+    val parentReqId = uuid("parent_req_id").nullable()
+    val traceId = uuid("trace_id").nullable()
+    val reqAt = timestamp("req_at")
+    val api = varchar("api", 255)
     val headers = text("headers").nullable()
     val querystring = text("querystring").nullable()
     val reqBody = text("req_body").nullable()
@@ -83,10 +87,10 @@ object RequestLogTable : UUIDTable(name = "infra_request_log") {
     val clientId = varchar("client_id", 36).nullable()
     val clientVersion = varchar("client_version", 36).nullable()
 
-    val rspAt = timestamp("rsp_at").nullable()
-    val rspStatus = integer("rsp_status").nullable()
+    val rspAt = timestamp("rsp_at")
+    val rspStatus = integer("rsp_status")
     val rspBody = text("rsp_body").nullable()
-    val rspTime = long("rsp_time").nullable()
+    val rspTime = long("rsp_time")
 
     override val naturalKeys: List<Column<out Any>> = listOf(id)
     override val surrogateKey: Column<EntityID<UUID>> = id

@@ -10,8 +10,4 @@ import io.ktor.auth.Principal
 abstract class MyPrincipal : Principal, IdentifiableObject<String>() {
 
     abstract val source: PrincipalSource
-
-    companion object {
-        const val MDC: String = "principal"
-    }
 }

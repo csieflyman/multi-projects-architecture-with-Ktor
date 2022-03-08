@@ -8,11 +8,15 @@ import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
 import fanpoll.infra.auth.HEADER_CLIENT_VERSION
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.logging.LoggingConfig
+import fanpoll.infra.logging.RequestAttribute.PARENT_REQ_ID
 import fanpoll.infra.logging.RequestAttribute.REQ_AT
+import fanpoll.infra.logging.RequestAttribute.REQ_ID
+import fanpoll.infra.logging.RequestAttribute.TRACE_ID
 import fanpoll.infra.logging.writers.LogWriter
 import io.ktor.application.*
 import io.ktor.auth.principal
 import io.ktor.features.CallLogging
+import io.ktor.features.callId
 import io.ktor.features.toLogString
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -30,6 +34,7 @@ import mu.KotlinLogging
 import org.koin.ktor.ext.get
 import org.slf4j.MDC
 import java.time.Instant
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -132,15 +137,15 @@ class MyCallLoggingFeature private constructor(
 
             if (feature.mdcEntries.isNotEmpty()) {
                 pipeline.intercept(loggingPhase) {
+                    beforeProceed(call)
                     withMDC(call) {
-                        putAttributes(call)
                         proceed()
                         feature.logSuccess(call)
                     }
                 }
             } else {
                 pipeline.intercept(loggingPhase) {
-                    putAttributes(call)
+                    beforeProceed(call)
                     proceed()
                     feature.logSuccess(call)
                 }
@@ -158,9 +163,14 @@ class MyCallLoggingFeature private constructor(
             return feature
         }
 
-        private fun putAttributes(call: ApplicationCall) {
-            if (!call.attributes.contains(REQ_AT))
-                call.attributes.put(REQ_AT, Instant.now())
+        private fun beforeProceed(call: ApplicationCall) {
+            call.attributes.put(TRACE_ID, UUID.fromString(call.callId))
+            call.attributes.put(REQ_ID, call.request.header(REQ_ID.name)?.let { UUID.fromString(it) } ?: UUID.randomUUID())
+            if (call.request.headers.contains(PARENT_REQ_ID.name))
+                call.attributes.put(PARENT_REQ_ID, call.request.header(PARENT_REQ_ID.name)!!.let { UUID.fromString(it) })
+
+            call.attributes.put(REQ_AT, Instant.now())
+
             if (call.request.headers.contains(HEADER_CLIENT_VERSION))
                 call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION, call.request.header(HEADER_CLIENT_VERSION)!!)
         }
