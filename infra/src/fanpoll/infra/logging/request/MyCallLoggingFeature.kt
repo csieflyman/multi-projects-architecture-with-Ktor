@@ -15,8 +15,9 @@ import kotlinx.coroutines.ThreadContextElement
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import org.slf4j.MDC
-import java.time.Instant
-import java.util.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 
 /**

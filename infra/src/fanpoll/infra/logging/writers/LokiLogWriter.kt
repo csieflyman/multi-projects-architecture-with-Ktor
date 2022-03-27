@@ -98,28 +98,31 @@ class LokiLogWriter(
         return "Basic $authBuf"
     }
 
-private fun toLokiLogText(requestLog: RequestLog): String = mutableMapOf(
-    "level" to requestLog.logLevel.name,
-    "logType" to requestLog.logType,
-    "function" to requestLog.function,
-    "source" to requestLog.source.name
-).apply {
-    with(requestLog) {
-        put("req.id", request.id)
-        put("req.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(request.at))
-        put("req.api", "${request.method} ${request.path}")
-        if (request.headers != null)
-            put("req.headers", request.headers.toString())
-        if (request.querystring != null)
-            put("req.querystring", request.querystring)
-        if (request.body != null)
-            put("req.body", request.body)
-        if (request.ip != null)
-            put("req.ip", request.ip)
-        if (request.clientId != null)
-            put("req.clientId", request.clientId)
-        if (request.clientVersion != null)
-            put("req.clientVersion", request.clientVersion)
+    private fun toLokiLogText(requestLog: RequestLog): String = mutableMapOf(
+        "level" to requestLog.level.name,
+        "logType" to requestLog.type,
+        "function" to requestLog.function,
+        "source" to requestLog.source.name
+    ).apply {
+        with(requestLog) {
+            // traceID is a Loki built-in derived field and use traceID=(\w+) regex pattern to extract value
+            if (request.traceId != null)
+                put("traceID", request.traceId.replace("-", ""))
+            put("req.id", request.id)
+            put("req.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(request.at))
+            put("req.api", "[${request.method}] ${request.path}")
+            if (request.headers != null)
+                put("req.headers", request.headers.toString())
+            if (request.querystring != null)
+                put("req.querystring", request.querystring)
+            if (request.body != null)
+                put("req.body", request.body)
+            if (request.ip != null)
+                put("req.ip", request.ip)
+            if (request.clientId != null)
+                put("req.clientId", request.clientId)
+            if (request.clientVersion != null)
+                put("req.clientVersion", request.clientVersion)
 
             put("rsp.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(response.at))
             put("rsp.status", response.status.toString())

@@ -4,8 +4,8 @@
 
 package fanpoll.infra.logging.writers
 
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
-import fanpoll.infra.logging.LogMessage
 import mu.KotlinLogging
 
 class FileLogWriter : LogWriter {

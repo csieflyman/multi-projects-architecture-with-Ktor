@@ -9,8 +9,8 @@ import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.tenant.TenantId
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
-import fanpoll.infra.logging.LogMessage
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.*

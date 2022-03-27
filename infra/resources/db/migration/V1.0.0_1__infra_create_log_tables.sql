@@ -107,26 +107,26 @@ create index infra_login_log_tenant_id_idx on infra_login_log (tenant_id);
 
 CREATE TABLE infra_notification_message_log
 (
-    id uuid primary key,
-    notification_id uuid NOT NULL,
-    event_id uuid NOT NULL,
-    type varchar(30) NOT NULL,
-    version varchar(5),
-    channel varchar(20) NOT NULL,
-    lang varchar(20) NOT NULL,
-    send_at timestamp,
-    error_msg text,
-    receivers text NOT NULL,
-    content text,
-    success  bool NOT NULL,
-    success_list text,
-    failure_list text,
+    id                    uuid primary key,
+    notification_id       uuid        NOT NULL,
+    event_id              uuid        NOT NULL,
+    type                  varchar(30) NOT NULL,
+    version               varchar(5),
+    channel               varchar(20) NOT NULL,
+    lang                  varchar(20) NOT NULL,
+    send_at               timestamp,
+    error_msg             text,
+    receivers             text        NOT NULL,
+    content               text,
+    success               bool        NOT NULL,
+    success_list          text,
+    failure_list          text,
     invalid_recipient_ids text,
-    rsp_code varchar(30),
-    rsp_msg text,
-    rsp_at timestamp,
-    rsp_time integer,
-    rsp_body text
+    rsp_code              varchar(30),
+    rsp_msg               text,
+    rsp_at                timestamp,
+    rsp_body              text,
+    duration              integer
 );
 
 create index infra_notification_log_notification_id_idx on infra_notification_message_log (notification_id);

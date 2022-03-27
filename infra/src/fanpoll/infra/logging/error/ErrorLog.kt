@@ -12,9 +12,9 @@ import fanpoll.infra.base.exception.RemoteServiceException
 import fanpoll.infra.base.json.DurationMicroSerializer
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.tenant.tenantId
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
-import fanpoll.infra.logging.LogMessage
-import fanpoll.infra.logging.RequestAttribute.TAGS
+import fanpoll.infra.logging.RequestAttributeKey.TAGS
 import fanpoll.infra.logging.logFunction
 import fanpoll.infra.logging.request.ApplicationRequestLog
 import fanpoll.infra.logging.request.ApplicationResponseLog

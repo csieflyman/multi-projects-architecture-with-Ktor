@@ -8,7 +8,7 @@ import fanpoll.infra.database.custom.principalSource
 import fanpoll.infra.database.custom.userType
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.sql.transaction
-import fanpoll.infra.logging.LogMessage
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column

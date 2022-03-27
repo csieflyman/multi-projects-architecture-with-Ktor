@@ -8,8 +8,8 @@ import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.json.DurationMicroSerializer
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.json.UUIDSerializer
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
-import fanpoll.infra.logging.LogMessage
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.notification.channel.NotificationChannel
 import kotlinx.serialization.Serializable
