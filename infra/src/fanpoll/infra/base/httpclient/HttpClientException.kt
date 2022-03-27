@@ -8,7 +8,6 @@ import fanpoll.infra.base.exception.RemoteServiceException
 import fanpoll.infra.base.extension.toInstant
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.tenant.TenantId
-import fanpoll.infra.logging.RequestAttribute.CLIENT_REQ_ID
 import io.ktor.client.request.HttpRequest
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.statement.HttpResponse
@@ -31,13 +30,13 @@ class HttpClientException(
     code, message, cause, dataMap, tenantId,
     name = serviceId,
     api = response?.request?.apiLogString() ?: "",
-    reqId = response?.request?.attributes?.getOrNull(CLIENT_REQ_ID),
+    reqId = response?.request?.attributes?.getOrNull(HttpClientAttributeKey.ID)?.toString(),
     reqBody = response?.request?.textBody(),
     reqAt = response?.requestTime?.toInstant(),
     rspCode = response?.status.toString(),
     rspAt = response?.responseTime?.toInstant(),
     rspBody = response?.textBody(),
-    rspTime = response?.let { Duration.between(it.requestTime.toInstant(), it.responseTime.toInstant()).toMillis() }
+    duration = response?.duration()
 )
 
 fun HttpRequest.apiLogString(): String = "${method.value} - $url"
@@ -47,5 +46,7 @@ fun HttpRequest.textBody(): String? = when (content) {
     is FormDataContent -> (content as FormDataContent).formData.formUrlEncode()
     else -> null
 }
+
+fun HttpResponse.duration(): Duration = Duration.between(requestTime.toInstant(), responseTime.toInstant())
 
 fun HttpResponse.textBody(): String = runBlocking { readText() }

@@ -30,7 +30,7 @@ fun Routing.opsQueryLog() {
 
         authorize(OpsAuth.OpsTeam) {
 
-            if (appConfig.infra.logging!!.request.destination == LogDestination.Database) {
+            if (appConfig.infra.logging!!.request?.destination == LogDestination.Database) {
                 route("/request") {
                     dynamicQuery<RequestLogDTO>(OpsOpenApi.QueryRequestLog) { dynamicQuery ->
                         call.respond(dynamicQuery.queryDB<RequestLogDTO>())
@@ -38,7 +38,7 @@ fun Routing.opsQueryLog() {
                 }
             }
 
-            if (appConfig.infra.logging!!.error.destination == LogDestination.Database) {
+            if (appConfig.infra.logging!!.error?.destination == LogDestination.Database) {
                 route("/error") {
                     dynamicQuery<ErrorLogDTO>(OpsOpenApi.QueryErrorLog) { dynamicQuery ->
                         call.respond(dynamicQuery.queryDB<ErrorLogDTO>())

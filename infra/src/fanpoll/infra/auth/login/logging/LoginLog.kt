@@ -27,14 +27,14 @@ data class LoginLog(
     val clientVersion: String?,
     val ip: String? = null,
     val sid: String? = null
-) : LogMessage() {
+) : LogEntity() {
 
     @Serializable(with = UUIDSerializer::class)
     override val id: UUID = UUID.randomUUID()
 
-    override val logType: String = LOG_TYPE
+    override val type: String = LOG_TYPE
 
-    override val logLevel: LogLevel = Log_Level
+    override val level: LogLevel = Log_Level
 
     companion object {
         const val LOG_TYPE = "login"

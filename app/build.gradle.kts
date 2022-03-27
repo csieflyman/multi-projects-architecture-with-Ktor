@@ -65,6 +65,7 @@ tasks.shadowJar {
         // Don't need to copy swagger-ui every build
         delete(fileTree("src/dist").matching {
             exclude("swagger-ui/**")
+            exclude("lib/**")
         })
 
         if (!Paths.get("src/dist/swagger-ui").toFile().exists()) {
@@ -75,6 +76,7 @@ tasks.shadowJar {
         }
 
         copy {
+            from("dist/config/common")
             from("dist/config/${gitProps["env"]}")
             into("src/dist")
             filter<ReplaceTokens>(
@@ -87,6 +89,11 @@ tasks.shadowJar {
         copy {
             from("dist/bin")
             into("src/dist/bin")
+        }
+
+        copy {
+            from("dist/lib")
+            into("src/dist/lib")
         }
     }
 }

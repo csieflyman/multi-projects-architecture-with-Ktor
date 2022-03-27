@@ -66,6 +66,9 @@ dependencies {
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:2.1.21")
     runtimeOnly("ch.qos.logback:logback-classic:1.2.10")
+    implementation("io.opentelemetry:opentelemetry-api:1.12.0")
+    implementation("io.opentelemetry:opentelemetry-extension-kotlin:1.12.0")
+    implementation("io.opentelemetry:opentelemetry-semconv:1.12.0-alpha")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.2.1")

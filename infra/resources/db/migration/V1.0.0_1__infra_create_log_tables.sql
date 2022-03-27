@@ -10,9 +10,8 @@ CREATE TABLE infra_request_log
     user_type      varchar(20),
     user_id        uuid,
     run_as         bool,
-    req_id         uuid         NOT NULL,
-    parent_req_id  uuid,
-    trace_id       uuid         NOT NULL,
+    trace_id       char(32)     NOT NULL,
+    req_id         varchar(36)  NOT NULL,
     req_at         timestamp    NOT NULL,
     api            varchar(255) NOT NULL,
     headers        text,
@@ -24,16 +23,15 @@ CREATE TABLE infra_request_log
     rsp_at         timestamp    NOT NULL,
     rsp_status     integer      NOT NULL,
     rsp_body       text,
-    rsp_time       integer      NOT NULL
+    duration       integer      NOT NULL
 );
 
 create index infra_request_log_trace_id_idx on infra_request_log (trace_id);
-create index infra_request_log_parent_req_id_idx on infra_request_log (parent_req_id);
 create index infra_request_log_req_id_idx on infra_request_log (req_id);
 create index infra_request_log_req_at_idx on infra_request_log (req_at);
 create index infra_request_log_project_idx on infra_request_log (project);
 create index infra_request_log_api_idx on infra_request_log (api);
-create index infra_request_log_rsp_time_idx on infra_request_log (rsp_time);
+create index infra_request_log_duration_idx on infra_request_log (duration);
 
 CREATE TABLE infra_error_log
 (
@@ -53,9 +51,8 @@ CREATE TABLE infra_error_log
     user_type        varchar(20),
     user_id          uuid,
     run_as           bool,
-    req_id           uuid,
-    parent_req_id    uuid,
-    trace_id         char(64),
+    trace_id         char(32),
+    req_id           varchar(36),
     req_at           timestamp,
     api              varchar(255),
     headers          text,
@@ -67,7 +64,7 @@ CREATE TABLE infra_error_log
     rsp_at           timestamp,
     rsp_status       integer,
     rsp_body         text,
-    rsp_time         integer,
+    duration         integer,
     service_name     varchar(30),
     service_api      varchar(255),
     service_req_id   varchar(255),
@@ -76,7 +73,7 @@ CREATE TABLE infra_error_log
     service_rsp_code varchar(20),
     service_rsp_at   timestamp,
     service_rsp_body text,
-    service_rsp_time integer
+    service_duration integer
 );
 
 create index infra_error_log_occur_at_idx on infra_error_log (occur_at);
@@ -84,7 +81,6 @@ create index infra_error_log_error_code_idx on infra_error_log (error_code);
 create index infra_error_log_error_code_type_idx on infra_error_log (error_code_type);
 create index infra_error_log_project_idx on infra_error_log (project);
 create index infra_error_log_trace_id_idx on infra_error_log (trace_id);
-create index infra_error_log_parent_req_id_idx on infra_error_log (parent_req_id);
 create index infra_error_log_req_id_idx on infra_error_log (req_id);
 create index infra_error_log_api_idx on infra_error_log (api);
 create index infra_error_log_service_name_req_id_idx on infra_error_log (service_name, service_req_id);

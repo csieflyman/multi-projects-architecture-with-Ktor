@@ -4,11 +4,11 @@
 
 package fanpoll.infra.logging.writers
 
-import fanpoll.infra.logging.LogMessage
+import fanpoll.infra.logging.LogEntity
 
 interface LogWriter {
 
-    fun write(message: LogMessage)
+    fun write(logEntity: LogEntity)
 
     fun shutdown() {}
 }

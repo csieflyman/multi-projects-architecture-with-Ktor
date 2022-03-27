@@ -122,6 +122,48 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
     }
 }
 
+@Serializer(forClass = Duration::class)
+object DurationMilliSerializer : KSerializer<Duration> {
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Duration.Milli", PrimitiveKind.LONG)
+
+    override fun serialize(encoder: Encoder, value: Duration) {
+        encoder.encodeLong(value.toMillis())
+    }
+
+    override fun deserialize(decoder: Decoder): Duration {
+        return Duration.ofMillis(decoder.decodeLong())
+    }
+}
+
+@Serializer(forClass = Duration::class)
+object DurationMicroSerializer : KSerializer<Duration> {
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Duration.Micro", PrimitiveKind.LONG)
+
+    override fun serialize(encoder: Encoder, value: Duration) {
+        encoder.encodeLong(value.toNanos() / 1000)
+    }
+
+    override fun deserialize(decoder: Decoder): Duration {
+        return Duration.ofNanos(decoder.decodeLong() * 1000)
+    }
+}
+
+@Serializer(forClass = Duration::class)
+object DurationNanoSerializer : KSerializer<Duration> {
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Duration.Nano", PrimitiveKind.LONG)
+
+    override fun serialize(encoder: Encoder, value: Duration) {
+        encoder.encodeLong(value.toNanos())
+    }
+
+    override fun deserialize(decoder: Decoder): Duration {
+        return Duration.ofNanos(decoder.decodeLong())
+    }
+}
+
 @Serializer(forClass = Instant::class)
 object InstantSerializer : KSerializer<Instant> {
 

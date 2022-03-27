@@ -1,0 +1,7 @@
+otel.traces.exporter=otlp
+otel.exporter.otlp.traces.endpoint=https://tempo-us-central1.grafana.net:443
+# environment variable: OTEL_EXPORTER_OTLP_TRACES_HEADERS
+otel.exporter.otlp.traces.headers=Authorization=<base64 token>
+otel.exporter.otlp.traces.compression=gzip
+otel.resource.attributes=service.name=fanpoll,service.version=@gitSemVer@,deployment.environment=@env@
+otel.instrumentation.netty.enabled=false

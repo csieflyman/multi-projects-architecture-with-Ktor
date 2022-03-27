@@ -9,6 +9,7 @@ import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.BaseException
 import fanpoll.infra.base.exception.RemoteServiceException
+import fanpoll.infra.base.json.DurationMicroSerializer
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.tenant.tenantId
 import fanpoll.infra.logging.LogLevel
@@ -21,6 +22,7 @@ import fanpoll.infra.logging.request.UserLog
 import io.ktor.application.ApplicationCall
 import io.ktor.auth.principal
 import kotlinx.serialization.Serializable
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -29,12 +31,12 @@ class ErrorLog private constructor(
     val call: ApplicationCall? = null,
     val function: String,
     val tags: Map<String, String>? = null
-) : LogMessage() {
+) : LogEntity() {
 
     override val id: UUID = UUID.randomUUID()
     override val occurAt = exception.occurAt
-    override val logType: String = LOG_TYPE
-    override val logLevel: LogLevel = Log_Level
+    override val type: String = LOG_TYPE
+    override val level: LogLevel = Log_Level
 
     private val principal = call?.principal<MyPrincipal>()
     val project = principal?.source?.projectId ?: "infra"
@@ -73,8 +75,8 @@ class ServiceRequestLog(
     val rspCode: String?,
     @Serializable(with = InstantSerializer::class) val rspAt: Instant?,
     val rspBody: String?,
-    val rspTime: Long?
+    @Serializable(with = DurationMicroSerializer::class) val duration: Duration?
 ) {
-    constructor(e: RemoteServiceException) : this(e.name, e.api, e.reqId, e.reqAt, e.reqBody, e.rspCode, e.rspAt, e.rspBody, e.rspTime)
+    constructor(e: RemoteServiceException) : this(e.name, e.api, e.reqId, e.reqAt, e.reqBody, e.rspCode, e.rspAt, e.rspBody, e.duration)
 }
 

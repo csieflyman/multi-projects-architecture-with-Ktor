@@ -7,12 +7,14 @@ package fanpoll.infra.logging.error
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.entity.EntityDTO
+import fanpoll.infra.base.json.DurationMicroSerializer
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.response.ResponseCodeType
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.database.util.ResultRowDTOMapper
 import kotlinx.serialization.Serializable
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -65,7 +67,9 @@ data class ErrorLogDTO(
     var rspAt: Instant? = null
     var rspStatus: Int? = null
     var rspBody: String? = null
-    var rspTime: Long? = null
+
+    @Serializable(with = DurationMicroSerializer::class)
+    var duration: Duration? = null
 
     var serviceName: String? = null
     var serviceApi: String? = null
@@ -79,7 +83,9 @@ data class ErrorLogDTO(
     @Serializable(with = InstantSerializer::class)
     var serviceRspAt: Instant? = null
     var serviceRspBody: String? = null
-    var serviceRspTime: Long? = null
+
+    @Serializable(with = DurationMicroSerializer::class)
+    var serviceDuration: Duration? = null
 
     override fun getId(): UUID = id
 

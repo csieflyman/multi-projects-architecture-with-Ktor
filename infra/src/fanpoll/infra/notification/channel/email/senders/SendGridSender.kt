@@ -87,7 +87,7 @@ class SendGridSender(
             val response: Response = client.api(request)
 
             log.rspAt = Instant.now()
-            log.rspTime = Duration.between(log.sendAt, log.rspAt).toMillis()
+            log.duration = Duration.between(log.sendAt, log.rspAt)
             log.rspCode = response.statusCode.toString()
             log.rspBody = response.body
             //response.headers
@@ -100,7 +100,7 @@ class SendGridSender(
             logger.debug("[$senderName] sendEmail success: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}")
         } catch (ex: Throwable) {
             log.rspAt = Instant.now()
-            log.rspTime = Duration.between(log.sendAt, log.rspAt).toMillis()
+            log.duration = Duration.between(log.sendAt, log.rspAt)
             log.success = false
             log.content = emailMessage.content.toJson().toString()
             log.errorMsg = "[$senderName] sendEmail error: ${ex.message}"

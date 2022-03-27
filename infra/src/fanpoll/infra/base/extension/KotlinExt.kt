@@ -6,6 +6,9 @@ package fanpoll.infra.base.extension
 import org.kpropmap.applyProps
 import org.kpropmap.deserialize
 import org.kpropmap.propMapOf
+import java.time.Duration
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
@@ -117,3 +120,9 @@ fun <T : Any> T.myHashCode(vararg properties: T.() -> Any?): Int {
 
     return result
 }
+
+fun Instant.toEpocMicro(): Long = ChronoUnit.MICROS.between(Instant.EPOCH, this)
+
+fun Instant.toEpocNano(): Long = ChronoUnit.NANOS.between(Instant.EPOCH, this)
+
+fun Duration.toMicros(): Long = this.toNanos() / 1000

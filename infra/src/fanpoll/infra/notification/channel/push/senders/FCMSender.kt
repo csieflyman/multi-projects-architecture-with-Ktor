@@ -100,7 +100,7 @@ class FCMSender(
 
             override fun onSuccess(messageId: String) {
                 log.rspAt = Instant.now()
-                log.rspTime = Duration.between(log.sendAt, log.rspAt).toMillis()
+                log.duration = Duration.between(log.sendAt, log.rspAt)
 
                 if (loggingConfig.logSuccess) {
                     if (loggingConfig.logSuccessReqBody) {
@@ -136,7 +136,7 @@ class FCMSender(
 
             override fun onSuccess(response: BatchResponse) {
                 log.rspAt = Instant.now()
-                log.rspTime = Duration.between(log.sendAt, log.rspAt).toMillis()
+                log.duration = Duration.between(log.sendAt, log.rspAt)
 
                 val successResponses = mutableListOf<FCMSuccessResponse>()
                 val failureResponses = mutableListOf<FCMFailureResponse>()
@@ -200,7 +200,7 @@ class FCMSender(
 
     private fun onFailure(message: NotificationMessage, log: NotificationMessageLog, ex: Throwable) {
         log.rspAt = Instant.now()
-        log.rspTime = Duration.between(log.sendAt, log.rspAt).toMillis()
+        log.duration = Duration.between(log.sendAt, log.rspAt)
 
         if (ex is FirebaseMessagingException) {
             if (ex.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {

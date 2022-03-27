@@ -10,7 +10,7 @@ services:
       APP_HOME: /app
       APP_LOG_HOME: /app/log
       JAVA_OPTS: -Xms128m -Xmx256m -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=/app/jvm.log
-      APP_OPTS: -Dconfig.file=/app/application.conf -Dlogback.configurationFile=/app/logback.xml -Dproject.config.dir=/app -Dswaggerui.dir=/app/swagger-ui -Duser.timezone=UTC -Dkotlinx.coroutines.debug
+      APP_OPTS: -Dconfig.file=/app/application.conf -Dlogback.configurationFile=/app/logback.xml -Dproject.config.dir=/app -Dswaggerui.dir=/app/swagger-ui -Duser.timezone=UTC -Dkotlinx.coroutines.debug -Dotel.javaagent.enabled=true -javaagent:/app/lib/opentelemetry-javaagent.jar -Dotel.javaagent.configuration-file=/app/otel-javaagent.properties
       PORT: 8080
       SERVER_SHUTDOWN_KEY: changeit
       DB_URL: jdbc:postgresql://postgres:5432/fanpoll
@@ -22,6 +22,10 @@ services:
       SWAGGER_UI_AUTH_USER: swagger
       SWAGGER_UI_AUTH_PASSWORD: changeit
       GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-key.json
+      #SENTRY_DSN:
+      #SENDGRID_API_KEY:
+      #LOKI_USERNAME:
+      #LOKI_PASSWORD:
       # ===== subproject ops =====
       OPS_AUTH_ROOT_API_KEY: changeit
       OPS_AUTH_MONITOR_API_KEY: changeit

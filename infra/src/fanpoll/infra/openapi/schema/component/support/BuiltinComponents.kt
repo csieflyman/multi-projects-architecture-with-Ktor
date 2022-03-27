@@ -6,9 +6,8 @@ package fanpoll.infra.openapi.schema.component.support
 
 import fanpoll.infra.app.AppVersion
 import fanpoll.infra.auth.AuthConst
+import fanpoll.infra.auth.ClientVersionAttributeKey
 import fanpoll.infra.auth.ClientVersionCheckResult
-import fanpoll.infra.auth.HEADER_CLIENT_VERSION
-import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
 import fanpoll.infra.auth.provider.UserRunAsAuthProvider
 import fanpoll.infra.base.response.*
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
@@ -177,7 +176,7 @@ object BuiltinComponents : ComponentLoader {
     // ==================== Headers ====================
 
     private val ClientVersionCheckResultSchema = PropertyDef(
-        HEADER_CLIENT_VERSION_CHECK_RESULT, SchemaDataType.string,
+        ClientVersionAttributeKey.CHECK_RESULT.name, SchemaDataType.string,
         enum = ClientVersionCheckResult.values().toList(), kClass = ClientVersionCheckResult::class,
         example = ClientVersionCheckResult.Latest
     )
@@ -200,9 +199,9 @@ object BuiltinComponents : ComponentLoader {
     private val RunAsOptionalHeader = ParameterObject(ParameterInputType.header, false, runAsTokenSchema).createRef()
 
     private val ClientVersionSchema = PropertyDef(
-        HEADER_CLIENT_VERSION, SchemaDataType.string,
+        ClientVersionAttributeKey.CLIENT_VERSION.name, SchemaDataType.string,
         pattern = AppVersion.NAME_PATTERN,
-        description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => $HEADER_CLIENT_VERSION_CHECK_RESULT = ${
+        description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => ${ClientVersionAttributeKey.CLIENT_ID.name} = ${
             ClientVersionCheckResult.values().toList()
         }",
         example = "1.0.0"

@@ -8,6 +8,7 @@ local-test.properties
 /app/out
 /app/build
 /app/src/dist
+/app/dist/config/common/otel-javaagent.properties
 /app/dist/config/local-dev/firebase-key.json
 /app/dist/config/local-test/firebase-key.json
 /app/node_modules

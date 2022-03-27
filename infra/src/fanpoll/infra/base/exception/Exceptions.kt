@@ -5,11 +5,13 @@
 package fanpoll.infra.base.exception
 
 import fanpoll.infra.base.entity.Entity
+import fanpoll.infra.base.extension.toMicros
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.tenant.TenantEntity
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.DateTimeUtils
 import io.konform.validation.Invalid
+import java.time.Duration
 import java.time.Instant
 
 abstract class BaseException(
@@ -87,7 +89,7 @@ open class RemoteServiceException(
     val rspCode: String?,
     val rspBody: String?,
     val rspAt: Instant?,
-    val rspTime: Long?
+    val duration: Duration?
 ) : BaseException(
     code,
     """${message ?: ""} => 
@@ -97,7 +99,7 @@ open class RemoteServiceException(
         rspCode = [$rspCode], 
         reqAt = [${reqAt?.let { DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it) }}], 
         rspAt = [${rspAt?.let { DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it) }}], 
-        rspTime = [$rspTime],
+        duration = [${duration?.toMicros()}],
         reqBody = [$reqBody],
         rspBody = [$rspBody]
     """,

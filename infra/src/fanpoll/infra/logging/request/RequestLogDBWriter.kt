@@ -13,13 +13,14 @@ import fanpoll.infra.logging.writers.LogWriter
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.duration
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.util.*
 
 class RequestLogDBWriter : LogWriter {
 
-    override fun write(message: LogMessage) {
-        val requestLog = message as RequestLog
+    override fun write(logEntity: LogEntity) {
+        val requestLog = logEntity as RequestLog
         transaction {
             RequestLogTable.insert {
                 it[id] = requestLog.id
@@ -38,9 +39,8 @@ class RequestLogDBWriter : LogWriter {
                 }
 
                 requestLog.request.let { req ->
-                    it[reqId] = req.id
-                    it[parentReqId] = req.parentId
                     it[traceId] = req.traceId
+                    it[reqId] = req.id
                     it[reqAt] = req.at
                     it[api] = "${req.method} ${req.path}"
                     it[headers] = req.headers?.toString()
@@ -55,7 +55,7 @@ class RequestLogDBWriter : LogWriter {
                     it[rspAt] = rsp.at
                     it[rspStatus] = rsp.status
                     it[rspBody] = rsp.body
-                    it[rspTime] = rsp.time
+                    it[duration] = rsp.duration
                 }
             }
         }
@@ -75,9 +75,8 @@ object RequestLogTable : UUIDTable(name = "infra_request_log") {
     val userId = uuid("user_id").nullable()
     val runAs = bool("run_as").nullable()
 
-    val reqId = uuid("req_id").nullable()
-    val parentReqId = uuid("parent_req_id").nullable()
-    val traceId = uuid("trace_id").nullable()
+    val traceId = char("trace_id", 32).nullable()
+    val reqId = varchar("req_id", 36)
     val reqAt = timestamp("req_at")
     val api = varchar("api", 255)
     val headers = text("headers").nullable()
@@ -90,7 +89,7 @@ object RequestLogTable : UUIDTable(name = "infra_request_log") {
     val rspAt = timestamp("rsp_at")
     val rspStatus = integer("rsp_status")
     val rspBody = text("rsp_body").nullable()
-    val rspTime = long("rsp_time")
+    val duration = duration("duration")
 
     override val naturalKeys: List<Column<out Any>> = listOf(id)
     override val surrogateKey: Column<EntityID<UUID>> = id

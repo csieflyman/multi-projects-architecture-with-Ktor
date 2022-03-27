@@ -5,6 +5,8 @@
 package fanpoll.infra.logging.request
 
 import fanpoll.infra.logging.LogDestination
+import io.ktor.application.ApplicationCall
+import io.ktor.request.path
 
 data class RequestLogConfig(
     val enabled: Boolean = true,
@@ -14,8 +16,7 @@ data class RequestLogConfig(
     val includeResponseBody: Boolean = false,
     val includeGetMethod: Boolean = false,
     val excludePaths: MutableList<String> = mutableListOf(),
-    val excludeRequestBodyPaths: MutableList<String> = mutableListOf(),
-    val loki: LokiLogConfig? = null
+    val excludeRequestBodyPaths: MutableList<String> = mutableListOf()
 ) {
 
     class Builder {
@@ -28,18 +29,13 @@ data class RequestLogConfig(
         var excludePaths: MutableList<String> = mutableListOf()
         var excludeRequestBodyPaths: MutableList<String> = mutableListOf()
 
-        private var loki: LokiLogConfig? = null
-
-        fun loki(block: LokiLogConfig.Builder.() -> Unit) {
-            loki = LokiLogConfig.Builder().apply(block).build()
-        }
-
         fun build(): RequestLogConfig = RequestLogConfig(
             enabled, destination,
             includeHeaders, includeQuerystring, includeResponseBody,
             includeGetMethod,
-            excludePaths, excludeRequestBodyPaths,
-            loki
+            excludePaths, excludeRequestBodyPaths
         )
     }
+
+    fun isExcludePath(call: ApplicationCall) = excludePaths.any { call.request.path().startsWith(it) }
 }

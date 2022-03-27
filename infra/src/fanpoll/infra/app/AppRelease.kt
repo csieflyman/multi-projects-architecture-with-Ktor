@@ -6,10 +6,8 @@
 
 package fanpoll.infra.app
 
-import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
-import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION_RESULT
+import fanpoll.infra.auth.ClientVersionAttributeKey
 import fanpoll.infra.auth.ClientVersionCheckResult
-import fanpoll.infra.auth.HEADER_CLIENT_VERSION_CHECK_RESULT
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.entity.EntityForm
@@ -89,18 +87,18 @@ class AppReleaseService {
     }
 
     fun check(call: ApplicationCall): ClientVersionCheckResult? {
-        return call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT) ?: run {
+        return call.attributes.getOrNull(ClientVersionAttributeKey.CHECK_RESULT) ?: run {
             val principalSource = call.attributes[PrincipalSource.ATTRIBUTE_KEY]
             if (principalSource.checkClientVersion() &&
-                call.attributes.contains(ATTRIBUTE_KEY_CLIENT_VERSION)
+                call.attributes.contains(ClientVersionAttributeKey.CLIENT_VERSION)
             ) {
-                val clientVersion = call.attributes[ATTRIBUTE_KEY_CLIENT_VERSION]
+                val clientVersion = call.attributes[ClientVersionAttributeKey.CLIENT_VERSION]
                 val appVersion = AppVersion(principalSource.id, clientVersion)
                 logger.debug("client appVersion = $appVersion")
 
                 val result = check(appVersion)
-                call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION_RESULT, result)
-                call.response.header(HEADER_CLIENT_VERSION_CHECK_RESULT, result.name)
+                call.attributes.put(ClientVersionAttributeKey.CHECK_RESULT, result)
+                call.response.header(ClientVersionAttributeKey.CHECK_RESULT.name, result.name)
                 result
             } else null
         }

@@ -6,12 +6,14 @@ package fanpoll.infra.notification.logging
 
 import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.i18n.Lang
+import fanpoll.infra.base.json.DurationMicroSerializer
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.database.util.ResultRowDTOMapper
 import fanpoll.infra.notification.channel.NotificationChannel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -46,7 +48,8 @@ data class NotificationMessageLogDTO(
     @Serializable(with = InstantSerializer::class)
     var rspAt: Instant? = null
 
-    var rspTime: Long? = null
+    @Serializable(with = DurationMicroSerializer::class)
+    var duration: Duration? = null
     var rspBody: String? = null
 
     override fun getId(): UUID = id

@@ -8,7 +8,7 @@ import fanpoll.infra.auth.login.LoginResultCode
 import fanpoll.infra.database.custom.principalSource
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.sql.transaction
-import fanpoll.infra.logging.LogMessage
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
@@ -18,20 +18,20 @@ import java.util.*
 
 class LoginLogDBWriter : LogWriter {
 
-    override fun write(message: LogMessage) {
-        val dto = message as LoginLog
+    override fun write(logEntity: LogEntity) {
+        val loginLog = logEntity as LoginLog
         transaction {
             LoginLogTable.insert {
-                it[userId] = dto.userId
-                it[resultCode] = dto.resultCode
-                it[occurAt] = dto.occurAt
-                it[project] = dto.project
-                it[sourceId] = dto.source
-                it[tenantId] = dto.tenantId?.value
-                it[clientId] = dto.clientId
-                it[clientVersion] = dto.clientVersion
-                it[ip] = dto.ip
-                it[sid] = dto.sid
+                it[userId] = loginLog.userId
+                it[resultCode] = loginLog.resultCode
+                it[occurAt] = loginLog.occurAt
+                it[project] = loginLog.project
+                it[sourceId] = loginLog.source
+                it[tenantId] = loginLog.tenantId?.value
+                it[clientId] = loginLog.clientId
+                it[clientVersion] = loginLog.clientVersion
+                it[ip] = loginLog.ip
+                it[sid] = loginLog.sid
             }
         }
     }

@@ -7,41 +7,42 @@ package fanpoll.infra.notification.logging
 import fanpoll.infra.database.custom.lang
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.sql.transaction
-import fanpoll.infra.logging.LogMessage
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.channel.NotificationChannel
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.duration
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.util.*
 
 class NotificationMessageLogDBWriter : LogWriter {
 
-    override fun write(message: LogMessage) {
-        val dto = message as NotificationMessageLog
+    override fun write(logEntity: LogEntity) {
+        val messageLog = logEntity as NotificationMessageLog
         transaction {
             NotificationMessageLogTable.insert {
-                it[id] = dto.id
-                it[notificationId] = dto.notificationId
-                it[eventId] = dto.eventId
-                it[type] = dto.type.id
-                it[version] = dto.version
-                it[channel] = dto.channel
-                it[lang] = dto.lang
-                it[sendAt] = dto.sendAt
-                it[errorMsg] = dto.errorMsg
-                it[receivers] = dto.receivers.toString()
-                it[content] = dto.content
-                it[success] = dto.success
-                it[successList] = dto.successList?.toString()
-                it[failureList] = dto.failureList?.toString()
-                it[invalidRecipientIds] = dto.invalidRecipientIds?.toString()
-                it[rspCode] = dto.rspCode
-                it[rspMsg] = dto.rspMsg
-                it[rspAt] = dto.rspAt
-                it[rspTime] = dto.rspTime
-                it[rspBody] = dto.rspBody
+                it[id] = messageLog.id
+                it[notificationId] = messageLog.notificationId
+                it[eventId] = messageLog.eventId
+                it[type] = messageLog.notificationType.id
+                it[version] = messageLog.version
+                it[channel] = messageLog.channel
+                it[lang] = messageLog.lang
+                it[sendAt] = messageLog.sendAt
+                it[errorMsg] = messageLog.errorMsg
+                it[receivers] = messageLog.receivers.toString()
+                it[content] = messageLog.content
+                it[success] = messageLog.success
+                it[successList] = messageLog.successList?.toString()
+                it[failureList] = messageLog.failureList?.toString()
+                it[invalidRecipientIds] = messageLog.invalidRecipientIds?.toString()
+                it[rspCode] = messageLog.rspCode
+                it[rspMsg] = messageLog.rspMsg
+                it[rspAt] = messageLog.rspAt
+                it[duration] = messageLog.duration
+                it[rspBody] = messageLog.rspBody
             }
         }
     }
@@ -68,7 +69,7 @@ object NotificationMessageLogTable : UUIDTable(name = "infra_notification_messag
     val rspCode = varchar("rsp_code", 30).nullable()
     val rspMsg = text("rsp_msg").nullable()
     val rspAt = timestamp("rsp_at").nullable()
-    val rspTime = long("rsp_time").nullable()
+    val duration = duration("duration").nullable()
     val rspBody = text("rsp_body").nullable()
 
     override val naturalKeys: List<Column<out Any>> = listOf(id)

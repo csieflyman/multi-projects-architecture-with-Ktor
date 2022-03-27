@@ -8,8 +8,7 @@ import fanpoll.infra.app.AppOs
 import fanpoll.infra.app.CreateUserDeviceForm
 import fanpoll.infra.app.UpdateUserDeviceForm
 import fanpoll.infra.app.UserDeviceDTO
-import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_ID
-import fanpoll.infra.auth.ATTRIBUTE_KEY_CLIENT_VERSION
+import fanpoll.infra.auth.ClientVersionAttributeKey
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.ServicePrincipal
 import fanpoll.infra.auth.principal.UserRole
@@ -61,13 +60,13 @@ abstract class LoginForm<Self : LoginForm<Self>> : Form<Self>() {
         ip = call.request.publicRemoteHost
 
         if (deviceId != null) {
-            call.attributes.put(ATTRIBUTE_KEY_CLIENT_ID, deviceId.toString())
+            call.attributes.put(ClientVersionAttributeKey.CLIENT_ID, deviceId.toString())
         }
 
         if (clientVersion != null) {
-            call.attributes.put(ATTRIBUTE_KEY_CLIENT_VERSION, clientVersion!!)
+            call.attributes.put(ClientVersionAttributeKey.CLIENT_VERSION, clientVersion!!)
         } else {
-            clientVersion = call.attributes.getOrNull(ATTRIBUTE_KEY_CLIENT_VERSION)
+            clientVersion = call.attributes.getOrNull(ClientVersionAttributeKey.CLIENT_VERSION)
         }
         checkClientVersion = clientVersion != null && source.checkClientVersion()
     }

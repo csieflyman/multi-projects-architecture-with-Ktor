@@ -6,15 +6,14 @@ package fanpoll.infra.auth
 
 import io.ktor.util.AttributeKey
 
-val ATTRIBUTE_KEY_CLIENT_ID = AttributeKey<String>("clientId")
+object ClientVersionAttributeKey {
 
-const val HEADER_CLIENT_VERSION = "clientVersion"
+    val CLIENT_ID = AttributeKey<String>("clientId")
 
-const val HEADER_CLIENT_VERSION_CHECK_RESULT = "clientVersionCheckResult"
+    val CLIENT_VERSION = AttributeKey<String>("clientVersion")
 
-val ATTRIBUTE_KEY_CLIENT_VERSION = AttributeKey<String>(HEADER_CLIENT_VERSION)
-
-val ATTRIBUTE_KEY_CLIENT_VERSION_RESULT = AttributeKey<ClientVersionCheckResult>(HEADER_CLIENT_VERSION_CHECK_RESULT)
+    val CHECK_RESULT = AttributeKey<ClientVersionCheckResult>("clientVersionCheckResult")
+}
 
 enum class ClientVersionCheckResult {
 

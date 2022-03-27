@@ -8,29 +8,11 @@ import fanpoll.infra.auth.principal.PrincipalSource
 import io.ktor.application.ApplicationCall
 import io.ktor.auth.Principal
 import io.ktor.auth.principal
-import io.ktor.features.callId
-import io.ktor.http.HttpHeaders
 import io.ktor.request.*
-import io.ktor.util.AttributeKey
-import java.time.Instant
-import java.util.*
-
-object RequestAttribute {
-
-    val TRACE_ID = AttributeKey<UUID>("X-Trace-ID")
-    val REQ_ID = AttributeKey<UUID>(HttpHeaders.XRequestId)
-    val PARENT_REQ_ID = AttributeKey<UUID>("X-Parent-Request-ID")
-
-    val REQ_AT = AttributeKey<Instant>("reqAt")
-
-    val TAGS = AttributeKey<Map<String, String>>("tags")
-
-    val CLIENT_REQ_ID = AttributeKey<String>("clientReqId")
-}
 
 fun ApplicationCall?.logCaller(): String {
     return this?.let {
-        "($callId) - " +
+        "(${attributes[RequestAttributeKey.ID]}) - " +
                 (attributes.getOrNull(PrincipalSource.ATTRIBUTE_KEY)?.id ?: "Unknown-Source") + " - " +
                 (principal<Principal>()?.toString() ?: "Unknown-Principal")
     } ?: "Internal"

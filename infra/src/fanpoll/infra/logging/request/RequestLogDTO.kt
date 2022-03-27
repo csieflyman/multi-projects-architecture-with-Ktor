@@ -7,11 +7,13 @@ package fanpoll.infra.logging.request
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.entity.EntityDTO
+import fanpoll.infra.base.json.DurationMicroSerializer
 import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.database.util.ResultRowDTOMapper
 import kotlinx.serialization.Serializable
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -56,7 +58,9 @@ data class RequestLogDTO(
     var rspAt: Instant? = null
     var rspStatus: Int? = null
     var rspBody: String? = null
-    var rspTime: Long? = null
+
+    @Serializable(with = DurationMicroSerializer::class)
+    var duration: Duration? = null
 
     override fun getId(): UUID = id
 

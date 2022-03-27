@@ -17,10 +17,10 @@ import fanpoll.infra.base.json.json
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.LogDestination
-import fanpoll.infra.logging.request.LokiLogWriter
 import fanpoll.infra.logging.writers.FileLogWriter
-import fanpoll.infra.logging.writers.LogMessageDispatcher
+import fanpoll.infra.logging.writers.LogEntityDispatcher
 import fanpoll.infra.logging.writers.LogWriter
+import fanpoll.infra.logging.writers.LokiLogWriter
 import fanpoll.infra.redis.RedisKeyspaceNotificationListener
 import fanpoll.infra.redis.ktorio.RedisClient
 import io.ktor.application.Application
@@ -114,8 +114,8 @@ class SessionAuthPlugin(configuration: Configuration) {
                     InfraResponseCode.SERVER_CONFIG_ERROR, "${sessionAuthConfig.logging.destination} is invalid"
                 )
             }
-            val logMessageDispatcher = pipeline.get<LogMessageDispatcher>()
-            logMessageDispatcher.register(LoginLog.LOG_TYPE, loginLogWriter)
+            val logEntityDispatcher = pipeline.get<LogEntityDispatcher>()
+            logEntityDispatcher.register(LoginLog.LOG_TYPE, loginLogWriter)
 
             val dbAsyncTaskCoroutineActor = pipeline.get<DBAsyncTaskCoroutineActor>()
             val logWriter = pipeline.get<LogWriter>()

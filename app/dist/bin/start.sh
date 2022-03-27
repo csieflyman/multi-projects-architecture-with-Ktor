@@ -22,7 +22,7 @@ export APP_LOG_HOME="$APP_HOME/log"
 
 # run kill -3 $pid to print jvm thread dump and memory usage to jvm.log
 export JAVA_OPTS="-Xms128m -Xmx256m -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=$APP_HOME/jvm.log"
-export APP_OPTS=-Dconfig.file="$APP_HOME/application.conf -Dlogback.configurationFile=$APP_HOME/logback.xml -Dproject.config.dir=$APP_HOME -Dswaggerui.dir=$APP_HOME/swagger-ui -Dkotlinx.coroutines.debug"
+export APP_OPTS=-Dconfig.file="$APP_HOME/application.conf -Dlogback.configurationFile=$APP_HOME/logback.xml -Dproject.config.dir=$APP_HOME -Dswaggerui.dir=$APP_HOME/swagger-ui -Dkotlinx.coroutines.debug -Dotel.javaagent.enabled=true -javaagent:$APP_HOME/lib/opentelemetry-javaagent.jar -Dotel.javaagent.configuration-file=$APP_HOME/otel-javaagent.properties"
 
 export PORT="8080"
 export SERVER_SHUTDOWN_KEY="changeit"
@@ -39,6 +39,11 @@ export SWAGGER_UI_AUTH_USER="swagger"
 export SWAGGER_UI_AUTH_PASSWORD="changeit"
 
 export GOOGLE_APPLICATION_CREDENTIALS="$APP_HOME/firebase-key.json"
+
+#export SENTRY_DSN=
+#export SENDGRID_API_KEY=
+#export LOKI_USERNAME=
+#export LOKI_PASSWORD=
 
 # ===== subprojects ops =====
 export OPS_AUTH_ROOT_API_KEY="changeit"

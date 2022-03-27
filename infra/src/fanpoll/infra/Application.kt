@@ -116,7 +116,7 @@ fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = nul
                 ExceptionUtils.writeLogToFile(e, call)
 
                 // write to external service
-                if (loggingConfig.error.enabled) {
+                if (loggingConfig.error != null && loggingConfig.error.enabled) {
                     logWriter.write(ErrorLog.request(e, call))
                 }
             }

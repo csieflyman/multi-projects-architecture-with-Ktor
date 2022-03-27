@@ -10,18 +10,19 @@ import fanpoll.infra.database.custom.principalSource
 import fanpoll.infra.database.custom.userType
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.sql.transaction
-import fanpoll.infra.logging.LogMessage
+import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.duration
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.util.*
 
 class ErrorLogDBWriter : LogWriter {
 
-    override fun write(message: LogMessage) {
-        val errorLog = message as ErrorLog
+    override fun write(logEntity: LogEntity) {
+        val errorLog = logEntity as ErrorLog
         transaction {
             ErrorLogTable.insert {
                 it[id] = errorLog.id
@@ -47,9 +48,8 @@ class ErrorLogDBWriter : LogWriter {
                 }
 
                 errorLog.request?.let { req ->
-                    it[reqId] = req.id
-                    it[parentReqId] = req.parentId
                     it[traceId] = req.traceId
+                    it[reqId] = req.id
                     it[reqAt] = req.at
                     it[api] = "${req.method} ${req.path}"
                     it[headers] = req.headers?.toString()
@@ -64,7 +64,7 @@ class ErrorLogDBWriter : LogWriter {
                     it[rspAt] = rsp.at
                     it[rspStatus] = rsp.status
                     it[rspBody] = rsp.body
-                    it[rspTime] = rsp.time
+                    it[duration] = rsp.duration
                 }
 
                 errorLog.serviceRequest?.let { serviceReq ->
@@ -76,7 +76,7 @@ class ErrorLogDBWriter : LogWriter {
                     it[serviceRspCode] = serviceReq.rspCode
                     it[serviceRspAt] = serviceReq.rspAt
                     it[serviceRspBody] = serviceReq.rspBody
-                    it[serviceRspTime] = serviceReq.rspTime
+                    it[serviceDuration] = serviceReq.duration
                 }
             }
         }
@@ -103,9 +103,8 @@ object ErrorLogTable : UUIDTable(name = "infra_error_log") {
     val userId = uuid("user_id").nullable()
     val runAs = bool("run_as").nullable()
 
-    val reqId = uuid("req_id").nullable()
-    val parentReqId = uuid("parent_req_id").nullable()
-    val traceId = uuid("trace_id").nullable()
+    val traceId = char("trace_id", 32).nullable()
+    val reqId = varchar("req_id", 36).nullable()
     val reqAt = timestamp("req_at").nullable()
     val api = varchar("api", 255).nullable()
     val headers = text("headers").nullable()
@@ -118,7 +117,7 @@ object ErrorLogTable : UUIDTable(name = "infra_error_log") {
     val rspAt = timestamp("rsp_at").nullable()
     val rspStatus = integer("rsp_status").nullable()
     val rspBody = text("rsp_body").nullable()
-    val rspTime = long("rsp_time").nullable()
+    val duration = duration("duration").nullable()
 
     val serviceName = varchar("service_name", 20).nullable()
     val serviceApi = varchar("service_api", 255).nullable()
@@ -128,7 +127,7 @@ object ErrorLogTable : UUIDTable(name = "infra_error_log") {
     val serviceRspCode = varchar("service_rsp_code", 20).nullable()
     val serviceRspAt = timestamp("service_rsp_at").nullable()
     val serviceRspBody = text("service_rsp_body").nullable()
-    val serviceRspTime = long("service_rsp_time").nullable()
+    val serviceDuration = duration("service_duration").nullable()
 
     override val naturalKeys: List<Column<out Any>> = listOf(id)
     override val surrogateKey: Column<EntityID<UUID>> = id
