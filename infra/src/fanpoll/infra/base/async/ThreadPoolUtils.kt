@@ -39,6 +39,7 @@ object ThreadPoolUtils {
         override fun newThread(r: Runnable): Thread {
             val thread = backingThreadFactory.newThread(r)
             thread.name = "$namePrefix-${thread.name}"
+            thread.isDaemon = true
             if (handler != null)
                 thread.uncaughtExceptionHandler = handler
             else
