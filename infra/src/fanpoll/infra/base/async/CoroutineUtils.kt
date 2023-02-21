@@ -8,7 +8,6 @@ import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.response.InfraResponseCode
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import mu.KotlinLogging
 
@@ -57,6 +56,7 @@ object CoroutineUtils {
         repeat(coroutines) {
             scope.launch(CoroutineName("$name-(${it + 1})")) {
                 for (e in channel) {
+                    channel.close()
                     logger.debug { coroutineContext }
                     block(e)
                 }
@@ -65,21 +65,35 @@ object CoroutineUtils {
         return channel
     }
 
-    fun <E> createConsumer(
-        name: String, coroutines: Int,
+    fun <E> createActor(
+        name: String, capacity: Int, coroutines: Int,
         scope: CoroutineScope,
-        block: suspend (E) -> Unit,
-        channel: ReceiveChannel<E>
-    ) {
+        block: suspend (List<E>) -> Unit,
+        sizeLimit: Int = 1,
+        timeMsLimit: Int? = null
+    ): SendChannel<E> {
         require(coroutines > 0)
+        require(sizeLimit >= 1)
 
+        val channel = Channel<E>(capacity)
         repeat(coroutines) {
             scope.launch(CoroutineName("$name-(${it + 1})")) {
+                val unProcessItems = mutableListOf<E>()
+                var nextProcessTimeMs = timeMsLimit?.plus(System.currentTimeMillis())
                 for (e in channel) {
                     logger.debug { coroutineContext }
-                    block(e)
+                    unProcessItems.add(e)
+                    if (unProcessItems.size >= sizeLimit ||
+                        (nextProcessTimeMs != null && System.currentTimeMillis() >= nextProcessTimeMs)
+                    ) {
+                        block(unProcessItems)
+                        unProcessItems.clear()
+                        if (timeMsLimit != null)
+                            nextProcessTimeMs = System.currentTimeMillis() + timeMsLimit
+                    }
                 }
             }
         }
+        return channel
     }
 }
