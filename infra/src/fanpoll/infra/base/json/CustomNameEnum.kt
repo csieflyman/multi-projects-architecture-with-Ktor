@@ -12,7 +12,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.reflect.KClass
 
 interface CustomNameEnumConverter {
@@ -28,24 +27,13 @@ class CustomNameEnum<E : Enum<E>>(enumValue: E, converter: CustomNameEnumConvert
 
     fun toJsonElement(): JsonElement = JsonPrimitive(name)
 
+    constructor(
+        value: String,
+        enumClass: KClass<E>,
+        converter: CustomNameEnumConverter
+    ) : this(converter.fromCustomName<E>()(value, enumClass), converter)
+
     companion object {
-
-        operator fun <E : Enum<E>> invoke(
-            value: String,
-            enumClass: KClass<E>,
-            converter: CustomNameEnumConverter
-        )
-                : CustomNameEnum<E> {
-            return CustomNameEnum(converter.fromCustomName<E>()(value, enumClass), converter)
-        }
-
-        operator fun <E : Enum<E>> invoke(
-            value: JsonElement,
-            enumClass: KClass<E>,
-            converter: CustomNameEnumConverter
-        ): CustomNameEnum<E> {
-            return CustomNameEnum(converter.fromCustomName<E>()(value.jsonPrimitive.content, enumClass), converter)
-        }
 
         val defaultCustomNameStrategy = object : CustomNameEnumConverter {
 
