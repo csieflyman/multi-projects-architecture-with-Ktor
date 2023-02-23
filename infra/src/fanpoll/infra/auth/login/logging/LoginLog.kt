@@ -17,10 +17,11 @@ import java.util.*
 
 @Serializable
 data class LoginLog(
+    override val traceId: String?,
     @Serializable(with = UUIDSerializer::class) val userId: UUID,
     val resultCode: LoginResultCode,
     @Serializable(with = InstantSerializer::class) override val occurAt: Instant,
-    val project: String,
+    override val project: String,
     val source: PrincipalSource,
     val tenantId: TenantId? = null,
     val clientId: String? = null,

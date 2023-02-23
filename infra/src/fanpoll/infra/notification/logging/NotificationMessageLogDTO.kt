@@ -25,6 +25,8 @@ data class NotificationMessageLogDTO(
     @Serializable(with = UUIDSerializer::class)
     var notificationId: UUID? = null
 
+    var traceId: String? = null
+
     @Serializable(with = UUIDSerializer::class)
     var eventId: UUID? = null
 

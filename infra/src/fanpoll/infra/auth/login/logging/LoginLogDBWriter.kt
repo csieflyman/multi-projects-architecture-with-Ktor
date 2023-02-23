@@ -22,6 +22,7 @@ class LoginLogDBWriter : LogWriter {
         val loginLog = logEntity as LoginLog
         transaction {
             LoginLogTable.insert {
+                it[traceId] = loginLog.traceId
                 it[userId] = loginLog.userId
                 it[resultCode] = loginLog.resultCode
                 it[occurAt] = loginLog.occurAt
@@ -39,6 +40,7 @@ class LoginLogDBWriter : LogWriter {
 
 object LoginLogTable : UUIDTable(name = "infra_login_log") {
 
+    val traceId = char("trace_id", 32).nullable()
     val userId = uuid("user_id")
     val resultCode = enumerationByName("result_code", 20, LoginResultCode::class)
     val occurAt = timestamp("occur_at")

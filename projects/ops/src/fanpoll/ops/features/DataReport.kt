@@ -10,6 +10,7 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.DataResponseDTO
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.respond
+import fanpoll.infra.logging.RequestAttributeKey
 import fanpoll.infra.notification.Notification
 import fanpoll.infra.notification.senders.NotificationSender
 import fanpoll.infra.openapi.post
@@ -34,10 +35,11 @@ fun Routing.opsDataReport() {
                 if (form.email == null)
                     form.email = opsUserService.getUserById(call.principal<UserPrincipal>()!!.userId).email
                 if (form.email == null)
-                    throw RequestException(InfraResponseCode.BAD_REQUEST_BODY, "email is missing")
+                    throw RequestException(InfraResponseCode.BAD_REQUEST_BODY_FIELD, "email is missing")
 
                 val notification = Notification(
-                    OpsNotification.DataReport, lazyLoadArg = form
+                    OpsNotification.DataReport, lazyLoadArg = form,
+                    traceId = call.attributes.getOrNull(RequestAttributeKey.TRACE_ID)
                 )
                 notificationSender.send(notification)
                 call.respond(DataResponseDTO.uuid(notification.id))

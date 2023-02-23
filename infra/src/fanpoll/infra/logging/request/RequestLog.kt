@@ -34,12 +34,13 @@ class RequestLog(
 ) : LogEntity() {
 
     override val id: UUID = UUID.randomUUID()
+    override val traceId: String? = call.attributes.getOrNull(RequestAttributeKey.TRACE_ID)
     override val occurAt: Instant = call.attributes[RequestAttributeKey.AT]
     override val type: String = LOG_TYPE
     override val level: LogLevel = Log_Level
 
     private val principal = call.principal<MyPrincipal>()
-    val project = principal?.source?.projectId ?: "infra"
+    override val project = principal?.source?.projectId ?: "infra"
     val function = call.request.logFunction()
     val source = principal?.source ?: PrincipalSource.System
     val tenantId = call.tenantId

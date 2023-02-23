@@ -29,6 +29,7 @@ data class Notification(
     val remote: Boolean = false,
     val remoteArg: JsonObject? = null,
     @Serializable(with = UUIDSerializer::class) override val id: UUID = UUID.randomUUID(),
+    val traceId: String? = null,
     @Serializable(with = UUIDSerializer::class) val eventId: UUID = UUID.randomUUID(),
     @Serializable(with = InstantSerializer::class) val createAt: Instant = Instant.now(),
     var version: String? = null

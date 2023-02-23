@@ -18,6 +18,7 @@ import fanpoll.infra.base.form.Form
 import fanpoll.infra.base.form.ValidationUtils
 import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.tenant.TenantId
+import fanpoll.infra.logging.RequestAttributeKey
 import io.konform.validation.Validation
 import io.ktor.application.ApplicationCall
 import io.ktor.auth.principal
@@ -56,6 +57,7 @@ abstract class LoginForm<Self : LoginForm<Self>> : Form<Self>() {
     var userRoles: Set<UserRole>? = null
 
     open fun populateRequest(call: ApplicationCall) {
+        traceId = call.attributes.getOrNull(RequestAttributeKey.TRACE_ID)
         source = call.principal<ServicePrincipal>()!!.source
         ip = call.request.publicRemoteHost
 
@@ -139,6 +141,7 @@ class LogoutForm(val clientVersion: String? = null) : Form<LogoutForm>() {
     var ip: String? = null
 
     fun populateRequest(call: ApplicationCall) {
+        traceId = call.attributes.getOrNull(RequestAttributeKey.TRACE_ID)
         ip = call.request.publicRemoteHost
     }
 }

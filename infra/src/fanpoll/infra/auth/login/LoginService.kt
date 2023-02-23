@@ -38,6 +38,7 @@ class LoginService(
 
         logWriter.write(
             LoginLog(
+                form.traceId,
                 userPrincipal.userId, LoginResultCode.LOGIN_SUCCESS, userPrincipal.createAt,
                 userPrincipal.source.projectId, userPrincipal.source, userPrincipal.tenantId,
                 userPrincipal.clientId, form.clientVersion, form.ip,
@@ -59,6 +60,7 @@ class LoginService(
         if (resultCode != LoginResultCode.ACCOUNT_NOT_FOUND) {
             logWriter.write(
                 LoginLog(
+                    form.traceId,
                     form.userId, resultCode, Instant.now(),
                     form.source.projectId, form.source, form.tenantId,
                     form.deviceId?.toString(), form.clientVersion, form.ip
@@ -78,6 +80,7 @@ class LoginService(
     suspend fun logout(form: LogoutForm, userPrincipal: UserPrincipal) {
         logWriter.write(
             LoginLog(
+                form.traceId,
                 userPrincipal.userId, LoginResultCode.LOGOUT_SUCCESS, Instant.now(),
                 userPrincipal.source.projectId, userPrincipal.source, userPrincipal.tenantId,
                 userPrincipal.clientId, form.clientVersion, form.ip,

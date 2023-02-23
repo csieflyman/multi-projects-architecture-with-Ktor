@@ -12,6 +12,7 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.tenant.TenantForm
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.tenant.TenantIdLocation
+import fanpoll.infra.logging.RequestAttributeKey
 import io.konform.validation.Invalid
 import io.konform.validation.Validation
 import io.ktor.application.ApplicationCall
@@ -34,8 +35,9 @@ suspend inline fun <reified T : Form<*>> ApplicationCall.receiveAndValidateBody(
     val form = try {
         json.decodeFromString(T::class.serializer(), receiveUTF8Text())
     } catch (e: Throwable) {
-        throw RequestException(InfraResponseCode.BAD_REQUEST_BODY, "can't deserialize from json: ${e.message}", e)
+        throw RequestException(InfraResponseCode.BAD_REQUEST_BODY_FORMAT, "can't deserialize from json: ${e.message}", e)
     }
+    form.traceId = attributes.getOrNull(RequestAttributeKey.TRACE_ID)
     form.validate()
     if (form is TenantForm<*>) {
         attributes.put(TenantId.ATTRIBUTE_KEY, form.tenantId)

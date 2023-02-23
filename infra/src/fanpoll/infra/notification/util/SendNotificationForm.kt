@@ -50,7 +50,8 @@ data class SendNotificationForm(
         return Notification(
             type, recipients = recipients.toMutableSet(),
             content, contentArgs = contentArgs ?: mutableMapOf(),
-            remote = false
+            remote = false,
+            traceId = traceId
         )
     }
 

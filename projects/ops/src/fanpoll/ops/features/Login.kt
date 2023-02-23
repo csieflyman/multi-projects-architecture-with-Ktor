@@ -25,6 +25,7 @@ import io.ktor.application.call
 import io.ktor.auth.principal
 import io.ktor.routing.Routing
 import io.ktor.routing.route
+import io.opentelemetry.extension.annotations.WithSpan
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.select
 import org.koin.ktor.ext.inject
@@ -58,6 +59,7 @@ fun Routing.opsLogin() {
 
 class OpsLoginService(private val loginService: LoginService) {
 
+    @WithSpan
     fun login(form: WebLoginForm): UserPrincipal {
         val user = transaction {
             OpsUserTable

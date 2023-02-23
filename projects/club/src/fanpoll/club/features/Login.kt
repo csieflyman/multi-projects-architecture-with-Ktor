@@ -28,6 +28,7 @@ import io.ktor.application.call
 import io.ktor.auth.principal
 import io.ktor.routing.Routing
 import io.ktor.routing.route
+import io.opentelemetry.extension.annotations.WithSpan
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.select
@@ -72,6 +73,7 @@ fun Routing.clubLogin() {
 
 class ClubLoginService(private val loginService: LoginService) {
 
+    @WithSpan
     fun login(form: AppLoginForm): UserPrincipal {
         val user = transaction {
             ClubUserTable.join(UserDeviceTable, JoinType.LEFT, ClubUserTable.id, UserDeviceTable.userId) {

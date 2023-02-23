@@ -22,6 +22,7 @@ import java.util.*
 data class NotificationMessageLog(
     @Serializable(with = UUIDSerializer::class) override val id: UUID,
     @Serializable(with = UUIDSerializer::class) val notificationId: UUID,
+    override val traceId: String?,
     @Serializable(with = UUIDSerializer::class) val eventId: UUID,
     val notificationType: NotificationType,
     val version: String? = null,
@@ -43,6 +44,8 @@ data class NotificationMessageLog(
 
     @Serializable(with = InstantSerializer::class)
     override val occurAt: Instant = Instant.now()
+
+    override val project: String = notificationType.projectId
 
     var content: String? = null
     var success: Boolean = true

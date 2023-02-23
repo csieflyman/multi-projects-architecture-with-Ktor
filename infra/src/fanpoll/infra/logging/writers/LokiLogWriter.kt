@@ -5,13 +5,21 @@
 package fanpoll.infra.logging.writers
 
 import fanpoll.infra.ServerConfig
+import fanpoll.infra.auth.login.logging.LoginLog
 import fanpoll.infra.base.extension.toEpocNano
+import fanpoll.infra.base.extension.toMicros
 import fanpoll.infra.base.httpclient.CIOHttpClientConfig
 import fanpoll.infra.base.httpclient.HttpClientCreator
 import fanpoll.infra.base.httpclient.textBody
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.logging.LogEntity
+import fanpoll.infra.logging.error.ErrorLog
+import fanpoll.infra.logging.error.ServiceRequestLog
+import fanpoll.infra.logging.request.ApplicationRequestLog
+import fanpoll.infra.logging.request.ApplicationResponseLog
 import fanpoll.infra.logging.request.RequestLog
+import fanpoll.infra.logging.request.UserLog
+import fanpoll.infra.notification.logging.NotificationMessageLog
 import io.ktor.client.HttpClient
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.request.header
@@ -66,20 +74,20 @@ class LokiLogWriter(
     private val json = io.ktor.client.features.json.defaultSerializer()
 
     override fun write(logEntity: LogEntity) {
-        val requestLog = logEntity as RequestLog
         val response = runBlocking {
             client.post<HttpResponse>(lokiConfig.pushUrl) {
                 body = json.write(buildJsonObject {
                     putJsonArray("streams") {
                         addJsonObject {
                             putJsonObject("stream") {
-                                put("project", requestLog.project)
+                                put("project", logEntity.project)
+                                put("logType", logEntity.type)
                                 put("env", serverConfig.env.name)
                             }
                             putJsonArray("values") {
                                 addJsonArray {
-                                    add(JsonPrimitive(requestLog.request.at.toEpocNano()).toString())
-                                    add(JsonPrimitive(toLokiLogText(requestLog)))
+                                    add(JsonPrimitive(logEntity.occurAt.toEpocNano()).toString())
+                                    add(JsonPrimitive(toLokiLogText(logEntity)))
                                 }
                             }
                         }
@@ -98,48 +106,147 @@ class LokiLogWriter(
         return "Basic $authBuf"
     }
 
-    private fun toLokiLogText(requestLog: RequestLog): String = mutableMapOf(
-        "level" to requestLog.level.name,
-        "logType" to requestLog.type,
-        "function" to requestLog.function,
-        "source" to requestLog.source.name
-    ).apply {
-        with(requestLog) {
-            // traceID is a Loki built-in derived field and use traceID=(\w+) regex pattern to extract value
-            if (request.traceId != null)
-                put("traceID", request.traceId.replace("-", ""))
-            put("req.id", request.id)
-            put("req.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(request.at))
-            put("req.api", "[${request.method}] ${request.path}")
-            if (request.headers != null)
-                put("req.headers", request.headers.toString())
-            if (request.querystring != null)
-                put("req.querystring", request.querystring)
-            if (request.body != null)
-                put("req.body", request.body)
-            if (request.ip != null)
-                put("req.ip", request.ip)
-            if (request.clientId != null)
-                put("req.clientId", request.clientId)
-            if (request.clientVersion != null)
-                put("req.clientVersion", request.clientVersion)
-
-            put("rsp.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(response.at))
-            put("rsp.status", response.status.toString())
-            if (response.body != null)
-                put("rsp.body", response.body)
-            put("duration", response.duration.toString())
-
-            if (user != null) {
-                put("user.type", user.type.name)
-                put("user.id", user.id.toString())
-                put("user.runAs", user.runAs.toString())
+    private fun toLokiLogText(logEntity: LogEntity): String {
+        val logMap = mutableMapOf<String, String>().apply {
+            with(logEntity) {
+                put("id", id.toString())
+                put("occurAt", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(occurAt))
+                put("level", level.name)
+                put("logType", type)
+                put("project", project)
+                // traceID is a Loki built-in derived field and use traceID=(\w+) regex pattern to extract value
+                if (logEntity.traceId != null)
+                    put("traceID", logEntity.traceId!!.replace("-", ""))
             }
+        }
+        val subTypeLogMap = when (logEntity) {
+            is RequestLog -> fromRequestLog(logEntity)
+            is ErrorLog -> fromErrorLog(logEntity)
+            is LoginLog -> fromLoginLog(logEntity)
+            is NotificationMessageLog -> fromNotificationMessageLog(logEntity)
+            else -> error("${logEntity.type} is not implemented yet")
+        }
+        logMap.putAll(subTypeLogMap)
+        return logMap.entries.joinToString(" ")
+    }
 
+    private fun fromNotificationMessageLog(messageLog: NotificationMessageLog) = mutableMapOf<String, String>().apply {
+        with(messageLog) {
+            put("notificationId", notificationId.toString())
+            put("eventId", eventId.toString())
+            put("notificationType", notificationType.name)
+            version?.let { put("version", it) }
+            put("channel", channel.name)
+            put("lang", lang.code)
+            sendAt?.let { put("sendAt", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it)) }
+            errorMsg?.let { put("errorMsg", it) }
+            put("receivers", receivers.toString())
+            content?.let { put("content", it) }
+            put("success", success.toString())
+            successList?.let { put("successList", it.toString()) }
+            failureList?.let { put("failureList", it.toString()) }
+            invalidRecipientIds?.let { put("invalidRecipientIds", it.toString()) }
+            rspCode?.let { put("rspCode", it) }
+            rspMsg?.let { put("rspMsg", it) }
+            rspAt?.let { put("rspAt", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it)) }
+            duration?.let { put("duration", it.toMicros().toString()) }
+            rspBody?.let { put("rspBody", it) }
+        }
+    }
+
+    private fun fromLoginLog(loginLog: LoginLog) = mutableMapOf<String, String>().apply {
+        with(loginLog) {
+            put("userId", userId.toString())
+            put("resultCode", resultCode.name)
+            put("source", source.name)
+            tenantId?.let { put("tenantId", it.value) }
+            clientId?.let { put("clientId", it) }
+            clientVersion?.let { put("clientVersion", it) }
+            ip?.let { put("ip", it) }
+            sid?.let { put("sid", it) }
+        }
+    }
+
+    private fun fromErrorLog(errorLog: ErrorLog) = mutableMapOf<String, String>().apply {
+        with(errorLog) {
+            put("function", function)
+            put("source", source.name)
             principalId?.let { put("principalId", it) }
             tenantId?.let { put("tenantId", it.value) }
-
             tags?.let { putAll(it.mapKeys { key -> "tag.$key" }) }
+
+            if (request != null) {
+                fromApplicationRequestLog(request)
+            }
+            if (response != null) {
+                putAll(fromApplicationResponseLog(response))
+            }
+            if (user != null) {
+                fromUserLog(user)
+            }
+            if (serviceRequest != null) {
+                fromServiceRequestLog(serviceRequest)
+            }
         }
-    }.entries.joinToString(" ")
+    }
+
+    private fun fromRequestLog(requestLog: RequestLog) = mutableMapOf<String, String>().apply {
+        with(requestLog) {
+            put("function", function)
+            put("source", source.name)
+            principalId?.let { put("principalId", it) }
+            tenantId?.let { put("tenantId", it.value) }
+            tags?.let { putAll(it.mapKeys { key -> "tag.$key" }) }
+
+            putAll(fromApplicationRequestLog(request))
+            putAll(fromApplicationResponseLog(response))
+            if (user != null) {
+                fromUserLog(user)
+            }
+        }
+    }
+
+    private fun fromApplicationRequestLog(request: ApplicationRequestLog) = mutableMapOf<String, String>().apply {
+        with(request) {
+            put("req.id", id)
+            put("req.api", "[$method] $path")
+            headers?.let { put("req.headers", it.toString()) }
+            querystring?.let { put("req.querystring", it) }
+            body?.let { put("req.body", it) }
+            ip?.let { put("req.ip", it) }
+            clientId?.let { put("req.clientId", it) }
+            clientVersion?.let { put("req.clientVersion", it) }
+        }
+    }
+
+    private fun fromApplicationResponseLog(response: ApplicationResponseLog) = mutableMapOf<String, String>().apply {
+        with(response) {
+            put("rsp.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(at))
+            put("rsp.status", status.toString())
+            body?.let { put("rsp.body", it) }
+            put("duration", duration.toMicros().toString())
+        }
+    }
+
+    private fun fromUserLog(user: UserLog) = mutableMapOf<String, String>().apply {
+        with(user) {
+            put("user.type", type.name)
+            put("user.id", id.toString())
+            put("user.runAs", runAs.toString())
+        }
+    }
+
+    private fun fromServiceRequestLog(service: ServiceRequestLog) = mutableMapOf<String, String>().apply {
+        with(service) {
+            put("service.name", name)
+            put("service.api", api)
+            reqId?.let { put("service.req.id", it) }
+            reqAt?.let { put("service.req.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it)) }
+            reqBody?.let { put("service.req.body", it) }
+            rspCode?.let { put("service.rsp.code", it) }
+            rspAt?.let { put("service.rsp.at", DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it)) }
+            rspBody?.let { put("service.rsp.body", it) }
+            duration?.let { put("service.duration", it.toMicros().toString()) }
+        }
+    }
 }

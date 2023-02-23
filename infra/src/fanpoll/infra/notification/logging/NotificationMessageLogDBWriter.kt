@@ -25,6 +25,7 @@ class NotificationMessageLogDBWriter : LogWriter {
             NotificationMessageLogTable.insert {
                 it[id] = messageLog.id
                 it[notificationId] = messageLog.notificationId
+                it[traceId] = messageLog.traceId
                 it[eventId] = messageLog.eventId
                 it[type] = messageLog.notificationType.id
                 it[version] = messageLog.version
@@ -51,6 +52,7 @@ class NotificationMessageLogDBWriter : LogWriter {
 object NotificationMessageLogTable : UUIDTable(name = "infra_notification_message_log") {
 
     val notificationId = uuid("notification_id")
+    val traceId = char("trace_id", 32).nullable()
     val eventId = uuid("event_id")
     val type = varchar("type", 30)
     val version = varchar("version", 5).nullable()

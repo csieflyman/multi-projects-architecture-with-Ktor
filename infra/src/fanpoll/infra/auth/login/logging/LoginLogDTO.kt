@@ -20,6 +20,8 @@ data class LoginLogDTO(
     @JvmField @Serializable(with = UUIDSerializer::class) val id: UUID
 ) : EntityDTO<UUID> {
 
+    var traceId: String? = null
+
     @Serializable(with = UUIDSerializer::class)
     var userId: UUID? = null
 

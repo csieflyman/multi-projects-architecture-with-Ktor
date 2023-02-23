@@ -56,7 +56,6 @@ object CoroutineUtils {
         repeat(coroutines) {
             scope.launch(CoroutineName("$name-(${it + 1})")) {
                 for (e in channel) {
-                    channel.close()
                     logger.debug { coroutineContext }
                     block(e)
                 }

@@ -14,11 +14,11 @@ object InfraResponseCode {
 
     // Entity Validation
     val ENTITY_NOT_FOUND =
-        ResponseCode("ENTITY_NOT_FOUND", "0010", ResponseCodeType.CLIENT_INFO, HttpStatusCode.UnprocessableEntity) // get, find
+        ResponseCode("ENTITY_NOT_FOUND", "0010", ResponseCodeType.CLIENT_INFO, HttpStatusCode.NotFound) // get, find
     val ENTITY_NOT_EXIST =
-        ResponseCode("ENTITY_NOT_EXIST", "0011", ResponseCodeType.CLIENT_INFO, HttpStatusCode.UnprocessableEntity) // update, delete
+        ResponseCode("ENTITY_NOT_EXIST", "0011", ResponseCodeType.CLIENT_INFO, HttpStatusCode.NotFound) // update, delete
     val ENTITY_ALREADY_EXISTS =
-        ResponseCode("ENTITY_ALREADY_EXISTS", "0012", ResponseCodeType.CLIENT_INFO, HttpStatusCode.UnprocessableEntity) // create
+        ResponseCode("ENTITY_ALREADY_EXISTS", "0012", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Conflict) // create
     val ENTITY_PROP_VALUE_INVALID =
         ResponseCode("ENTITY_PROP_VALUE_INVALID", "0013", ResponseCodeType.CLIENT_INFO, HttpStatusCode.UnprocessableEntity) // update
     val ENTITY_STATUS_DISABLED =
@@ -47,12 +47,14 @@ object InfraResponseCode {
     val BAD_REQUEST_QUERYSTRING = ResponseCode("BAD_REQUEST_QUERYSTRING", "1002", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
     val BAD_REQUEST_PATH_OR_QUERYSTRING =
         ResponseCode("BAD_REQUEST_PATH_OR_QUERYSTRING", "1003", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST_BODY = ResponseCode("BAD_REQUEST_BODY", "1004", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST = ResponseCode("BAD_REQUEST", "1005", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST_LANG = ResponseCode("BAD_REQUEST_LANG", "1006", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST_TENANT_ID = ResponseCode("BAD_REQUEST_HASH_ID", "1007", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST_HASH_ID = ResponseCode("BAD_REQUEST_HASH_ID", "1008", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST_APP_VERSION = ResponseCode("BAD_REQUEST_APP_VERSION", "1009", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
+    val BAD_REQUEST_BODY_FORMAT = ResponseCode("BAD_REQUEST_BODY", "1004", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
+    val BAD_REQUEST_BODY_FIELD =
+        ResponseCode("BAD_REQUEST_BODY_FIELD", "1005", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.UnprocessableEntity)
+    val BAD_REQUEST = ResponseCode("BAD_REQUEST", "1006", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
+    val BAD_REQUEST_LANG = ResponseCode("BAD_REQUEST_LANG", "1007", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
+    val BAD_REQUEST_TENANT_ID = ResponseCode("BAD_REQUEST_HASH_ID", "1008", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
+    val BAD_REQUEST_HASH_ID = ResponseCode("BAD_REQUEST_HASH_ID", "1009", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
+    val BAD_REQUEST_APP_VERSION = ResponseCode("BAD_REQUEST_APP_VERSION", "1010", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
 
     // ========== Authentication ==========
     val AUTH_BAD_KEY = ResponseCode("AUTH_BAD_KEY", "2000", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.Unauthorized)

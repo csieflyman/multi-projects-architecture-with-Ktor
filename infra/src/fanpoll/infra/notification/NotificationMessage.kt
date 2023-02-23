@@ -14,6 +14,7 @@ import java.util.*
 
 data class NotificationMessage(
     val notificationId: UUID,
+    val traceId: String? = null,
     val eventId: UUID,
     val type: NotificationType,
     val version: String? = null,
@@ -31,7 +32,7 @@ data class NotificationMessage(
         "$id - $notificationId - $eventId - [${type.id}${version?.let { "($it)" } ?: ""}] ($channel)(${lang.code}) => $receivers"
 
     fun toNotificationMessageLog(): NotificationMessageLog = NotificationMessageLog(
-        id, notificationId, eventId,
+        id, notificationId, traceId, eventId,
         type, version, channel, lang, receivers
     )
 }

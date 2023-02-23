@@ -111,6 +111,7 @@ class NotificationDispatcher(
                                 }
                                 content.push[lang]
                             }
+
                             NotificationChannel.SMS -> {
                                 if (!content.sms.containsKey(lang)) {
                                     content.sms[lang] = SMSContent(
@@ -120,7 +121,8 @@ class NotificationDispatcher(
                                 content.sms[lang]
                             }
                         }!!
-                        NotificationMessage(id, eventId, type, version, channel, lang, sender, receivers, langContent)
+                        NotificationMessage(id, traceId, eventId, type, version, channel, lang, sender, receivers, langContent)
+                        NotificationMessage(id, traceId, eventId, type, version, channel, lang, sender, receivers, langContent)
                     } else null
                 }
             }

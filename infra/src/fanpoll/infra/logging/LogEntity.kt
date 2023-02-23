@@ -13,6 +13,10 @@ import java.util.*
 
 abstract class LogEntity : IdentifiableObject<UUID>() {
 
+    abstract val traceId: String?
+
+    abstract val project: String
+
     abstract val occurAt: Instant
 
     abstract val type: String

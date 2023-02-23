@@ -14,6 +14,7 @@ import fanpoll.infra.base.json.InstantSerializer
 import fanpoll.infra.base.tenant.tenantId
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
+import fanpoll.infra.logging.RequestAttributeKey
 import fanpoll.infra.logging.RequestAttributeKey.TAGS
 import fanpoll.infra.logging.logFunction
 import fanpoll.infra.logging.request.ApplicationRequestLog
@@ -34,12 +35,13 @@ class ErrorLog private constructor(
 ) : LogEntity() {
 
     override val id: UUID = UUID.randomUUID()
+    override val traceId: String? = call?.attributes?.getOrNull(RequestAttributeKey.TRACE_ID)
     override val occurAt = exception.occurAt
     override val type: String = LOG_TYPE
     override val level: LogLevel = Log_Level
 
     private val principal = call?.principal<MyPrincipal>()
-    val project = principal?.source?.projectId ?: "infra"
+    override val project = principal?.source?.projectId ?: "infra"
     val source = principal?.source ?: PrincipalSource.System
     val tenantId = call?.tenantId ?: exception.tenantId
     val principalId = principal?.id

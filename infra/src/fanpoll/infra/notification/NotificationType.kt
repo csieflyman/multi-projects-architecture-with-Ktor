@@ -69,7 +69,7 @@ open class NotificationType(
         private fun lookup(projectId: String, name: String): NotificationType {
             val typeId = buildTypeId(projectId, name)
             return registeredTypes[typeId]
-                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_BODY, "invalid NotificationType: $typeId")
+                ?: throw RequestException(InfraResponseCode.BAD_REQUEST_BODY_FIELD, "invalid NotificationType: $typeId")
         }
 
         private fun buildTypeId(projectId: String, name: String): String = "${projectId}_${name}"

@@ -26,7 +26,7 @@ object ExceptionUtils {
         is MissingRequestParameterException -> RequestException(InfraResponseCode.BAD_REQUEST_PATH_OR_QUERYSTRING, e.message, e)
         is BadRequestException -> RequestException(InfraResponseCode.BAD_REQUEST, e.message, e)
         is LocationRoutingException -> RequestException(InfraResponseCode.BAD_REQUEST_PATH_OR_QUERYSTRING, e.message, e)
-        is kotlinx.serialization.SerializationException -> RequestException(InfraResponseCode.BAD_REQUEST_BODY, e.message, e)
+        is kotlinx.serialization.SerializationException -> RequestException(InfraResponseCode.BAD_REQUEST_BODY_FORMAT, e.message, e)
         else -> InternalServerException(InfraResponseCode.UNEXPECTED_ERROR, cause = e)
     }
 
