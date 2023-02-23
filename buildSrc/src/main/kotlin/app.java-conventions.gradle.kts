@@ -21,8 +21,8 @@ sourceSets["test"].resources.srcDirs("testresources")
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "11"
-        kotlinOptions.languageVersion = "1.6"
+        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.languageVersion = "1.8"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
@@ -30,8 +30,8 @@ tasks {
         //kotlinOptions.useIR = true (1.4 in Alpha)
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "11"
-        kotlinOptions.languageVersion = "1.6"
+        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.languageVersion = "1.8"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
     }

@@ -51,7 +51,7 @@ class RedisCache<K : Any, V : Any>(
 
     private fun buildRedisKey(key: K): String {
         val redisKey = when (key) {
-            keyMapper != null -> keyMapper?.invoke(key)
+            (keyMapper != null) -> keyMapper?.invoke(key)
             is String -> key
             else -> key.toString()
         }

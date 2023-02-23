@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    val kotlinVersion = "1.6.10"
+    val kotlinVersion = "1.8.10"
     val ktorVersion = "1.6.7"
     val koinVersion = "3.1.5"
     val exposedVersion = "0.37.3"
