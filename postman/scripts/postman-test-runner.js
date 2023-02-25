@@ -17,12 +17,12 @@ console.log(`folder: ${folderName ? folderName : ''}`);
 if (!envName) {
     throw '[ERROR] env name is required';
 }
-const envFilePath = `postman/${projectName}/environment/${envName}.json`;
+const envFilePath = `projects/${projectName}/environment/${envName}.json`;
 if (!fs.existsSync(envFilePath)) {
     throw `[ERROR] ${envFilePath} is not exist.`;
 }
 
-const collectionFilePath = `postman/${projectName}/${projectName}-collection.json`;
+const collectionFilePath = `projects/${projectName}/${projectName}-collection.json`;
 if (!fs.existsSync(collectionFilePath)) {
     throw `[ERROR] ${collectionFilePath} is not exist.`;
 }
@@ -60,13 +60,13 @@ if (folderName) {
 
 function runSpecifiedFolder(folderName) {
     console.log(`start to run folder ${folderName}...`);
-    htmlextraDefaultOptions.export = `postman/${projectName}/report/folder/${folderName}-report.html`
+    htmlextraDefaultOptions.export = `projects/${projectName}/report/folder/${folderName}-report.html`
     newman.run({
-        globals: `postman/${projectName}/globals.json`,
+        globals: `projects/${projectName}/globals.json`,
         environment: envFilePath,
         collection: collectionFilePath,
         folder: folderName,
-        iterationData: `postman/${projectName}/data/folder/${folderName}.json`,
+        iterationData: `projects/${projectName}/data/folder/${folderName}.json`,
         reporters: ['htmlextra'],
         reporter: {
             htmlextra: htmlextraDefaultOptions
@@ -115,17 +115,17 @@ function runAllSuitesInParallel(next) {
 }
 
 function getAllFoldersRunners() {
-    return fs.readdirSync(`postman/${projectName}/data/folder`).map(fileName => {
+    return fs.readdirSync(`projects/${projectName}/data/folder`).map(fileName => {
         let folderName = fileName.replace('.json', '');
-        htmlextraDefaultOptions.export = `postman/${projectName}/report/folder/${folderName}-report.html`
+        htmlextraDefaultOptions.export = `projects/${projectName}/report/folder/${folderName}-report.html`
         return function (finish) {
             console.log(`========== Folder ${folderName} Begin ==========`);
             newman.run({
-                globals: `postman/${projectName}/globals.json`,
+                globals: `projects/${projectName}/globals.json`,
                 environment: envFilePath,
                 collection: collectionFilePath,
                 folder: folderName,
-                iterationData: `postman/${projectName}/data/folder/${folderName}.json`,
+                iterationData: `projects/${projectName}/data/folder/${folderName}.json`,
                 reporters: ['htmlextra'],
                 reporter: {
                     htmlextra: htmlextraDefaultOptions
@@ -142,16 +142,16 @@ function getAllFoldersRunners() {
 }
 
 function getAllSuitesRunners() {
-    return fs.readdirSync(`postman/${projectName}/data/suite`).map(fileName => {
+    return fs.readdirSync(`projects/${projectName}/data/suite`).map(fileName => {
         let suiteName = fileName.replace('.json', '');
-        htmlextraDefaultOptions.export = `postman/${projectName}/report/suite/${suiteName}-report.html`
+        htmlextraDefaultOptions.export = `projects/${projectName}/report/suite/${suiteName}-report.html`
         return function (finish) {
             console.log(`========== Suite ${suiteName} Begin ==========`);
             newman.run({
-                globals: `postman/${projectName}/globals.json`,
+                globals: `projects/${projectName}/globals.json`,
                 environment: envFilePath,
                 collection: collectionFilePath,
-                iterationData: `postman/${projectName}/data/suite/${fileName}`,
+                iterationData: `projects/${projectName}/data/suite/${fileName}`,
                 reporters: ['htmlextra'],
                 reporter: {
                     htmlextra: htmlextraDefaultOptions

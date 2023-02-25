@@ -1,2 +1,2 @@
 rootProject.name = "fanpoll"
-include("app", "infra", "projects:ops", "projects:club")
+include("app", "infra", "projects:ops", "projects:club", "postman")

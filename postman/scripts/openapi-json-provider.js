@@ -26,6 +26,6 @@ async function downloadJson() {
 
     const getJson = bent('GET', 'json', headers, schemaUrl);
     let response = await getJson()
-    fs.writeFileSync(`postman/${projectName}/${projectName}-openapi.json`, JSON.stringify(response));
+    fs.writeFileSync(`projects/${projectName}/${projectName}-openapi.json`, JSON.stringify(response));
     return response
 }

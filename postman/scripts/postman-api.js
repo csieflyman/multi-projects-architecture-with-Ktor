@@ -47,9 +47,9 @@ function uploadAll() {
 }
 
 function uploadEnvironments() {
-    fs.readdirSync(`postman/${projectName}/environment`).forEach(fileName => {
+    fs.readdirSync(`projects/${projectName}/environment`).forEach(fileName => {
         let envJson = JSON.parse(
-            fs.readFileSync(`postman/${projectName}/environment/${fileName}`, {encoding: 'utf8'})
+            fs.readFileSync(`projects/${projectName}/environment/${fileName}`, {encoding: 'utf8'})
         );
         uploadObj(envJson.environment.name, envJson, findEnvironmentByName, createEnvironment, updateEnvironment);
     });
@@ -57,7 +57,7 @@ function uploadEnvironments() {
 
 function uploadCollection() {
     let collectionJson = JSON.parse(
-        fs.readFileSync(`postman/${projectName}/${projectName}-collection.json`, {encoding: 'utf8'})
+        fs.readFileSync(`projects/${projectName}/${projectName}-collection.json`, {encoding: 'utf8'})
     );
     uploadObj(collectionJson.info.name, {collection: collectionJson}, findCollectionByName, createCollection, updateCollection);
 }

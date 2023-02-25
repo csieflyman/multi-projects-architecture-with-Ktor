@@ -15,7 +15,7 @@ convert().then(() => console.log("convert success"));
 async function convert(json) {
     let input = json ? {type: 'json', data: json} : {
         type: 'file',
-        data: `postman/${projectName}/${projectName}-openapi.json`
+        data: `projects/${projectName}/${projectName}-openapi.json`
     };
     let options = {
         requestNameSource: "Fallback",
@@ -37,7 +37,7 @@ function manipulateCollection(collection) {
     manipulateRequests(collection);
     addDummyRequestAtFirstPosition(collection);
     console.log("manipulateCollection success");
-    fs.writeFileSync(`postman/${projectName}/${projectName}-collection.json`, JSON.stringify(collection));
+    fs.writeFileSync(`projects/${projectName}/${projectName}-collection.json`, JSON.stringify(collection));
 }
 
 function manipulateRequests(collection) {
