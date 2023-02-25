@@ -8,9 +8,9 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.LocalDateRange
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.report.Report
-import io.ktor.application.ApplicationCall
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.Location
 import java.time.ZoneId
 
 interface ReportLocation {

@@ -25,8 +25,8 @@ tasks {
         kotlinOptions.languageVersion = "1.8"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalStdlibApi"
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
         //kotlinOptions.useIR = true (1.4 in Alpha)
     }
     compileTestKotlin {

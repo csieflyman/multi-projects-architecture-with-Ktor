@@ -10,15 +10,13 @@ import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.auth.principal.UserRole
 import fanpoll.infra.auth.principal.UserType
-import fanpoll.infra.auth.provider.UserRunAsAuthProvider.Companion.RUN_AS_TOKEN_HEADER_NAME
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.IdentifiableObject
-import io.ktor.application.call
-import io.ktor.auth.*
-import io.ktor.request.header
+import io.ktor.server.auth.*
+import io.ktor.server.request.header
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -49,7 +47,20 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
 
     private val authConfigs: List<UserRunAsAuthConfig> = config.authConfigs
 
-    val authenticationFunction: AuthenticationFunction<UserRunAsAuthCredential> = { credentials ->
+    override suspend fun onAuthenticate(context: AuthenticationContext) {
+        val call = context.call
+        val apiKey = call.request.header(AuthConst.API_KEY_HEADER_NAME)
+        val runAsToken = call.request.header(RUN_AS_TOKEN_HEADER_NAME)
+
+        if (apiKey != null && runAsToken != null) {
+            val principal = (authenticationFunction)(call, UserRunAsAuthCredential(apiKey, runAsToken)) as UserPrincipal?
+            if (principal != null) {
+                context.principal(principal)
+            }
+        }
+    }
+
+    private val authenticationFunction: AuthenticationFunction<UserRunAsAuthCredential> = { credentials ->
 
         var principal: UserPrincipal? = null
         run loop@{
@@ -91,29 +102,14 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
         }
     }
 
-    class Configuration constructor(providerName: String, val authConfigs: List<UserRunAsAuthConfig>) :
-        AuthenticationProvider.Configuration(providerName) {
+    class Configuration constructor(providerName: String, val authConfigs: List<UserRunAsAuthConfig>) : Config(providerName) {
 
         fun build() = UserRunAsAuthProvider(this)
     }
 }
 
-fun Authentication.Configuration.runAs(providerName: String, authConfigs: List<UserRunAsAuthConfig>) {
-
+fun AuthenticationConfig.runAs(providerName: String, authConfigs: List<UserRunAsAuthConfig>) {
     val provider = UserRunAsAuthProvider.Configuration(providerName, authConfigs).build()
-
-    provider.pipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
-        val apiKey = call.request.header(AuthConst.API_KEY_HEADER_NAME)
-        val runAsToken = call.request.header(RUN_AS_TOKEN_HEADER_NAME)
-
-        if (apiKey != null && runAsToken != null) {
-            val principal = (provider.authenticationFunction)(call, UserRunAsAuthCredential(apiKey, runAsToken)) as UserPrincipal?
-            if (principal != null) {
-                context.principal(principal)
-            }
-        }
-    }
-
     register(provider)
 }
 

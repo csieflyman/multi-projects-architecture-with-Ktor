@@ -17,19 +17,20 @@ import fanpoll.infra.base.i18n.PropertiesMessagesProvider
 import fanpoll.infra.base.response.ResponseMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationProjectMessages
-import io.ktor.application.Application
-import io.ktor.auth.authentication
-import io.ktor.auth.session
-import io.ktor.routing.routing
+import io.ktor.server.application.Application
+import io.ktor.server.auth.authentication
+import io.ktor.server.auth.session
+import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.koin
 
 private val logger = KotlinLogging.logger {}
 
 fun Application.clubMain() {
     logger.info { "load ${ClubConst.projectId} project..." }
+    val application = this
 
     val projectManager = get<ProjectManager>()
     val projectConfig = ProjectManager.loadConfig<ClubConfig>(ClubConst.projectId)
@@ -47,7 +48,7 @@ fun Application.clubMain() {
         service(ClubAuth.serviceAuthProviderName, projectConfig.auth.getServiceAuthConfigs())
         session(
             ClubAuth.userAuthProviderName,
-            UserSessionAuthValidator(projectConfig.auth.getUserAuthConfigs(), get()).configureFunction
+            UserSessionAuthValidator(projectConfig.auth.getUserAuthConfigs(), application.get()).configureFunction
         )
         runAs(ClubAuth.userRunAsAuthProviderName, projectConfig.auth.getRunAsConfigs())
     }

@@ -16,19 +16,20 @@ import fanpoll.infra.notification.i18n.I18nNotificationMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationProjectMessages
 import fanpoll.ops.features.OpsLoginService
 import fanpoll.ops.features.OpsUserService
-import io.ktor.application.Application
-import io.ktor.auth.authentication
-import io.ktor.auth.session
-import io.ktor.routing.routing
+import io.ktor.server.application.Application
+import io.ktor.server.auth.authentication
+import io.ktor.server.auth.session
+import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.koin
 
 private val logger = KotlinLogging.logger {}
 
 fun Application.opsMain() {
     logger.info { "load ${OpsConst.projectId} project..." }
+    val application = this
 
     val projectManager = get<ProjectManager>()
     val projectConfig = ProjectManager.loadConfig<OpsConfig>(OpsConst.projectId)
@@ -46,7 +47,7 @@ fun Application.opsMain() {
         service(OpsAuth.serviceAuthProviderName, projectConfig.auth.getServiceAuthConfigs())
         session(
             OpsAuth.userAuthProviderName,
-            UserSessionAuthValidator(projectConfig.auth.getUserAuthConfigs(), get()).configureFunction
+            UserSessionAuthValidator(projectConfig.auth.getUserAuthConfigs(), application.get()).configureFunction
         )
     }
 

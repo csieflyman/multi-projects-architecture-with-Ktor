@@ -4,7 +4,7 @@
 
 package fanpoll.infra.base.httpclient
 
-import io.ktor.client.features.logging.LogLevel
+import io.ktor.client.plugins.logging.LogLevel
 
 // https://ktor.io/docs/http-client-engines.html#jvm
 

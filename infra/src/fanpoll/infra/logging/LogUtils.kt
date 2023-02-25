@@ -5,10 +5,10 @@
 package fanpoll.infra.logging
 
 import fanpoll.infra.auth.principal.PrincipalSource
-import io.ktor.application.ApplicationCall
-import io.ktor.auth.Principal
-import io.ktor.auth.principal
-import io.ktor.request.*
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.Principal
+import io.ktor.server.auth.principal
+import io.ktor.server.request.*
 
 fun ApplicationCall?.logCaller(): String {
     return this?.let {

@@ -5,8 +5,8 @@
 package fanpoll.infra.logging.request
 
 import fanpoll.infra.logging.LogDestination
-import io.ktor.application.ApplicationCall
-import io.ktor.request.path
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.path
 
 data class RequestLogConfig(
     val enabled: Boolean = true,

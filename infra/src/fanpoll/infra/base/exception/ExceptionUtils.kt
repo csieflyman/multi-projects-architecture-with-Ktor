@@ -7,12 +7,12 @@ package fanpoll.infra.base.exception
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCodeType
 import fanpoll.infra.logging.logString
-import io.ktor.application.ApplicationCall
-import io.ktor.features.BadRequestException
-import io.ktor.features.MissingRequestParameterException
-import io.ktor.features.ParameterConversionException
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.LocationRoutingException
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.LocationRoutingException
+import io.ktor.server.plugins.BadRequestException
+import io.ktor.server.plugins.MissingRequestParameterException
+import io.ktor.server.plugins.ParameterConversionException
 import mu.KotlinLogging
 
 object ExceptionUtils {

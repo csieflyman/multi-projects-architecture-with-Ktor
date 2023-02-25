@@ -6,9 +6,9 @@ package fanpoll.infra.base.i18n
 
 import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
-import io.ktor.application.ApplicationCall
-import io.ktor.request.ApplicationRequest
-import io.ktor.request.acceptLanguageItems
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.ApplicationRequest
+import io.ktor.server.request.acceptLanguageItems
 import io.ktor.util.AttributeKey
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

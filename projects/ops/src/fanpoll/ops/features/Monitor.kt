@@ -11,9 +11,9 @@ import fanpoll.infra.openapi.get
 import fanpoll.ops.OpsAuth
 import fanpoll.ops.OpsConst
 import fanpoll.ops.OpsOpenApi
-import io.ktor.application.call
-import io.ktor.routing.Routing
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
 
 fun Routing.opsMonitor() {
 

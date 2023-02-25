@@ -9,7 +9,7 @@ import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.response.InfraResponseCode
-import io.ktor.request.ApplicationRequest
+import io.ktor.server.request.ApplicationRequest
 import io.ktor.util.toMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

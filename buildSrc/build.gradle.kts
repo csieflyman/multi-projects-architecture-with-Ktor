@@ -12,6 +12,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-serialization:1.8.10")
     implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
     implementation("com.bmuschko:gradle-docker-plugin:9.2.1")
+    implementation("org.jetbrains.kotlinx.kover:org.jetbrains.kotlinx.kover.gradle.plugin:0.6.1")
 
     // https://github.com/kotest/kotest-gradle-plugin
     // get NPE when run gradle task 'kotest'. It may be incompatible with kotest 5.0.2
@@ -26,8 +27,8 @@ tasks {
         kotlinOptions.languageVersion = "1.8"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalStdlibApi"
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
         //kotlinOptions.useIR = true (1.4 in Alpha)
     }
     compileTestKotlin {

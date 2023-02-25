@@ -10,7 +10,7 @@ import fanpoll.infra.base.extension.toEpocNano
 import fanpoll.infra.base.extension.toMicros
 import fanpoll.infra.base.httpclient.CIOHttpClientConfig
 import fanpoll.infra.base.httpclient.HttpClientCreator
-import fanpoll.infra.base.httpclient.textBody
+import fanpoll.infra.base.httpclient.bodyAsTextBlocking
 import fanpoll.infra.base.util.DateTimeUtils
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.error.ErrorLog
@@ -21,10 +21,10 @@ import fanpoll.infra.logging.request.RequestLog
 import fanpoll.infra.logging.request.UserLog
 import fanpoll.infra.notification.logging.NotificationMessageLog
 import io.ktor.client.HttpClient
-import io.ktor.client.features.defaultRequest
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
+import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
 import io.ktor.util.InternalAPI
 import io.ktor.util.encodeBase64
@@ -71,12 +71,12 @@ class LokiLogWriter(
         }
     }
 
-    private val json = io.ktor.client.features.json.defaultSerializer()
+    private val json = io.ktor.client.plugins.json.defaultSerializer()
 
     override fun write(logEntity: LogEntity) {
         val response = runBlocking {
-            client.post<HttpResponse>(lokiConfig.pushUrl) {
-                body = json.write(buildJsonObject {
+            client.post(lokiConfig.pushUrl) {
+                setBody(json.write(buildJsonObject {
                     putJsonArray("streams") {
                         addJsonObject {
                             putJsonObject("stream") {
@@ -92,10 +92,10 @@ class LokiLogWriter(
                             }
                         }
                     }
-                })
+                }))
             }
         }
-        logger.debug { "${response.status.value}-${response.textBody()}" }
+        logger.debug { "${response.status.value}-${response.bodyAsTextBlocking()}" }
     }
 
     @OptIn(InternalAPI::class)

@@ -20,8 +20,8 @@ import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.logging.RequestAttributeKey
 import io.konform.validation.Validation
-import io.ktor.application.ApplicationCall
-import io.ktor.auth.principal
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.principal
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.util.*

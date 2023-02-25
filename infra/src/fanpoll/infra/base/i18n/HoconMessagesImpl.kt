@@ -5,7 +5,7 @@
 package fanpoll.infra.base.i18n
 
 import com.typesafe.config.Config
-import io.ktor.config.tryGetString
+import io.ktor.server.config.tryGetString
 import org.apache.commons.text.StringSubstitutor
 
 class HoconMessagesImpl(override val lang: Lang, var config: Config) : Messages {

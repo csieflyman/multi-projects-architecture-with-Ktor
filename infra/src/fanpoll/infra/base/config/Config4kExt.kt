@@ -12,7 +12,7 @@ import io.github.config4k.CustomType
 import io.github.config4k.extract
 import io.github.config4k.readers.SelectReader
 import io.github.config4k.registerCustomType
-import io.ktor.config.tryGetString
+import io.ktor.server.config.tryGetString
 import kotlinx.serialization.SerialName
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.TypeVariable

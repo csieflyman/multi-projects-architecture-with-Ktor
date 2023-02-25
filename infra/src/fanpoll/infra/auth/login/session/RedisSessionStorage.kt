@@ -85,7 +85,7 @@ class RedisSessionStorage(
     override suspend fun getSession(sid: String): UserSession? =
         redisClient.get(buildSessionKey(sid))?.let { json.decodeFromString(UserSession.Value.serializer(), it).session() }
 
-    override suspend fun getSessionAsByteArray(sid: String): ByteArray? = redisClient.get(buildSessionKey(sid))?.toByteArray()
+    override suspend fun getSessionAsText(sid: String): String? = redisClient.get(buildSessionKey(sid))
 
     override suspend fun hasSession(sid: String): Boolean = redisClient.exists(buildSessionKey(sid))
 

@@ -4,11 +4,10 @@
 
 package fanpoll.infra.logging.request
 
-import io.ktor.application.*
-import io.ktor.features.CallLogging
-import io.ktor.request.ApplicationRequest
-import io.ktor.request.httpMethod
-import io.ktor.request.path
+import io.ktor.server.application.*
+import io.ktor.server.request.ApplicationRequest
+import io.ktor.server.request.httpMethod
+import io.ktor.server.request.path
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelinePhase
 import kotlinx.coroutines.ThreadContextElement
@@ -23,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * Logs application lifecycle and call events.
  */
-public class MyCallLoggingFeature private constructor(
+public class MyCallLoggingPlugin private constructor(
     private val monitor: ApplicationEvents,
     private val filters: List<(ApplicationCall) -> Boolean>,
     private val mdcEntries: List<MDCEntry>,
@@ -35,7 +34,7 @@ public class MyCallLoggingFeature private constructor(
     internal class MDCEntry(val name: String, val provider: (ApplicationCall) -> String?)
 
     /**
-     * Configuration for [CallLogging] feature
+     * Configuration for [CallLogging] plugin
      */
     public class Configuration {
         internal val filters = mutableListOf<(ApplicationCall) -> Boolean>()
@@ -99,15 +98,15 @@ public class MyCallLoggingFeature private constructor(
     }
 
     /**
-     * Installable feature for [CallLogging].
+     * Installable plugin for [CallLogging].
      */
-    public companion object Feature : ApplicationFeature<Application, Configuration, MyCallLoggingFeature> {
-        override val key: AttributeKey<MyCallLoggingFeature> = AttributeKey("MyCallLogging")
-        override fun install(pipeline: Application, configure: Configuration.() -> Unit): MyCallLoggingFeature {
+    public companion object Plugin : BaseApplicationPlugin<Application, Configuration, MyCallLoggingPlugin> {
+        override val key: AttributeKey<MyCallLoggingPlugin> = AttributeKey("MyCallLogging")
+        override fun install(pipeline: Application, configure: Configuration.() -> Unit): MyCallLoggingPlugin {
             val loggingPhase = PipelinePhase("Logging")
             val configuration = Configuration().apply(configure)
 
-            val feature = MyCallLoggingFeature(
+            val plugin = MyCallLoggingPlugin(
                 pipeline.environment.monitor,
                 configuration.filters.toList(),
                 configuration.mdcEntries.toList(),
@@ -116,21 +115,21 @@ public class MyCallLoggingFeature private constructor(
 
             pipeline.insertPhaseBefore(ApplicationCallPipeline.Monitoring, loggingPhase)
 
-            if (feature.mdcEntries.isNotEmpty()) {
+            if (plugin.mdcEntries.isNotEmpty()) {
                 pipeline.intercept(loggingPhase) {
                     withMDC(call) {
                         proceed()
-                        feature.logSuccess(call)
+                        plugin.logSuccess(call)
                     }
                 }
             } else {
                 pipeline.intercept(loggingPhase) {
                     proceed()
-                    feature.logSuccess(call)
+                    plugin.logSuccess(call)
                 }
             }
 
-            return feature
+            return plugin
         }
     }
 
@@ -145,13 +144,13 @@ public class MyCallLoggingFeature private constructor(
  * Invoke suspend [block] with a context having MDC configured.
  */
 private suspend inline fun withMDC(call: ApplicationCall, crossinline block: suspend () -> Unit) {
-    val feature = call.application.featureOrNull(MyCallLoggingFeature) ?: return block()
+    val plugin = call.application.pluginOrNull(MyCallLoggingPlugin) ?: return block()
 
-    withContext(MDCSurvivalElement(feature.setupMdc(call))) {
+    withContext(MDCSurvivalElement(plugin.setupMdc(call))) {
         try {
             block()
         } finally {
-            feature.cleanupMdc()
+            plugin.cleanupMdc()
         }
     }
 }

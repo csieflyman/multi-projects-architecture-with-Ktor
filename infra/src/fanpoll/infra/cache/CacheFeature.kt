@@ -7,16 +7,16 @@ package fanpoll.infra.cache
 import fanpoll.infra.MyApplicationConfig
 import fanpoll.infra.cache.redis.RedisCache
 import fanpoll.infra.redis.ktorio.RedisClient
-import io.ktor.application.Application
-import io.ktor.application.ApplicationFeature
+import io.ktor.server.application.Application
+import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.koin
 
-class CacheFeature(configuration: Configuration) {
+class CachePlugin(configuration: Configuration) {
 
     class Configuration {
 
@@ -27,15 +27,15 @@ class CacheFeature(configuration: Configuration) {
         }
     }
 
-    companion object Feature : ApplicationFeature<Application, Configuration, CacheFeature> {
+    companion object Plugin : BaseApplicationPlugin<Application, Configuration, CachePlugin> {
 
-        override val key = AttributeKey<CacheFeature>("Cache")
+        override val key = AttributeKey<CachePlugin>("Cache")
 
         private val logger = KotlinLogging.logger {}
 
-        override fun install(pipeline: Application, configure: Configuration.() -> Unit): CacheFeature {
+        override fun install(pipeline: Application, configure: Configuration.() -> Unit): CachePlugin {
             val configuration = Configuration().apply(configure)
-            val feature = CacheFeature(configuration)
+            val plugin = CachePlugin(configuration)
 
             val appConfig = pipeline.get<MyApplicationConfig>()
             val cacheConfig = appConfig.infra.cache ?: configuration.build()
@@ -52,7 +52,7 @@ class CacheFeature(configuration: Configuration) {
                     )
                 }
             }
-            return feature
+            return plugin
         }
     }
 }

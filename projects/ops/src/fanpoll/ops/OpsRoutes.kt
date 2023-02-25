@@ -5,7 +5,7 @@
 package fanpoll.ops
 
 import fanpoll.ops.features.*
-import io.ktor.routing.Routing
+import io.ktor.server.routing.Routing
 
 fun Routing.ops() {
 

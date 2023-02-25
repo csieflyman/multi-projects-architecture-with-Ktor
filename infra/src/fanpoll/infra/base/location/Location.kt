@@ -15,7 +15,7 @@ import fanpoll.infra.base.tenant.TenantIdLocation
 import fanpoll.infra.logging.RequestAttributeKey
 import io.konform.validation.Invalid
 import io.konform.validation.Validation
-import io.ktor.application.ApplicationCall
+import io.ktor.server.application.ApplicationCall
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
 

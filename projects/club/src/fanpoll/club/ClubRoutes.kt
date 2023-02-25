@@ -7,7 +7,7 @@ package fanpoll.club
 import fanpoll.club.features.clubLogin
 import fanpoll.club.features.clubNotification
 import fanpoll.club.features.clubUser
-import io.ktor.routing.Routing
+import io.ktor.server.routing.Routing
 
 fun Routing.club() {
 

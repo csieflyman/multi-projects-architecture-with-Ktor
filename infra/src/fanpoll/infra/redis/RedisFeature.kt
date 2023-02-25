@@ -18,8 +18,9 @@ import fanpoll.infra.redis.ktorio.commands.ping
 import fanpoll.infra.redis.ktorio.commands.psubscribe
 import fanpoll.infra.redis.ktorio.commands.quit
 import fanpoll.infra.redis.ktorio.commands.subscribe
-import io.ktor.application.Application
-import io.ktor.application.ApplicationFeature
+import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.server.application.Application
+import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -28,11 +29,10 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
-import java.net.InetSocketAddress
+import org.koin.ktor.plugin.koin
 import kotlin.system.measureTimeMillis
 
-class RedisFeature(configuration: Configuration) {
+class RedisPlugin(configuration: Configuration) {
 
     class Configuration {
 
@@ -57,9 +57,9 @@ class RedisFeature(configuration: Configuration) {
         }
     }
 
-    companion object Feature : ApplicationFeature<Application, Configuration, RedisFeature> {
+    companion object Plugin : BaseApplicationPlugin<Application, Configuration, RedisPlugin> {
 
-        override val key = AttributeKey<RedisFeature>("Redis")
+        override val key = AttributeKey<RedisPlugin>("Redis")
 
         private val logger = KotlinLogging.logger {}
 
@@ -75,9 +75,9 @@ class RedisFeature(configuration: Configuration) {
 
         private var keyspaceNotificationListener: RedisKeyspaceNotificationListener? = null
 
-        override fun install(pipeline: Application, configure: Configuration.() -> Unit): RedisFeature {
+        override fun install(pipeline: Application, configure: Configuration.() -> Unit): RedisPlugin {
             val configuration = Configuration().apply(configure)
-            val feature = RedisFeature(configuration)
+            val plugin = RedisPlugin(configuration)
 
             val appConfig = pipeline.get<MyApplicationConfig>()
             val logWriter = pipeline.get<LogWriter>()
@@ -100,7 +100,7 @@ class RedisFeature(configuration: Configuration) {
                 )
             }
 
-            return feature
+            return plugin
         }
         
         private fun initClient(config: RedisConfig) {

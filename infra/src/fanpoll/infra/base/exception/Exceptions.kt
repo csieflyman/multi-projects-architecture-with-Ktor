@@ -22,7 +22,7 @@ abstract class BaseException(
     var tenantId: TenantId? = null
 ) : RuntimeException(
     "[${code.name}] ${message ?: ""}" +
-            (if (dataMap != null && dataMap.isNotEmpty()) "dataMap = $dataMap" else "") +
+            (if (!dataMap.isNullOrEmpty()) "dataMap = $dataMap" else "") +
             (if (tenantId != null) "tenantId = $tenantId" else ""), cause
 ) {
     val occurAt: Instant = Instant.now()
@@ -83,13 +83,13 @@ open class RemoteServiceException(
     tenantId: TenantId? = null,
     val name: String,
     val api: String,
-    val reqId: String?,
-    val reqBody: String?,
-    val reqAt: Instant?,
-    val rspCode: String?,
-    val rspBody: String?,
-    val rspAt: Instant?,
-    val duration: Duration?
+    val reqId: String,
+    val reqAt: Instant,
+    val reqBody: String? = null,
+    val rspCode: String? = null,
+    val rspBody: String? = null,
+    val rspAt: Instant? = null,
+    val duration: Duration? = null
 ) : BaseException(
     code,
     """${message ?: ""} => 
@@ -97,7 +97,7 @@ open class RemoteServiceException(
         api = [$api], 
         reqId = [$reqId], 
         rspCode = [$rspCode], 
-        reqAt = [${reqAt?.let { DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it) }}], 
+        reqAt = [${DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(reqAt)}], 
         rspAt = [${rspAt?.let { DateTimeUtils.UTC_DATE_TIME_FORMATTER.format(it) }}], 
         duration = [${duration?.toMicros()}],
         reqBody = [$reqBody],

@@ -13,25 +13,29 @@ import fanpoll.club.features.UpdateUserForm
 import fanpoll.infra.auth.AuthConst
 import fanpoll.infra.auth.login.AppLoginForm
 import fanpoll.infra.auth.login.AppLoginResponse
+import fanpoll.infra.auth.provider.UserRunAsAuthProvider
 import fanpoll.infra.auth.provider.UserRunAsToken
 import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.json.toJsonString
 import fanpoll.infra.base.response.InfraResponseCode
-import integration.util.clubHandleSecuredRequest
-import integration.util.code
-import integration.util.data
-import integration.util.dataJsonObject
+import integration.util.*
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
-import io.ktor.http.HttpMethod
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.setBody
+import io.ktor.http.contentType
 import kotlinx.serialization.json.jsonPrimitive
+import mu.KotlinLogging
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val loginApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit = { context ->
+val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client ->
+
+    val logger = KotlinLogging.logger {}
 
     lateinit var userId: UUID
     lateinit var runAsToken: UserRunAsToken
@@ -49,102 +53,91 @@ val loginApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit 
         loginUser1DeviceId1, "pushToken", "Android 9.0"
     )
 
-    context.test("user login success") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/users", ClubAuth.RootSource
-        ) {
-            setBody(loginUser1Form.toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val userIdStr = response.dataJsonObject()["id"]?.jsonPrimitive?.content
-            assertNotNull(userIdStr)
-
-            userId = UUID.fromString(userIdStr)
-            runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
+    test("user login success") {
+        val createUserResponse = client.post(mergeRootPath("/users")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.RootSource))
+            setBody(loginUser1Form)
         }
+        assertEquals(HttpStatusCode.OK, createUserResponse.status)
+        val userIdStr = createUserResponse.dataJsonObject()["id"]?.jsonPrimitive?.content
+        assertNotNull(userIdStr)
 
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
-        ) {
-            setBody(loginForm.toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val appLoginResponse = response.data<AppLoginResponse>()
-            assertNotNull(appLoginResponse.sid)
+        userId = UUID.fromString(userIdStr)
+        runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
 
-            sessionId = appLoginResponse.sid!!
+        val loginResponse = client.post(mergeRootPath("/login")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
+            setBody(loginForm)
         }
+        assertEquals(HttpStatusCode.OK, loginResponse.status)
+        val appLoginResponse = loginResponse.data<AppLoginResponse>()
+        assertNotNull(appLoginResponse.sid)
+
+        sessionId = appLoginResponse.sid!!
     }
 
-    context.test("account doesn't exist should login failed") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
-        ) {
-            setBody(loginForm.copy(account = "inExistAccount@test.com").toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.Unauthorized, response.status())
-            assertEquals(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED, response.code())
+    test("account doesn't exist should login failed") {
+        val response = client.post(mergeRootPath("/login")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
+            setBody(loginForm.copy(account = "inExistAccount@test.com"))
         }
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED, response.code())
     }
 
-    context.test("incorrect password should login failed") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
-        ) {
-            setBody(loginForm.copy(password = "incorrect password").toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.Unauthorized, response.status())
-            assertEquals(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED, response.code())
+    test("incorrect password should login failed") {
+        val response = client.post(mergeRootPath("/login")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
+            setBody(loginForm.copy(password = "incorrect password"))
         }
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(InfraResponseCode.AUTH_LOGIN_UNAUTHENTICATED, response.code())
     }
 
-    context.test("user logout without sessionId") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/logout", ClubAuth.Android
-        ) {
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED, response.code())
+    test("user logout without sessionId") {
+        val response = client.post(mergeRootPath("/logout")) {
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
         }
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED, response.code())
     }
 
-    context.test("user logout with wrong sessionId") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/logout", ClubAuth.Android
-        ) {
-            addHeader(AuthConst.SESSION_ID_HEADER_NAME, "wrong sessionId")
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED, response.code())
+    test("user logout with wrong sessionId") {
+        val response = client.post(mergeRootPath("/logout")) {
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
+            header(AuthConst.SESSION_ID_HEADER_NAME, "wrong sessionId")
         }
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(InfraResponseCode.AUTH_SESSION_NOT_FOUND_OR_EXPIRED, response.code())
     }
 
-    context.test("user logout success") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/logout", ClubAuth.Android
-        ) {
-            addHeader(AuthConst.SESSION_ID_HEADER_NAME, sessionId)
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
+    test("user logout success") {
+        val response = client.post(mergeRootPath("/logout")) {
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
+            header(AuthConst.SESSION_ID_HEADER_NAME, sessionId)
         }
+        assertEquals(HttpStatusCode.OK, response.status)
     }
 
-    context.test("disabled account should login failed") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Put, "/users/$userId", ClubAuth.Android, runAsToken
-        ) {
-            setBody(UpdateUserForm(userId, enabled = false).toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
+    test("disabled account should login failed") {
+        val updateUserResponse = client.put(mergeRootPath("/users/$userId")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getRunAsKey(ClubAuth.Android))
+            header(UserRunAsAuthProvider.RUN_AS_TOKEN_HEADER_NAME, runAsToken.value)
+            setBody(UpdateUserForm(userId, enabled = false))
         }
+        assertEquals(HttpStatusCode.OK, updateUserResponse.status)
 
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/login", ClubAuth.Android
-        ) {
-            setBody(loginForm.toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.Forbidden, response.status())
-            assertEquals(InfraResponseCode.AUTH_PRINCIPAL_DISABLED, response.code())
+        val loginResponse = client.post(mergeRootPath("/login")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
+            setBody(loginForm)
         }
+        assertEquals(HttpStatusCode.Forbidden, loginResponse.status)
+        assertEquals(InfraResponseCode.AUTH_PRINCIPAL_DISABLED, loginResponse.code())
     }
 }

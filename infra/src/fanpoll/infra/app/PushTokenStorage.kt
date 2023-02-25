@@ -10,6 +10,7 @@ import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.deleteWhere
 
 class PushTokenStorage(private val logWriter: LogWriter) {
@@ -19,7 +20,7 @@ class PushTokenStorage(private val logWriter: LogWriter) {
     fun deleteUnRegisteredTokens(tokens: Collection<String>) {
         try {
             transaction {
-                UserDeviceTable.deleteWhere { UserDeviceTable.pushToken inList tokens.toSet() }
+                UserDeviceTable.deleteWhere { pushToken inList tokens.toSet() }
             }
         } catch (e: Throwable) {
             val errorMsg = "deleteUnRegisteredTokens error"

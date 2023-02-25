@@ -6,8 +6,8 @@ package fanpoll.infra.openapi.schema.operation.support.converters
 
 import fanpoll.infra.openapi.schema.operation.definitions.ParameterInputType
 import fanpoll.infra.openapi.schema.operation.definitions.ParameterObject
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 

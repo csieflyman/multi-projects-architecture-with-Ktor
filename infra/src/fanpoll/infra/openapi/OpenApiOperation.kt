@@ -6,7 +6,7 @@
 
 package fanpoll.infra.openapi
 
-import fanpoll.infra.auth.AuthorizationRouteSelector
+import fanpoll.infra.auth.AuthorizedRoutePrincipalAuthsKey
 import fanpoll.infra.auth.PrincipalAuth
 import fanpoll.infra.base.query.DynamicQueryLocation
 import fanpoll.infra.base.util.IdentifiableObject
@@ -17,14 +17,14 @@ import fanpoll.infra.openapi.schema.operation.definitions.OperationObject
 import fanpoll.infra.openapi.schema.operation.support.converters.ParameterObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.RequestBodyObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
-import io.ktor.auth.AuthenticationRouteSelector
 import io.ktor.http.HttpMethod
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.routing.PathSegmentConstantRouteSelector
-import io.ktor.routing.PathSegmentParameterRouteSelector
-import io.ktor.routing.Route
-import io.ktor.routing.RouteSelector
+import io.ktor.server.auth.AuthenticationRouteSelector
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.Location
+import io.ktor.server.routing.PathSegmentConstantRouteSelector
+import io.ktor.server.routing.PathSegmentParameterRouteSelector
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.RouteSelector
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -67,6 +67,7 @@ class OpenApiOperation(
         openAPIObject.addPath(path, method, operationObject)
     }
 
+    @OptIn(KtorExperimentalLocationsAPI::class)
     private fun getKtorLocationPath(locationClass: KClass<*>): String {
         val location = locationClass.annotations.first { it.annotationClass == Location::class } as? Location
             ?: error("[OpenAPI]: Location Class ${locationClass.qualifiedName} @Location annotation is required")
@@ -152,8 +153,8 @@ class OpenApiOperation(
     private fun routeAuth(route: Route): List<PrincipalAuth>? {
         var current: Route? = route
         while (current != null) {
-            if (current.selector is AuthorizationRouteSelector) {
-                return (current.selector as AuthorizationRouteSelector).principalAuths
+            if (current.attributes.contains(AuthorizedRoutePrincipalAuthsKey)) {
+                return current.attributes[AuthorizedRoutePrincipalAuthsKey]
             }
             current = current.parent
         }
@@ -165,7 +166,7 @@ class OpenApiOperation(
         var current = route
         while (current.parent?.parent?.parent != null) {
             val parent = current.parent!!
-            if (parent.selector !is AuthenticationRouteSelector || parent.selector !is AuthorizationRouteSelector) {
+            if (parent.selector !is AuthenticationRouteSelector) {
                 openApiPath = routeSelectorPath(parent.selector) + openApiPath
             }
             current = parent

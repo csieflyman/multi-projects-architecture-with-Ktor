@@ -3,29 +3,40 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    id("com.bmuschko.docker-remote-api")
     id("app.java-conventions")
+    id("com.bmuschko.docker-remote-api")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
 
-    val kotestVersion = "5.1.0"
-    val testContainerVersion = "1.16.3"
+    val kotestVersion = "5.5.5"
+    val testContainerVersion = "1.17.6"
 
-    val kotlinVersion = "1.6.10"
-    val ktorVersion = "1.6.7"
-    val koinVersion = "3.1.5"
+    val kotlinVersion = "1.8.10"
+    val ktorVersion = "2.2.3"
+    val koinVersion = "3.3.3"
 
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    // ========== kotest ==========
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 
-    testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainerVersion"))
-    testImplementation("org.testcontainers:postgresql")
-
+    // ========== ktor ==========
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor:1.0.3")
+
+    // ========== koin ==========
     testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
+    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.1.0")
+
+    // ========== testcontainer ==========
+    testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainerVersion"))
+    testImplementation("org.testcontainers:postgresql")
 }
 
 val removeTestContainers by tasks.register<RemoveTestContainersTask>("removeTestContainers")
@@ -130,4 +141,26 @@ fun loadProperties(path: String, keyPrefix: String? = null): Map<String, String>
     return if (properties != null && keyPrefix != null)
         properties.filter { it.key.startsWith(keyPrefix) }.mapKeys { it.key.substring(keyPrefix.length) }.toMutableMap()
     else properties
+}
+
+kover {
+    isDisabled.set(false) // true to disable instrumentation and all Kover tasks in this project
+    engine.set(kotlinx.kover.api.DefaultIntellijEngine)
+    filters {
+        classes {
+            includes.add("fanpoll.*")
+            excludes.addAll(
+                listOf(
+                    // ignore library code => https://github.com/ktorio/ktor-clients/tree/main/ktor-client-redis/src/io/ktor/experimental/client/redis
+                    "fanpoll.infra.redis.ktorio.*"
+                )
+            )
+        }
+    }
+    xmlReport {
+        onCheck.set(true)
+    }
+    htmlReport {
+        onCheck.set(true)
+    }
 }

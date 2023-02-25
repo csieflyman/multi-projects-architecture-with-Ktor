@@ -11,32 +11,27 @@ import fanpoll.infra.base.tenant.TenantId
 import io.ktor.client.request.HttpRequest
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.readText
-import io.ktor.client.statement.request
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.content.TextContent
 import io.ktor.http.formUrlEncode
 import kotlinx.coroutines.runBlocking
 import java.time.Duration
 
 class HttpClientException(
+    request: HttpRequest,
     code: ResponseCode,
     message: String? = null,
     cause: Throwable? = null,
     dataMap: Map<String, Any>? = null,
     tenantId: TenantId? = null,
-    serviceId: String,
-    response: HttpResponse? = null
+    serviceId: String
 ) : RemoteServiceException(
     code, message, cause, dataMap, tenantId,
     name = serviceId,
-    api = response?.request?.apiLogString() ?: "",
-    reqId = response?.request?.attributes?.getOrNull(HttpClientAttributeKey.ID)?.toString(),
-    reqBody = response?.request?.textBody(),
-    reqAt = response?.requestTime?.toInstant(),
-    rspCode = response?.status.toString(),
-    rspAt = response?.responseTime?.toInstant(),
-    rspBody = response?.textBody(),
-    duration = response?.duration()
+    api = request.apiLogString(),
+    reqId = request.attributes[HttpClientAttributeKey.REQ_ID],
+    reqAt = request.attributes[HttpClientAttributeKey.REQ_AT],
+    reqBody = request.textBody()
 )
 
 fun HttpRequest.apiLogString(): String = "${method.value} - $url"
@@ -49,4 +44,4 @@ fun HttpRequest.textBody(): String? = when (content) {
 
 fun HttpResponse.duration(): Duration = Duration.between(requestTime.toInstant(), responseTime.toInstant())
 
-fun HttpResponse.textBody(): String = runBlocking { readText() }
+fun HttpResponse.bodyAsTextBlocking(): String = runBlocking { bodyAsText() }

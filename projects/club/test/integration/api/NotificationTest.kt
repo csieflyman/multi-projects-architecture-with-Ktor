@@ -9,9 +9,10 @@ import fanpoll.club.ClubUserRole
 import fanpoll.club.ClubUserType
 import fanpoll.club.features.CreateUserForm
 import fanpoll.club.features.Gender
+import fanpoll.infra.auth.AuthConst
+import fanpoll.infra.auth.provider.UserRunAsAuthProvider
 import fanpoll.infra.auth.provider.UserRunAsToken
 import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.json.toJsonString
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.database.util.toDTO
 import fanpoll.infra.notification.NotificationContent
@@ -22,13 +23,18 @@ import fanpoll.infra.notification.channel.sms.SMSContent
 import fanpoll.infra.notification.logging.NotificationMessageLogDTO
 import fanpoll.infra.notification.logging.NotificationMessageLogTable
 import fanpoll.infra.notification.util.SendNotificationForm
-import integration.util.clubHandleSecuredRequest
 import integration.util.dataJsonObject
+import integration.util.getRunAsKey
+import integration.util.getServiceApiKey
+import integration.util.mergeRootPath
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
-import io.ktor.http.HttpMethod
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.setBody
+import io.ktor.http.contentType
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.jsonPrimitive
 import mu.KotlinLogging
@@ -37,7 +43,7 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val notificationApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -> Unit = { context ->
+val notificationApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client ->
 
     val logger = KotlinLogging.logger {}
 
@@ -50,19 +56,18 @@ val notificationApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -
         Gender.Male, 2000, "notification-user_1@test.com", "0987654321", Lang.zh_TW
     )
 
-    context.test("send multi-notifications") {
-        with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/users", ClubAuth.RootSource
-        ) {
-            setBody(notificationUser1Form.toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val userIdStr = response.dataJsonObject()["id"]?.jsonPrimitive?.content
-            assertNotNull(userIdStr)
-
-            userId = UUID.fromString(userIdStr)
-            runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
+    test("send multi-notifications") {
+        val createUserResponse = client.post(mergeRootPath("/users")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.RootSource))
+            setBody(notificationUser1Form)
         }
+        assertEquals(HttpStatusCode.OK, createUserResponse.status)
+        val userIdStr = createUserResponse.dataJsonObject()["id"]?.jsonPrimitive?.content
+        assertNotNull(userIdStr)
+
+        userId = UUID.fromString(userIdStr)
+        runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
 
         val sendNotificationForm = SendNotificationForm(
             userFilters = mapOf(ClubUserType.User.value to "[account = ${notificationUser1Form.account}]"),
@@ -74,14 +79,15 @@ val notificationApiTest: suspend TestApplicationEngine.(FunSpecContainerScope) -
             contentArgs = mutableMapOf("data" to "test")
         )
 
-        val notificationId = with(clubHandleSecuredRequest(
-            HttpMethod.Post, "/notification/send", ClubAuth.Android, runAsToken
-        ) {
-            setBody(sendNotificationForm.toJsonString())
-        }) {
-            assertEquals(HttpStatusCode.OK, response.status())
-            UUID.fromString(response.dataJsonObject()["id"]!!.jsonPrimitive.content)
+
+        val sendNotificationResponse = client.post(mergeRootPath("/notification/send")) {
+            contentType(ContentType.Application.Json)
+            header(AuthConst.API_KEY_HEADER_NAME, getRunAsKey(ClubAuth.Android))
+            header(UserRunAsAuthProvider.RUN_AS_TOKEN_HEADER_NAME, runAsToken.value)
+            setBody(sendNotificationForm)
         }
+        assertEquals(HttpStatusCode.OK, sendNotificationResponse.status)
+        val notificationId = UUID.fromString(sendNotificationResponse.dataJsonObject()["id"]!!.jsonPrimitive.content)
 
         // This is a fragile integration test because sending notification is asynchronous operation
         delay(500)

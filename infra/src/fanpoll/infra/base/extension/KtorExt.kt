@@ -5,11 +5,11 @@
 package fanpoll.infra.base.extension
 
 import fanpoll.infra.base.util.DateTimeUtils
-import io.ktor.application.ApplicationCall
-import io.ktor.features.origin
 import io.ktor.http.Headers
-import io.ktor.request.ApplicationRequest
-import io.ktor.request.receiveChannel
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.plugins.origin
+import io.ktor.server.request.ApplicationRequest
+import io.ktor.server.request.receiveChannel
 import io.ktor.util.date.GMTDate
 import io.ktor.util.toByteArray
 import kotlinx.coroutines.runBlocking

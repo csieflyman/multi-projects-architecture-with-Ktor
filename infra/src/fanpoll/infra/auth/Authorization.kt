@@ -6,23 +6,19 @@ package fanpoll.infra.auth
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.InfraResponseCode
-import io.ktor.application.call
-import io.ktor.application.feature
-import io.ktor.auth.Authentication
-import io.ktor.auth.authentication
-import io.ktor.routing.*
+import io.ktor.server.application.createRouteScopedPlugin
+import io.ktor.server.application.install
+import io.ktor.server.auth.AuthenticationChecked
+import io.ktor.server.auth.Principal
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
+import io.ktor.server.routing.Route
+import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class AuthorizationRouteSelector(private val names: List<String?>, val principalAuths: List<PrincipalAuth>) : RouteSelector() {
-
-    override fun evaluate(context: RoutingResolveContext, segmentIndex: Int): RouteSelectorEvaluation {
-        return RouteSelectorEvaluation(true, RouteSelectorEvaluation.qualityTransparent)
-    }
-
-    override fun toString(): String = "(authenticate ${names.joinToString { it ?: "\"default\"" }})"
-}
+val AuthorizedRoutePrincipalAuthsKey = AttributeKey<List<PrincipalAuth>>("AuthorizedRoutePrincipalAuthsKey")
 
 fun Route.authorize(
     vararg principalAuths: PrincipalAuth,
@@ -35,27 +31,37 @@ fun Route.authorize(
         if (it is PrincipalAuth.User && it.runAsAuthProviderName != null) it.runAsAuthProviderName else null
     }
     configurationNames.addAll(0, runAsProviderNames)
+    val principalAuthList = principalAuths.toList()
 
-    val authenticatedRoute = createChild(AuthorizationRouteSelector(configurationNames, principalAuths.toList()))
+    return authenticate(*configurationNames.toTypedArray(), optional = optional) {
+        install(AuthorizationPlugin) {
+            this.principalAuths = principalAuthList
+        }
+        attributes.put(AuthorizedRoutePrincipalAuthsKey, principalAuthList)
+        build()
+    }
+}
 
-    application.feature(Authentication).interceptPipeline(authenticatedRoute, configurationNames, optional = optional)
-    authenticatedRoute.intercept(Authentication.ChallengePhase) {
-        val principal = call.authentication.principal
-
-        if (principal == null) {
-            if (call.response.status() != null) finish()
-            else error("principal is null and no response in authorize challenge phase")
-        } else {
+val AuthorizationPlugin = createRouteScopedPlugin(
+    name = "AuthorizationPlugin",
+    createConfiguration = ::PluginConfiguration
+) {
+    on(AuthenticationChecked) { call ->
+        val principal = call.principal<Principal>()
+        if (principal != null) {
             require(principal is MyPrincipal)
 
-            if (principalAuths.none { it.allow(principal, call) }) {
+            if (pluginConfig.principalAuths.none { it.allow(principal, call) }) {
                 throw RequestException(InfraResponseCode.AUTH_ROLE_FORBIDDEN, "$principal is forbidden unable to access this api")
             } else {
                 logger.debug("$principal authenticated")
             }
+        } else {
+            require(call.response.status() != null) { "Authenticator should response status code if unauthenticated" }
         }
     }
-    authenticatedRoute.build()
-    return authenticatedRoute
 }
 
+class PluginConfiguration {
+    lateinit var principalAuths: List<PrincipalAuth>
+}

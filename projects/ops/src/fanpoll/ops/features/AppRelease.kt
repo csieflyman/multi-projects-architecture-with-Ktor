@@ -19,10 +19,10 @@ import fanpoll.infra.openapi.put
 import fanpoll.ops.OpsAuth
 import fanpoll.ops.OpsConst
 import fanpoll.ops.OpsOpenApi
-import io.ktor.application.call
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.routing.Routing
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
 
 fun Routing.opsAppRelease() {
@@ -56,7 +56,7 @@ fun Routing.opsAppRelease() {
 }
 
 @OptIn(KtorExperimentalLocationsAPI::class)
-@io.ktor.locations.Location("/check")
+@io.ktor.server.locations.Location("/check")
 data class CheckAppReleaseLocation(val appId: String, val verName: String) : Location()
 
 data class CheckAppReleaseResponse(val result: ClientVersionCheckResult)

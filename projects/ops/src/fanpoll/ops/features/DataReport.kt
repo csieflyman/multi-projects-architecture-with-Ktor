@@ -15,10 +15,10 @@ import fanpoll.infra.notification.Notification
 import fanpoll.infra.notification.senders.NotificationSender
 import fanpoll.infra.openapi.post
 import fanpoll.ops.*
-import io.ktor.application.call
-import io.ktor.auth.principal
-import io.ktor.routing.Routing
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.auth.principal
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
 import java.util.*
 

@@ -8,9 +8,11 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.InfraResponseCode
 import io.konform.validation.Invalid
 import io.konform.validation.Validation
+import kotlinx.serialization.Transient
 
 abstract class Form<Self : Form<Self>> {
 
+    @Transient
     var traceId: String? = null
 
     open fun validator(): Validation<Self>? = null

@@ -19,10 +19,10 @@ import fanpoll.infra.base.json.UUIDSerializer
 import fanpoll.infra.base.tenant.tenantId
 import fanpoll.infra.logging.*
 import fanpoll.infra.logging.RequestAttributeKey.TAGS
-import io.ktor.application.ApplicationCall
-import io.ktor.auth.principal
-import io.ktor.request.httpMethod
-import io.ktor.request.path
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.principal
+import io.ktor.server.request.httpMethod
+import io.ktor.server.request.path
 import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant

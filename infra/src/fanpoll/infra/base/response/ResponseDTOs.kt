@@ -11,8 +11,8 @@ import fanpoll.infra.base.form.Form
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.query.DynamicQuery
 import fanpoll.infra.base.util.IdentifiableObject
-import io.ktor.application.ApplicationCall
-import io.ktor.response.respond
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.response.respond
 import kotlinx.serialization.*
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -21,7 +21,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
 
 suspend fun ApplicationCall.respond(responseDTO: ResponseDTO) {
-    respond(responseDTO.code.httpStatusCode, responseDTO)
+    this.respond(responseDTO.code.httpStatusCode, responseDTO)
 }
 
 @Serializable
@@ -53,10 +53,11 @@ class DataResponseDTO(
 ) : ResponseDTO() {
 
     companion object {
-
+        @OptIn(InternalSerializationApi::class)
         inline operator fun <reified T : Any> invoke(data: T, message: String? = null): DataResponseDTO =
             DataResponseDTO(InfraResponseCode.OK, message, json.encodeToJsonElement(T::class.serializer(), data))
 
+        @OptIn(InternalSerializationApi::class)
         inline operator fun <reified T : Any> invoke(data: List<T>, message: String? = null): DataResponseDTO =
             DataResponseDTO(InfraResponseCode.OK, message, JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
 
@@ -81,6 +82,7 @@ class PagingDataResponseDTO(
 
     companion object {
 
+        @OptIn(InternalSerializationApi::class)
         inline fun <reified T : Any> dtoList(
             offsetLimit: DynamicQuery.OffsetLimit,
             total: Long,
@@ -174,10 +176,12 @@ class SuccessResult(override val id: String, val data: JsonElement? = JsonObject
 
     companion object {
 
+        @OptIn(InternalSerializationApi::class)
         inline operator fun <reified T : Form<*>> invoke(id: String, data: T): SuccessResult {
             return SuccessResult(id, json.encodeToJsonElement(T::class.serializer(), data))
         }
 
+        @OptIn(InternalSerializationApi::class)
         inline operator fun <reified T : Form<*>> invoke(id: String, data: List<T>): SuccessResult {
             return SuccessResult(id, JsonArray(data.map { json.encodeToJsonElement(T::class.serializer(), it) }))
         }

@@ -17,7 +17,7 @@ import fanpoll.infra.base.json.json
 import fanpoll.infra.base.json.pathOrNull
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.IdentifiableObject
-import io.ktor.sessions.generateSessionId
+import io.ktor.server.sessions.generateSessionId
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -104,6 +104,7 @@ class UserSession : IdentifiableObject<UserSession.Id> {
 
     // session data content schema may be changed. if we can't deserialize data then return null
 
+    @OptIn(InternalSerializationApi::class)
     inline fun <reified T : Any> getData(path: String? = null): T? {
         val sessionData = value.data
         return if (sessionData == null) null
@@ -120,6 +121,7 @@ class UserSession : IdentifiableObject<UserSession.Id> {
         }
     }
 
+    @OptIn(InternalSerializationApi::class)
     inline fun <reified T : Any> getDataAsList(path: String): List<T>? {
         val sessionData = value.data
         return if (sessionData == null) null

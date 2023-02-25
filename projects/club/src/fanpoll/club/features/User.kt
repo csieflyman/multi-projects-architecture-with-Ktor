@@ -40,12 +40,12 @@ import fanpoll.infra.openapi.put
 import fanpoll.infra.openapi.schema.operation.support.OpenApiModel
 import io.konform.validation.Validation
 import io.konform.validation.jsonschema.maxLength
-import io.ktor.application.call
-import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.Routing
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.auth.principal
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.exposed.dao.id.EntityID

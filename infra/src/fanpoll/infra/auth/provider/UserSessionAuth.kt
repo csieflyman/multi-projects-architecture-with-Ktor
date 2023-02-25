@@ -13,10 +13,9 @@ import fanpoll.infra.base.response.CodeResponseDTO
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.response.respond
-import io.ktor.application.call
-import io.ktor.auth.SessionAuthenticationProvider
-import io.ktor.request.header
-import io.ktor.request.path
+import io.ktor.server.auth.SessionAuthenticationProvider
+import io.ktor.server.request.header
+import io.ktor.server.request.path
 import io.ktor.util.AttributeKey
 
 data class UserSessionAuthConfig(
@@ -29,7 +28,7 @@ private val ATTRIBUTE_KEY_AUTH_ERROR_CODE = AttributeKey<ResponseCode>("AuthErro
 
 class UserSessionAuthValidator(private val authConfigs: List<UserSessionAuthConfig>, private val sessionStorage: MySessionStorage) {
 
-    val configureFunction: SessionAuthenticationProvider.Configuration<UserPrincipal>.() -> Unit = {
+    val configureFunction: SessionAuthenticationProvider.Config<UserPrincipal>.() -> Unit = {
         validate { principal ->
             val apiKey = request.header(AuthConst.API_KEY_HEADER_NAME)
 

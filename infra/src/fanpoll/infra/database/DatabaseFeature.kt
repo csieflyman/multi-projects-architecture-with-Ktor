@@ -19,8 +19,8 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.jasync.JasyncExposedAdapter
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.writers.LogWriter
-import io.ktor.application.Application
-import io.ktor.application.ApplicationFeature
+import io.ktor.server.application.Application
+import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import org.flywaydb.core.Flyway
@@ -28,13 +28,13 @@ import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.koin
 import org.jetbrains.exposed.sql.Database as ExposedDatabase
 
 /**
  *  Support Flyway (database migration tool), Hikari (connection pool), Exposed (orm)
  */
-class DatabaseFeature(configuration: Configuration) {
+class DatabasePlugin(configuration: Configuration) {
 
     class Configuration {
 
@@ -65,15 +65,15 @@ class DatabaseFeature(configuration: Configuration) {
         }
     }
 
-    companion object Feature : ApplicationFeature<Application, Configuration, DatabaseFeature> {
+    companion object Plugin : BaseApplicationPlugin<Application, Configuration, DatabasePlugin> {
 
-        override val key = AttributeKey<DatabaseFeature>("Database")
+        override val key = AttributeKey<DatabasePlugin>("Database")
 
         private val logger = KotlinLogging.logger {}
 
-        override fun install(pipeline: Application, configure: Configuration.() -> Unit): DatabaseFeature {
+        override fun install(pipeline: Application, configure: Configuration.() -> Unit): DatabasePlugin {
             val configuration = Configuration().apply(configure)
-            val feature = DatabaseFeature(configuration)
+            val plugin = DatabasePlugin(configuration)
 
             val appConfig = pipeline.get<MyApplicationConfig>()
             if (appConfig.infra.database != null) {
@@ -98,7 +98,7 @@ class DatabaseFeature(configuration: Configuration) {
 
             KoinApplicationShutdownManager.register { shutdown() }
 
-            return feature
+            return plugin
         }
 
         private var asyncExecutor: DBAsyncTaskCoroutineActor? = null

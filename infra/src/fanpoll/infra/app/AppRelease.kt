@@ -22,8 +22,8 @@ import fanpoll.infra.database.sql.update
 import fanpoll.infra.database.util.ResultRowDTOMapper
 import fanpoll.infra.database.util.toDTO
 import io.konform.validation.Validation
-import io.ktor.application.ApplicationCall
-import io.ktor.response.header
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.response.header
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

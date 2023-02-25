@@ -10,7 +10,7 @@ import fanpoll.infra.base.entity.EntityForm
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.form.Form
 import fanpoll.infra.base.response.InfraResponseCode
-import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
 import java.util.*
 
 abstract class EntityIdLocation : Location() {
@@ -24,11 +24,11 @@ abstract class EntityIdLocation : Location() {
     }
 }
 
-@io.ktor.locations.Location("/{entityId}")
+@io.ktor.server.locations.Location("/{entityId}")
 data class LongEntityIdLocation(override val entityId: Long) : EntityIdLocation()
 
-@io.ktor.locations.Location("/{entityId}")
+@io.ktor.server.locations.Location("/{entityId}")
 data class StringEntityIdLocation(override val entityId: String) : EntityIdLocation()
 
-@io.ktor.locations.Location("/{entityId}")
+@io.ktor.server.locations.Location("/{entityId}")
 data class UUIDEntityIdLocation(override val entityId: UUID) : EntityIdLocation()

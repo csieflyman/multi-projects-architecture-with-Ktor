@@ -4,9 +4,7 @@
 
 package fanpoll.infra.auth.login.session
 
-import io.ktor.sessions.SessionStorage
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.server.sessions.SessionStorage
 
 abstract class MySessionStorage : SessionStorage {
 
@@ -16,15 +14,12 @@ abstract class MySessionStorage : SessionStorage {
         //SessionService.invalidateSession(id)
     }
 
-    override suspend fun <R> read(id: String, consumer: suspend (ByteReadChannel) -> R): R {
-        return getSessionAsByteArray(id)?.let { data -> consumer(ByteReadChannel(data)) }
-            ?: throw NoSuchElementException("Session $id not found")
-    }
+    override suspend fun read(id: String): String = getSessionAsText(id) ?: throw NoSuchElementException("Session $id not found")
 
-    override suspend fun write(id: String, provider: suspend (ByteWriteChannel) -> Unit) {
+    override suspend fun write(id: String, value: String) {
         // CUSTOMIZATION
         // ktor call this function when update/remove session at ApplicationSendPipeline.Before for each call
-        // => see io.ktor.sessions.Sessions feature
+        // => see io.ktor.sessions.Sessions plugin
         // but we want to control session write by ourself
     }
 
@@ -36,7 +31,7 @@ abstract class MySessionStorage : SessionStorage {
 
     abstract suspend fun getSession(sid: String): UserSession?
 
-    abstract suspend fun getSessionAsByteArray(sid: String): ByteArray?
+    abstract suspend fun getSessionAsText(sid: String): String?
 
     abstract suspend fun hasSession(sid: String): Boolean
 }

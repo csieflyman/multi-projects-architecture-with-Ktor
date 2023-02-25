@@ -9,16 +9,17 @@ import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
-import io.ktor.client.features.Charsets
-import io.ktor.client.features.HttpRequestTimeoutException
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.features.logging.DEFAULT
-import io.ktor.client.features.logging.Logger
-import io.ktor.client.features.logging.Logging
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
+import io.ktor.serialization.kotlinx.json.json
 import java.net.http.HttpConnectTimeoutException
+import java.time.Instant
+import java.util.*
 
 object HttpClientCreator {
 
@@ -58,13 +59,20 @@ object HttpClientCreator {
                 level = config.logLevel
             }
 
-            install(JsonFeature) {
-                serializer = KotlinxSerializer(json)
+            install(ContentNegotiation) {
+                json(json)
+            }
+
+            defaultRequest {
+                val reqId = UUID.randomUUID().toString()
+                attributes.put(HttpClientAttributeKey.REQ_ID, reqId)
+                attributes.put(HttpClientAttributeKey.REQ_AT, Instant.now())
+                header(HttpHeaders.XRequestId, reqId)
             }
 
             expectSuccess = false
             HttpResponseValidator {
-                handleResponseException { cause ->
+                handleResponseExceptionWithRequest { cause, request ->
                     val responseCode = when (cause) {
                         is HttpConnectTimeoutException -> InfraResponseCode.REMOTE_SERVICE_CONNECT_TIMEOUT_ERROR
                         is HttpRequestTimeoutException -> InfraResponseCode.REMOTE_SERVICE_REQUEST_TIMEOUT_ERROR
@@ -72,6 +80,7 @@ object HttpClientCreator {
                         else -> InfraResponseCode.REMOTE_SERVICE_CONNECT_ERROR
                     }
                     throw HttpClientException(
+                        request,
                         responseCode, "HttpClient $name Response Error => ${cause.message}", cause,
                         serviceId = name
                     )

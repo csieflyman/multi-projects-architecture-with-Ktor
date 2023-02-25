@@ -11,27 +11,23 @@ import fanpoll.infra.base.location.Location
 import fanpoll.infra.base.location.receiveAndValidateBody
 import fanpoll.infra.base.query.DynamicQuery
 import fanpoll.infra.base.query.DynamicQueryLocation
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
 import io.ktor.http.HttpMethod
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.routing.Route
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.patch
-import io.ktor.routing.post
-import io.ktor.routing.put
-import io.ktor.util.pipeline.ContextDsl
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.get
+import io.ktor.server.routing.*
+import io.ktor.util.KtorDsl
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelineInterceptor
 import kotlin.reflect.typeOf
-import io.ktor.locations.delete as locationDelete
-import io.ktor.locations.get as locationGet
-import io.ktor.locations.patch as locationPatch
-import io.ktor.locations.post as locationPost
-import io.ktor.locations.put as locationPut
+import io.ktor.server.locations.delete as locationDelete
+import io.ktor.server.locations.get as locationGet
+import io.ktor.server.locations.patch as locationPatch
+import io.ktor.server.locations.post as locationPost
+import io.ktor.server.locations.put as locationPut
 
-@ContextDsl
+@KtorDsl
 inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
@@ -43,7 +39,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     return post { body(this, call.receiveAndValidateBody()) }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     path: String,
     operation: OpenApiOperation,
@@ -56,7 +52,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     return post(path) { body(this, call.receiveAndValidateBody()) }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
@@ -68,7 +64,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     return put { body(this, call.receiveAndValidateBody()) }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     path: String,
     operation: OpenApiOperation,
@@ -81,7 +77,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     return put(path) { body(this, call.receiveAndValidateBody()) }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(REQUEST) -> Unit
@@ -93,7 +89,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     return patch { body(this, call.receiveAndValidateBody()) }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     path: String,
     operation: OpenApiOperation,
@@ -106,7 +102,7 @@ inline fun <reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     return patch(path) { body(this, call.receiveAndValidateBody()) }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified RESPONSE : Any> Route.get(
     operation: OpenApiOperation,
     noinline body: PipelineInterceptor<Unit, ApplicationCall>
@@ -118,7 +114,7 @@ inline fun <reified RESPONSE : Any> Route.get(
     return get(body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified RESPONSE : Any> Route.get(
     path: String,
     operation: OpenApiOperation,
@@ -131,7 +127,7 @@ inline fun <reified RESPONSE : Any> Route.get(
     return get(path, body)
 }
 
-@ContextDsl
+@KtorDsl
 fun Route.delete(operation: OpenApiOperation, body: PipelineInterceptor<Unit, ApplicationCall>): Route {
     operation.bindRoute(
         this, null, HttpMethod.Delete,
@@ -140,7 +136,7 @@ fun Route.delete(operation: OpenApiOperation, body: PipelineInterceptor<Unit, Ap
     return delete(body)
 }
 
-@ContextDsl
+@KtorDsl
 fun Route.delete(path: String, operation: OpenApiOperation, body: PipelineInterceptor<Unit, ApplicationCall>): Route {
     operation.bindRoute(
         this, path, HttpMethod.Delete,
@@ -149,7 +145,7 @@ fun Route.delete(path: String, operation: OpenApiOperation, body: PipelineInterc
     return delete(path, body)
 }
 
-@ContextDsl
+@KtorDsl
 fun Route.postEmptyBody(
     operation: OpenApiOperation,
     body: PipelineInterceptor<Unit, ApplicationCall>
@@ -161,7 +157,7 @@ fun Route.postEmptyBody(
     return post(body)
 }
 
-@ContextDsl
+@KtorDsl
 fun Route.postEmptyBody(
     path: String,
     operation: OpenApiOperation,
@@ -174,7 +170,7 @@ fun Route.postEmptyBody(
     return post(path, body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified RESPONSE : Any> Route.getList(
     operation: OpenApiOperation,
     noinline body: PipelineInterceptor<Unit, ApplicationCall>
@@ -186,7 +182,7 @@ inline fun <reified RESPONSE : Any> Route.getList(
     return get(body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified RESPONSE : Any> Route.getList(
     path: String,
     operation: OpenApiOperation,
@@ -199,7 +195,7 @@ inline fun <reified RESPONSE : Any> Route.getList(
     return get(path, body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.post(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, REQUEST) -> Unit
@@ -213,7 +209,7 @@ inline fun <reified LOCATION : Any, reified REQUEST : Form<*>, reified RESPONSE 
     }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Location, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.put(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, REQUEST) -> Unit
@@ -227,7 +223,7 @@ inline fun <reified LOCATION : Location, reified REQUEST : Form<*>, reified RESP
     }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Location, reified REQUEST : Form<*>, reified RESPONSE : Any> Route.patch(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, REQUEST) -> Unit
@@ -242,7 +238,7 @@ inline fun <reified LOCATION : Location, reified REQUEST : Form<*>, reified RESP
 }
 
 @OptIn(KtorExperimentalLocationsAPI::class)
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Location, reified RESPONSE : Any> Route.getWithLocation(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
@@ -254,7 +250,7 @@ inline fun <reified LOCATION : Location, reified RESPONSE : Any> Route.getWithLo
     return locationGet(body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Location> Route.deleteWithLocation(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
@@ -266,7 +262,7 @@ inline fun <reified LOCATION : Location> Route.deleteWithLocation(
     return locationDelete(body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified RESPONSE : EntityDTO<*>> Route.dynamicQuery(
     operation: OpenApiOperation,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(DynamicQuery) -> Unit

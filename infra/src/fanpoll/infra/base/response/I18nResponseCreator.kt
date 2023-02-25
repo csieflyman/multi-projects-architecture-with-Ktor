@@ -8,7 +8,7 @@ import fanpoll.infra.base.exception.BaseException
 import fanpoll.infra.base.i18n.lang
 import fanpoll.infra.base.json.toJsonObject
 import fanpoll.infra.logging.RequestAttributeKey
-import io.ktor.application.ApplicationCall
+import io.ktor.server.application.ApplicationCall
 
 class I18nResponseCreator(private val messagesProvider: ResponseMessagesProvider) {
 

@@ -10,9 +10,9 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.form.Form
 import fanpoll.infra.base.location.Location
 import fanpoll.infra.base.response.InfraResponseCode
-import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
 
-@io.ktor.locations.Location("/{tenantId}")
+@io.ktor.server.locations.Location("/{tenantId}")
 data class TenantIdLocation(val tenantId: TenantId) : Location() {
 
     override fun validate(form: Form<*>?) {

@@ -21,11 +21,11 @@ import fanpoll.ops.OpsAuth
 import fanpoll.ops.OpsConst
 import fanpoll.ops.OpsOpenApi
 import fanpoll.ops.OpsUserType
-import io.ktor.application.call
-import io.ktor.auth.principal
-import io.ktor.routing.Routing
-import io.ktor.routing.route
-import io.opentelemetry.extension.annotations.WithSpan
+import io.ktor.server.application.call
+import io.ktor.server.auth.principal
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.select
 import org.koin.ktor.ext.inject

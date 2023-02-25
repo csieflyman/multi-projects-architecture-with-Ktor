@@ -7,7 +7,7 @@ package fanpoll.infra.auth
 import fanpoll.infra.auth.principal.*
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.openapi.schema.component.support.SecurityScheme
-import io.ktor.application.ApplicationCall
+import io.ktor.server.application.ApplicationCall
 
 sealed class PrincipalAuth(
     override val id: String,

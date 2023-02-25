@@ -7,9 +7,9 @@
 package fanpoll.infra.base.query
 
 import fanpoll.infra.base.location.Location
-import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
 
-@io.ktor.locations.Location("")
+@io.ktor.server.locations.Location("")
 data class DynamicQueryLocation(
     val q_fields: String? = null,
     val q_filter: String? = null,

@@ -23,17 +23,17 @@ import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.logging.writers.LokiLogWriter
 import fanpoll.infra.redis.RedisKeyspaceNotificationListener
 import fanpoll.infra.redis.ktorio.RedisClient
-import io.ktor.application.Application
-import io.ktor.application.ApplicationFeature
-import io.ktor.application.install
-import io.ktor.sessions.SessionSerializer
-import io.ktor.sessions.Sessions
-import io.ktor.sessions.header
+import io.ktor.server.application.Application
+import io.ktor.server.application.BaseApplicationPlugin
+import io.ktor.server.application.install
+import io.ktor.server.sessions.SessionSerializer
+import io.ktor.server.sessions.Sessions
+import io.ktor.server.sessions.header
 import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.koin
 
 class SessionAuthPlugin(configuration: Configuration) {
 
@@ -57,7 +57,7 @@ class SessionAuthPlugin(configuration: Configuration) {
         }
     }
 
-    companion object Feature : ApplicationFeature<Application, Configuration, SessionAuthPlugin> {
+    companion object Plugin : BaseApplicationPlugin<Application, Configuration, SessionAuthPlugin> {
 
         override val key = AttributeKey<SessionAuthPlugin>("MySession")
 
@@ -65,7 +65,7 @@ class SessionAuthPlugin(configuration: Configuration) {
 
         override fun install(pipeline: Application, configure: Configuration.() -> Unit): SessionAuthPlugin {
             val configuration = Configuration().apply(configure)
-            val feature = SessionAuthPlugin(configuration)
+            val plugin = SessionAuthPlugin(configuration)
 
             val appConfig = pipeline.get<MyApplicationConfig>()
             val sessionAuthConfig = appConfig.infra.sessionAuth ?: configuration.build()
@@ -128,7 +128,7 @@ class SessionAuthPlugin(configuration: Configuration) {
                 )
             }
 
-            return feature
+            return plugin
         }
     }
 }

@@ -20,8 +20,8 @@ import fanpoll.infra.logging.logFunction
 import fanpoll.infra.logging.request.ApplicationRequestLog
 import fanpoll.infra.logging.request.ApplicationResponseLog
 import fanpoll.infra.logging.request.UserLog
-import io.ktor.application.ApplicationCall
-import io.ktor.auth.principal
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.principal
 import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
@@ -51,8 +51,8 @@ class ErrorLog private constructor(
     val response = request?.let { ApplicationResponseLog(call!!, request) }
     val serviceRequest = (exception as? RemoteServiceException)?.let { ServiceRequestLog(it) }
 
-    // LIMITATION => ktor StatusPages feature exception run at ApplicationCallPipeline before
-    //  CallLogging feature run at ApplicationSendPipeline.Render
+    // LIMITATION => ktor StatusPages Plugin exception run at ApplicationCallPipeline before
+    //  CallLogging Plugin run at ApplicationSendPipeline.Render
 
     companion object {
 

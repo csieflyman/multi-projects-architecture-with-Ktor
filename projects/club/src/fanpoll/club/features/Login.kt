@@ -24,11 +24,11 @@ import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.database.util.toSingleDTO
 import fanpoll.infra.openapi.post
 import fanpoll.infra.openapi.postEmptyBody
-import io.ktor.application.call
-import io.ktor.auth.principal
-import io.ktor.routing.Routing
-import io.ktor.routing.route
-import io.opentelemetry.extension.annotations.WithSpan
+import io.ktor.server.application.call
+import io.ktor.server.auth.principal
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.select

@@ -4,10 +4,10 @@
 
 package fanpoll.infra.base.koin
 
-import io.ktor.application.ApplicationEnvironment
-import io.ktor.application.EventHandler
+import io.ktor.events.EventHandler
+import io.ktor.server.application.ApplicationEnvironment
 import org.koin.core.KoinApplication
-import org.koin.ktor.ext.KoinApplicationStopPreparing
+import org.koin.ktor.plugin.KoinApplicationStopPreparing
 
 // ApplicationEvent order: Ktor ApplicationStopPreparing → KoinApplicationStopPreparing → KoinApplicationStopped → Ktor ApplicationStopping → Ktor ApplicationStopped
 // shutdown execution path: ShutDownUrl.doShutdown() → io.ktor.server.netty.NettyApplicationEngine.stop()

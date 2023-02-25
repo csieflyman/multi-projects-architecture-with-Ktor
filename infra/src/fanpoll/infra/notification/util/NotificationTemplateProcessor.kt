@@ -22,7 +22,7 @@ class NotificationTemplateProcessor(
     private val availableLangs: AvailableLangs
 ) {
 
-    private val cfg: Configuration = Configuration(Configuration.VERSION_2_3_31).apply {
+    private val cfg: Configuration = Configuration(Configuration.VERSION_2_3_32).apply {
         templateLoader = ClassTemplateLoader(NotificationTemplateProcessor::class.java, "/i18n/notification/templates")
         templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
         logTemplateExceptions = false

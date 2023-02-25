@@ -14,33 +14,33 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.error.ErrorLogConfig
 import fanpoll.infra.logging.error.ErrorLogDBWriter
-import fanpoll.infra.logging.otel.OpenTracingServer
-import fanpoll.infra.logging.request.MyCallLoggingFeature
+import fanpoll.infra.logging.otel.OpenTracingServerPlugin
+import fanpoll.infra.logging.request.MyCallLoggingPlugin
 import fanpoll.infra.logging.request.RequestLog
 import fanpoll.infra.logging.request.RequestLogConfig
 import fanpoll.infra.logging.request.RequestLogDBWriter
 import fanpoll.infra.logging.writers.*
-import io.ktor.application.*
-import io.ktor.auth.principal
-import io.ktor.features.CallId
-import io.ktor.features.DoubleReceive
-import io.ktor.features.callId
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.TextContent
-import io.ktor.request.header
-import io.ktor.request.httpMethod
-import io.ktor.response.ApplicationSendPipeline
+import io.ktor.server.application.*
+import io.ktor.server.auth.principal
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callId
+import io.ktor.server.plugins.doublereceive.DoubleReceive
+import io.ktor.server.request.header
+import io.ktor.server.request.httpMethod
+import io.ktor.server.response.ApplicationSendPipeline
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelinePhase
 import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.koin
 import java.time.Instant
 import java.util.*
 
-class LoggingFeature(configuration: Configuration) {
+class LoggingPlugin(configuration: Configuration) {
 
     class Configuration {
 
@@ -70,15 +70,15 @@ class LoggingFeature(configuration: Configuration) {
         }
     }
 
-    companion object Feature : ApplicationFeature<Application, Configuration, LoggingFeature> {
+    companion object Plugin : BaseApplicationPlugin<Application, Configuration, LoggingPlugin> {
 
-        override val key = AttributeKey<LoggingFeature>("Logging")
+        override val key = AttributeKey<LoggingPlugin>("Logging")
 
         private val logger = KotlinLogging.logger {}
 
-        override fun install(pipeline: Application, configure: Configuration.() -> Unit): LoggingFeature {
+        override fun install(pipeline: Application, configure: Configuration.() -> Unit): LoggingPlugin {
             val configuration = Configuration().apply(configure)
-            val feature = LoggingFeature(configuration)
+            val plugin = LoggingPlugin(configuration)
 
             val appConfig = pipeline.get<MyApplicationConfig>()
             val appInfoConfig = appConfig.info
@@ -147,13 +147,11 @@ class LoggingFeature(configuration: Configuration) {
                 )
             }
 
-            pipeline.install(DoubleReceive) {
-                receiveEntireContent = true
-            }
+            pipeline.install(DoubleReceive)
 
             val openTracingEnabled = System.getProperty("otel.javaagent.enabled", "true").toBoolean()
             if (openTracingEnabled) {
-                pipeline.install(OpenTracingServer) {
+                pipeline.install(OpenTracingServerPlugin) {
                     filter = { call -> loggingConfig.request?.isExcludePath(call) ?: false }
                 }
             } else {
@@ -165,19 +163,19 @@ class LoggingFeature(configuration: Configuration) {
 
             setRequestAttributes(pipeline)
 
-            // customize Ktor CallLogging feature
+            // customize Ktor CallLogging plugin
             if (loggingConfig.request != null && loggingConfig.request.enabled) {
                 installMyCallLogging(pipeline, loggingConfig.request)
             }
 
-            return feature
+            return plugin
         }
 
         private fun installMyCallLogging(
             pipeline: Application,
             config: RequestLogConfig
         ) {
-            pipeline.install(MyCallLoggingFeature) {
+            pipeline.install(MyCallLoggingPlugin) {
                 mdc(RequestAttributeKey.TRACE_ID.name) { it.attributes.getOrNull(RequestAttributeKey.TRACE_ID) }
                 mdc(RequestAttributeKey.ID.name) { it.attributes[RequestAttributeKey.ID] }
 

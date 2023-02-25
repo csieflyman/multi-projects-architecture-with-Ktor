@@ -4,7 +4,7 @@
 
 package fanpoll.infra
 
-import fanpoll.infra.app.AppFeature
+import fanpoll.infra.app.AppPlugin
 import fanpoll.infra.auth.SessionAuthPlugin
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.base.exception.ExceptionUtils
@@ -16,30 +16,33 @@ import fanpoll.infra.base.koinBaseModule
 import fanpoll.infra.base.location.LocationUtils.DataConverter
 import fanpoll.infra.base.response.I18nResponseCreator
 import fanpoll.infra.base.response.respond
-import fanpoll.infra.cache.CacheFeature
-import fanpoll.infra.database.DatabaseFeature
+import fanpoll.infra.cache.CachePlugin
+import fanpoll.infra.database.DatabasePlugin
 import fanpoll.infra.logging.LoggingConfig
-import fanpoll.infra.logging.LoggingFeature
+import fanpoll.infra.logging.LoggingPlugin
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
-import fanpoll.infra.notification.NotificationFeature
-import fanpoll.infra.openapi.OpenApiFeature
-import fanpoll.infra.redis.RedisFeature
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.Authentication
-import io.ktor.auth.principal
-import io.ktor.features.*
-import io.ktor.locations.Locations
-import io.ktor.serialization.json
+import fanpoll.infra.notification.NotificationPlugin
+import fanpoll.infra.openapi.OpenApiPlugin
+import fanpoll.infra.redis.RedisPlugin
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.principal
 import io.ktor.server.engine.ShutDownUrl
+import io.ktor.server.locations.Locations
+import io.ktor.server.plugins.compression.Compression
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.dataconversion.DataConversion
+import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
+import io.ktor.server.plugins.statuspages.StatusPages
 import mu.KotlinLogging
 import org.koin.core.logger.Level
 import org.koin.dsl.module
-import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.get
-import org.koin.ktor.ext.koin
+import org.koin.ktor.plugin.Koin
+import org.koin.ktor.plugin.koin
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -63,13 +66,14 @@ fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = nul
 
     install(Locations)
 
-    install(ShutDownUrl.ApplicationCallFeature) {
+    install(ShutDownUrl.ApplicationCallPlugin) {
         shutDownUrl = appConfig.server.shutDownUrl
+        exitCodeSupplier = { 0 }
     }
 
     install(Authentication)
 
-    install(XForwardedHeaderSupport)
+    install(XForwardedHeaders)
 
     install(Compression)
 
@@ -84,32 +88,32 @@ fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = nul
         )
     }
 
-    install(LoggingFeature)
+    install(LoggingPlugin)
 
-    install(DatabaseFeature)
+    install(DatabasePlugin)
 
-    install(RedisFeature)
+    install(RedisPlugin)
 
-    install(CacheFeature)
+    install(CachePlugin)
 
     install(SessionAuthPlugin)
 
-    install(OpenApiFeature)
+    install(OpenApiPlugin)
 
-    install(AppFeature)
+    install(AppPlugin)
 
-    install(NotificationFeature)
+    install(NotificationPlugin)
 
     install(StatusPages) {
-        val loggingConfig = get<LoggingConfig>()
-        val logWriter = get<LogWriter>()
-        val responseCreator = get<I18nResponseCreator>()
+        val loggingConfig = this@main.get<LoggingConfig>()
+        val logWriter = this@main.get<LogWriter>()
+        val responseCreator = this@main.get<I18nResponseCreator>()
 
-        exception<Throwable> { cause ->
+        exception<Throwable> { call, cause ->
             val e = ExceptionUtils.wrapException(cause)
 
             // ASSUMPTION => (1) Principal should be not null
-            //  instead of throwing exception when request is unauthenticated (2) need to install DoubleReceive feature
+            //  instead of throwing exception when request is unauthenticated (2) need to install DoubleReceive plugin
             if (e is InternalServerException ||
                 (call.principal<MyPrincipal>() != null && e.code.type.isError())
             ) {
@@ -137,5 +141,5 @@ fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = nul
 
     KoinApplicationShutdownManager.complete(environment)
 
-    routing()
+    staticContentRouting()
 }

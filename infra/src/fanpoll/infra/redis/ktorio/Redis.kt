@@ -3,6 +3,8 @@ package fanpoll.infra.redis.ktorio
 import fanpoll.infra.redis.ktorio.protocol.RedisException
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.SocketAddress
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import java.io.*
