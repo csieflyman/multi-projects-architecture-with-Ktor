@@ -42,7 +42,7 @@ services:
       - postgres
       - redis
   postgres:
-    image: postgres
+    image: postgres:15.2
     container_name: postgres
     ports:
       - "5432:5432"
@@ -51,7 +51,7 @@ services:
     volumes:
       - F:/docker/volume/fanpoll-postgres/data:/var/lib/postgresql/data
   redis:
-    image: redis
+    image: redis:7.0.8
     container_name: redis
     ports:
       - "6379:6379"

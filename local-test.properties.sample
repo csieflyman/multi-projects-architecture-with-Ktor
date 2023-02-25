@@ -7,8 +7,8 @@ gradle.report.junit.xml=false
 gradle.report.junit.html=false
 # ========== TestContainers ==========
 env.TESTCONTAINERS_RYUK_DISABLED=true
-sysProperty.testcontainers.image.postgres=postgres:13.4
-sysProperty.testcontainers.image.redis=redis:6.2.1
+sysProperty.testcontainers.image.postgres=postgres:15.2
+sysProperty.testcontainers.image.redis=redis:7.0.8
 # ========== Kotest ==========
 # https://kotest.io/docs/framework/framework-config-props.html
 sysProperty.kotest.framework.parallelism=1
