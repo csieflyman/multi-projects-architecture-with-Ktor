@@ -17,11 +17,11 @@ This project has two subprojects built on common infrastructure and library but 
     }
 ```
 ## Technique Stack
-* Kotlin 1.5.21
-* Ktor 1.6.2
-* Gradle 7.1.1
-* PostgreSQL 13.2
-* Redis 6.2.1
+* Kotlin 1.8.10
+* Ktor 2.2.3
+* Gradle 8.0.1
+* PostgreSQL 15.2
+* Redis 7.0.8
 * Kotlinx Serialization, Kotlinx Coroutine
 * Exposed ORM, HikariCP, Flyway database migration tool
 * Koin DI
