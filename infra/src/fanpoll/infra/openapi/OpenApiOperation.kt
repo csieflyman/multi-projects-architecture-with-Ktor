@@ -76,7 +76,7 @@ class OpenApiOperation(
 
     private fun bindAuth(routeAuths: List<PrincipalAuth>?) {
         logger.debug { "OpenAPI $id bindAuth => $routeAuths" }
-        operationObject.summary += "　=>　Auth = [${routeAuths?.joinToString(" or ") ?: "Public"}]"
+        operationObject.summary += "　Auth => (${routeAuths?.joinToString(" or ") ?: "Public"})"
         if (routeAuths != null) {
             setOperationSecurities(routeAuths)
             setSessionIdHeader(routeAuths)

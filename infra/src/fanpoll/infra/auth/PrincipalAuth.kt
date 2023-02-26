@@ -32,7 +32,7 @@ sealed class PrincipalAuth(
         }
 
         override fun toString(): String {
-            return id + " => " + allowSources.map { it.name }
+            return "ServiceAuth => authProvider = $id, allowSources = ${allowSources.map { it.name }}"
         }
     }
 
@@ -57,7 +57,8 @@ sealed class PrincipalAuth(
         }
 
         override fun toString(): String {
-            return id + " => " + typeRolesMap.map { it.key.name + " => " + (it.value?.joinToString(",") ?: "All") }
+            return "UserAuth => authProvider = $id, allowSources = ${allowSources.map { it.name }}, " +
+                    "userTypeRoles = ${typeRolesMap.map { it.key.name + " => " + (it.value?.joinToString(",") ?: "All") }}"
         }
     }
 }
