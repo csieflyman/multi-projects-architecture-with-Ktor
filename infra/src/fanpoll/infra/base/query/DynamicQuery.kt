@@ -123,7 +123,7 @@ class DynamicQuery(
             if (s1.contains(s2) || s2.contains(s1))
                 s1.length - s2.length
             else
-                s1.compareTo(s2)
+                s1 compareTo s2
         }
 
         private fun parseFields(text: String): List<String> = text.split(",")
