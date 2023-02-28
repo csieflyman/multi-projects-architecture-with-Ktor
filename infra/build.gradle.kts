@@ -13,7 +13,8 @@ dependencies {
     val opentelemetryVersion = "1.23.1"
 
     // =============== kotlin, kotlinx ===============
-    implementation(kotlin("stdlib", kotlinVersion))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
