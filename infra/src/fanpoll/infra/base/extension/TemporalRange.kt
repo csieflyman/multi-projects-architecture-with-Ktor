@@ -52,7 +52,7 @@ abstract class TemporalRange<T>(
     }
 
     override fun isEmpty(): Boolean {
-        return start.compareTo(endInclusive) == 0
+        return start > endInclusive
     }
 
     override fun equals(other: Any?) = myEquals(other, { start }, { endInclusive })
