@@ -14,9 +14,10 @@ dependencies {
     implementation("com.bmuschko:gradle-docker-plugin:9.2.1")
     implementation("org.jetbrains.kotlinx.kover:org.jetbrains.kotlinx.kover.gradle.plugin:0.6.1")
 
-    // https://github.com/kotest/kotest-gradle-plugin
-    // get NPE when run gradle task 'kotest'. It may be incompatible with kotest 5.0.2
-    //implementation("io.kotest:kotest-gradle-plugin:0.3.9")
+    // https://kotlinlang.org/docs/whatsnew18.html#resolution-of-kotlin-gradle-plugins-transitive-dependencies
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-sam-with-receiver:1.8.10")
+    }
 }
 
 // =============================== Compile ===============================

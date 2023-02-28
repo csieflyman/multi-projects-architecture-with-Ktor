@@ -30,6 +30,7 @@ dependencies {
 application {
     mainClass.set("fanpoll.infra.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8", "-Duser.timezone=UTC")
+    //-Xdebug => https://kotlinlang.org/docs/whatsnew18.html#a-new-compiler-option-for-disabling-optimizations
 }
 
 val semVersion = determineVersion()
