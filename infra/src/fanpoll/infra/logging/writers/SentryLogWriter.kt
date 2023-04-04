@@ -115,9 +115,8 @@ class SentryLogWriter(
         requireNotNull(errorLog.user)
         id = "${errorLog.user.type}/${errorLog.user.id}"
         ipAddress = errorLog.request?.ip
-
         with(errorLog.user) {
-            others = mutableMapOf(
+            data = mutableMapOf(
                 "userType" to type.name,
                 "userId" to id.toString(),
                 "runAs" to runAs.toString()
