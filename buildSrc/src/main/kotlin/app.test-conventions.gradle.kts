@@ -13,7 +13,7 @@ dependencies {
     val kotestVersion = "5.5.5"
     val testContainerVersion = "1.17.6"
 
-    val kotlinVersion = "1.8.10"
+    val kotlinVersion = "1.8.21"
     val ktorVersion = "2.2.3"
     val koinVersion = "3.3.3"
 

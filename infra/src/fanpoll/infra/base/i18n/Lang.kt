@@ -21,7 +21,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.util.*
 
-@Serializable
+@Serializable(Lang.Companion::class)
 class Lang(val locale: Locale) {
 
     constructor(code: String) : this(Locale.Builder().setLanguageTag(code).build())
