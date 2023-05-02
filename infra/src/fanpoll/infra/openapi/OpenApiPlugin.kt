@@ -22,9 +22,8 @@ import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.basic
-import io.ktor.server.http.content.files
-import io.ktor.server.http.content.resources
-import io.ktor.server.http.content.static
+import io.ktor.server.http.content.staticFiles
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Route
@@ -34,8 +33,8 @@ import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
-
 import org.koin.ktor.plugin.koin
+import java.io.File
 
 class OpenApiPlugin(configuration: Configuration) {
 
@@ -138,10 +137,8 @@ class OpenApiPlugin(configuration: Configuration) {
                     call.respondRedirect("/apidocs/index.html")
                 }
 
-                static("apidocs") {
-                    resources("swagger-ui")
-                    files(swaggerUiDir)
-                }
+                staticResources("/apidocs", "swagger-ui")
+                staticFiles("/apidocs", File(swaggerUiDir))
             }
         }
 

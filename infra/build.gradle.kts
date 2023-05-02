@@ -6,11 +6,11 @@ plugins {
 
 dependencies {
     val kotlinVersion = "1.8.21"
-    val ktorVersion = "2.2.3"
-    val koinVersion = "3.3.3"
+    val ktorVersion = "2.3.0"
+    val koinVersion = "3.4.0"
     val exposedVersion = "0.41.1"
-    val jacksonVersion = "2.14.2"
-    val opentelemetryVersion = "1.23.1"
+    val jacksonVersion = "2.15.0"
+    val opentelemetryVersion = "1.25.0"
 
     // =============== kotlin, kotlinx ===============
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -45,7 +45,7 @@ dependencies {
     // ===============  koin (DI) ===============
     api("io.insert-koin:koin-core:$koinVersion")
     api("io.insert-koin:koin-core-ext:3.0.2")
-    api("io.insert-koin:koin-ktor:3.3.1")
+    api("io.insert-koin:koin-ktor:$koinVersion")
 
     // =============== database ===============
     api("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -53,7 +53,7 @@ dependencies {
     api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
-    api("com.github.jasync-sql:jasync-postgresql:2.1.23")
+    api("com.github.jasync-sql:jasync-postgresql:2.1.24")
 
     // =============== utils - feature ===============
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
@@ -79,16 +79,16 @@ dependencies {
 
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:3.0.5")
-    runtimeOnly("ch.qos.logback:logback-classic:1.4.5")
+    runtimeOnly("ch.qos.logback:logback-classic:1.4.7")
 
     // =============== utils - trace ===============
     api("io.opentelemetry:opentelemetry-api:$opentelemetryVersion")
     api("io.opentelemetry:opentelemetry-extension-kotlin:$opentelemetryVersion")
     api("io.opentelemetry:opentelemetry-semconv:$opentelemetryVersion-alpha")
-    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.23.0")
+    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     // =============== utils - general ===============
-    implementation("com.github.kittinunf.result:result:5.3.0")
+    implementation("com.github.kittinunf.result:result:5.4.0")
     implementation("com.github.kittinunf.result:result-coroutines:4.0.0")
     implementation("org.apache.commons:commons-text:1.10.0")
 
@@ -98,12 +98,12 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.flywaydb:flyway-core:9.15.0")
 
-    runtimeOnly("org.postgresql:postgresql:42.5.4")
+    runtimeOnly("org.postgresql:postgresql:42.6.0")
 
     // ===============  third-party service ===============
     implementation("com.google.firebase:firebase-admin:9.1.1")
     implementation("com.sendgrid:sendgrid-java:4.9.3")
-    implementation("io.sentry:sentry:6.14.0")
+    implementation("io.sentry:sentry:6.18.1")
 
     // =============== utils - feature ===============
     implementation("org.freemarker:freemarker:2.3.32")

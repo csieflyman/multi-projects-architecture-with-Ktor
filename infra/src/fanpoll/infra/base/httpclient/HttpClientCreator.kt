@@ -57,6 +57,7 @@ object HttpClientCreator {
             install(Logging) {
                 logger = Logger.DEFAULT
                 level = config.logLevel
+                sanitizeHeader("<secret>") { it == HttpHeaders.Authorization }
             }
 
             install(ContentNegotiation) {
