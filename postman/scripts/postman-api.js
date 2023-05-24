@@ -18,14 +18,14 @@ module.exports = {
 };
 
 const fs = require('fs');
-const request = require('request');
-const postmanApiUrl = 'https://api.getpostman.com';
-const baseRequest = request.defaults({
-    headers: {'X-Api-Key': process.env["X-Api-Key"]}
-});
+const axios = require('axios');
+axios.defaults.baseURL = 'https://api.getpostman.com'
+axios.defaults.headers.common['X-Api-Key'] = process.env["X-Api-Key"]
 
 const funName = process.argv[2];
 const projectName = process.argv[3];
+console.log(`funName = ${funName}`);
+console.log(`projectName = ${projectName}`);
 
 switch (funName) {
     case 'uploadAll':
@@ -96,66 +96,31 @@ function findEnvironmentByName(environmentName) {
     return findObjByName('environments', environmentName);
 }
 
-function sendGetRequest(endpoint, uid) {
-    return new Promise((resolve, reject) => {
-        const url = `${postmanApiUrl}/${endpoint}/${uid}`;
-        console.log("GET " + url);
-        baseRequest.get({url: url, json: true}, function (err, res, body) {
-            if (err) {
-                console.error(`GET ${url} failure`)
-                reject();
-            }
-            console.log(body);
-            resolve(body);
-        });
-    });
+async function sendGetRequest(endpoint, uid) {
+    const url = `/${endpoint}/${uid}`
+    console.log("GET " + url);
+    return axios.get(url)
 }
 
-function sendPostRequest(endpoint, obj) {
-    return new Promise((resolve, reject) => {
-        const url = `${postmanApiUrl}/${endpoint}`
-        console.log("POST " + url);
-        baseRequest.post({url: url, body: obj, json: true}, function (err, res, body) {
-            if (err) {
-                console.error(`POST ${url} failure`)
-                reject();
-            }
-            console.log(body);
-            resolve(body);
-        });
-    });
+async function sendPostRequest(endpoint, obj) {
+    const url = `/${endpoint}`
+    console.log("POST " + url);
+    return axios.post(url, obj)
 }
 
-function sendPutRequest(endpoint, uid, obj) {
-    return new Promise((resolve, reject) => {
-        const url = `${postmanApiUrl}/${endpoint}/${uid}`;
-        console.log("PUT " + url);
-        baseRequest.put({url: url, body: obj, json: true}, function (err, res, body) {
-            if (err) {
-                console.error(`PUT ${url} failure`)
-                reject();
-            }
-            console.log(body);
-            resolve(body);
-        });
-    });
+async function sendPutRequest(endpoint, uid, obj) {
+    const url = `/${endpoint}/${uid}`
+    console.log("PUT " + url);
+    return axios.put(url, obj)
 }
 
-function findObjByName(endpoint, objName) {
-    return new Promise((resolve, reject) => {
-        const url = `${postmanApiUrl}/${endpoint}`;
-        console.log("GET " + url);
-        baseRequest.get({url: url, json: true}, function (err, res, body) {
-            if (err) {
-                console.error(`GET ${url} failure`)
-                reject();
-            }
-            //console.log(body);
-            let objRes = body[endpoint].find(obj => obj.name === objName);
-            //console.log(objRes);
-            resolve(objRes);
-        });
-    });
+async function findObjByName(endpoint, objName) {
+    const url = `/${endpoint}`
+    console.log("GET " + url);
+    return await axios.get(url)
+        .then((res) => {
+            return res.data[endpoint].find(obj => obj.name === objName)
+        })
 }
 
 function uploadObj(objName, obj, findObjByNameFunction, createObjFunction, updateObjFunction) {
@@ -166,6 +131,10 @@ function uploadObj(objName, obj, findObjByNameFunction, createObjFunction, updat
             } else {
                 createObjFunction(obj);
             }
+            console.log(objRes)
         })
-        .catch(() => console.error(`upload ${objName} To Postman Server failure`));
+        .catch((err) => {
+            console.error(`upload ${objName} To Postman Server failure`);
+            console.error(err);
+        });
 }

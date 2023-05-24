@@ -1,11 +1,10 @@
 {
   "devDependencies": {
     "async": "^3.2.4",
-    "bent": "^7.3.12",
+    "axios": "^1.4.0",
     "newman": "^5.3.2",
     "newman-reporter-htmlextra": "^1.22.11",
-    "openapi-to-postmanv2": "^4.9.0",
-    "request": "^2.88.2",
+    "openapi-to-postmanv2": "^4.12.0",
     "uuid": "^9.0.0"
   }
 }

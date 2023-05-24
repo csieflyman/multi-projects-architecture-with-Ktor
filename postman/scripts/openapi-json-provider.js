@@ -2,7 +2,7 @@
  * Copyright (c) 2021. fanpoll All rights reserved.
  */
 
-const bent = require('bent');
+const axios = require('axios');
 const fs = require('fs');
 
 const projectName = process.argv[2];
@@ -20,12 +20,12 @@ async function downloadJson() {
     let headers = {}
     if (username && password) {
         headers = {
-            'Authorization': `Basic ${new Buffer(`${username}:${password}`).toString('base64')}==`
+            'Authorization': `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}==`
         }
     }
-
-    const getJson = bent('GET', 'json', headers, schemaUrl);
-    let response = await getJson()
-    fs.writeFileSync(`projects/${projectName}/${projectName}-openapi.json`, JSON.stringify(response));
+    const response = await axios.get(schemaUrl, {
+        headers: headers
+    })
+    fs.writeFileSync(`projects/${projectName}/${projectName}-openapi.json`, JSON.stringify(response.data));
     return response
 }

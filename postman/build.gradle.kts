@@ -12,13 +12,13 @@ plugins {
 
 // ========== Configuration ==========
 
-val openApiProjectName = "club" // club or ops
+val openApiProjectName = "club" // club, ops
 val openApiSchemaUrl = "http://localhost:8080/apidocs/schema/$openApiProjectName.json"
 val postmanEnvironment = "localhost"
 val swaggerUserName = "fanpoll"
 val swaggerPassword = "fanpoll"
 
-val postmanApiKey: String = System.getenv("POSTMAN_API_KEY") ?: ""
+val postmanApiKey: String = System.getenv("POSTMAN_API_KEY") ?: "Your Api Key"
 
 // ========== Tasks ==========
 
@@ -28,8 +28,7 @@ val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
         listOf(
             "install",
             "uuid",
-            "bent",
-            "request",
+            "axios",
             "async",
             "openapi-to-postmanv2",
             "newman",

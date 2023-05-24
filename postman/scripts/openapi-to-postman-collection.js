@@ -21,12 +21,13 @@ async function convert(json) {
         requestNameSource: "Fallback",
         folderStrategy: "Tags"
     }
-    let collection = await postmanConverter.convert(input, options, (err, conversionResult) => {
+    let collection = {}
+    postmanConverter.convert(input, options, (err, conversionResult) => {
         if (!conversionResult.result) {
             throw err
         } else {
             console.log("openapiToPostmanCollection success");
-            return conversionResult.output[0].data;
+            collection = conversionResult.output[0].data;
         }
     });
     manipulateCollection(collection);
@@ -72,8 +73,6 @@ function setRequestNameAndDescription(request) {
     request.request.description = request.description;
 }
 
-const ignoreHeaders = new Set(["Content-Type"]);
-
 function setRequest(request) {
     if (request.body) {
         request.body = {mode: "raw", raw: "{{_requestBody}}"};
@@ -85,6 +84,7 @@ function setRequest(request) {
         }
     }
 
+    const ignoreHeaders = new Set(["Content-Type"]);
     if (request.header) {
         request.header.filter(it => !ignoreHeaders.has(it.key)).forEach(it => it.value = `{{${it.key}}}`)
     }
