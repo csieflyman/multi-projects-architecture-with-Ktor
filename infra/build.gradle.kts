@@ -16,8 +16,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
     // ===============  ktor ===============
     api("io.ktor:ktor-server-core:$ktorVersion")
@@ -63,7 +63,7 @@ dependencies {
 
     // =============== utils - config file parser ===============
     implementation("com.ufoscout.properlty:properlty-kotlin:1.9.0")
-    implementation("io.github.config4k:config4k:0.5.0")
+    implementation("io.github.config4k:config4k:0.6.0")
     //api("com.charleskorn.kaml:kaml:0.51.0")
 
     // =============== utils - bean ===============
