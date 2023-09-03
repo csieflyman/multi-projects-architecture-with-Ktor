@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 group = "com.fanpoll"
@@ -22,15 +23,14 @@ sourceSets["test"].resources.srcDirs("testresources")
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "17"
-        kotlinOptions.languageVersion = "1.8"
+        kotlinOptions.languageVersion = "1.9"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
         compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.ExperimentalStdlibApi")
-        //kotlinOptions.useIR = true (1.4 in Alpha)
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "17"
-        kotlinOptions.languageVersion = "1.8"
+        kotlinOptions.languageVersion = "1.9"
         kotlinOptions.javaParameters = true
         kotlinOptions.suppressWarnings = true
     }
@@ -42,4 +42,20 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.shadowJar {
     mergeServiceFiles()
+}
+
+koverReport {
+    filters {
+        includes {
+            classes("fanpoll.*")
+        }
+    }
+    defaults {
+        xml {
+            onCheck = true
+        }
+        html {
+            onCheck = true
+        }
+    }
 }

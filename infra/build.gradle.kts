@@ -2,22 +2,23 @@ plugins {
     id("app.java-conventions")
     id("app.test-conventions")
     `java-library`
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
-    val kotlinVersion = "1.8.21"
-    val ktorVersion = "2.3.0"
-    val koinVersion = "3.4.0"
-    val exposedVersion = "0.41.1"
-    val jacksonVersion = "2.15.0"
-    val opentelemetryVersion = "1.25.0"
+    val kotlinVersion = "1.9.10"
+    val ktorVersion = "2.3.4"
+    val koinVersion = "3.4.3"
+    val exposedVersion = "0.43.0"
+    val jacksonVersion = "2.15.2"
+    val opentelemetryVersion = "1.29.0"
 
     // =============== kotlin, kotlinx ===============
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     // ===============  ktor ===============
     api("io.ktor:ktor-server-core:$ktorVersion")
@@ -53,10 +54,10 @@ dependencies {
     api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
-    api("com.github.jasync-sql:jasync-postgresql:2.1.24")
+    api("com.github.jasync-sql:jasync-postgresql:2.2.3")
 
     // =============== utils - feature ===============
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
     api("io.konform:konform-jvm:0.4.0")
     implementation("at.favre.lib:bcrypt:0.10.2")
     implementation("com.vdurmont:semver4j:3.1.0")
@@ -79,7 +80,7 @@ dependencies {
 
     // =============== utils - logging ===============
     api("io.github.microutils:kotlin-logging-jvm:3.0.5")
-    runtimeOnly("ch.qos.logback:logback-classic:1.4.7")
+    runtimeOnly("ch.qos.logback:logback-classic:1.4.11")
 
     // =============== utils - trace ===============
     api("io.opentelemetry:opentelemetry-api:$opentelemetryVersion")
@@ -96,7 +97,7 @@ dependencies {
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.flywaydb:flyway-core:9.15.0")
+    implementation("org.flywaydb:flyway-core:9.22.0")
 
     runtimeOnly("org.postgresql:postgresql:42.6.0")
 
@@ -118,4 +119,12 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-blackbird:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+}
+
+koverReport {
+    filters {
+        excludes {
+            classes("fanpoll.infra.redis.ktorio.*")
+        }
+    }
 }

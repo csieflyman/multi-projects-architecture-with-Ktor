@@ -5,17 +5,16 @@ import java.util.*
 plugins {
     id("app.java-conventions")
     id("com.bmuschko.docker-remote-api")
-    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
 
-    val kotestVersion = "5.6.1"
-    val testContainerVersion = "1.18.0"
+    val kotestVersion = "5.6.2"
+    val testContainerVersion = "1.19.0"
 
-    val kotlinVersion = "1.8.21"
-    val ktorVersion = "2.3.0"
-    val koinVersion = "3.4.0"
+    val kotlinVersion = "1.9.10"
+    val ktorVersion = "2.3.4"
+    val koinVersion = "3.4.3"
 
     // ========== kotest ==========
     testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
@@ -28,11 +27,11 @@ dependencies {
     testImplementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    testImplementation("io.kotest.extensions:kotest-assertions-ktor:1.0.3")
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor-jvm:2.0.0")
 
     // ========== koin ==========
     testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
-    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.1.0")
+    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.2.0")
 
     // ========== testcontainer ==========
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainerVersion"))
@@ -55,6 +54,7 @@ open class RemoveTestContainersTask : AbstractDockerRemoteApiTask() {
 }
 
 tasks.withType<Test> {
+    // dryRun = true
 
     useJUnitPlatform {}
 
@@ -141,26 +141,4 @@ fun loadProperties(path: String, keyPrefix: String? = null): Map<String, String>
     return if (properties != null && keyPrefix != null)
         properties.filter { it.key.startsWith(keyPrefix) }.mapKeys { it.key.substring(keyPrefix.length) }.toMutableMap()
     else properties
-}
-
-kover {
-    isDisabled.set(false) // true to disable instrumentation and all Kover tasks in this project
-    engine.set(kotlinx.kover.api.DefaultIntellijEngine)
-    filters {
-        classes {
-            includes.add("fanpoll.*")
-            excludes.addAll(
-                listOf(
-                    // ignore library code => https://github.com/ktorio/ktor-clients/tree/main/ktor-client-redis/src/io/ktor/experimental/client/redis
-                    "fanpoll.infra.redis.ktorio.*"
-                )
-            )
-        }
-    }
-    xmlReport {
-        onCheck.set(true)
-    }
-    htmlReport {
-        onCheck.set(true)
-    }
 }

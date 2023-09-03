@@ -6,27 +6,8 @@ repositories {
     mavenCentral()
 }
 
-koverMerged {
-    enable()
-
-    filters {
-        classes {
-            includes.add("fanpoll.*")
-            excludes.addAll(
-                listOf(
-                    "fanpoll.infra.redis.ktorio.*"
-                )
-            )
-        }
-        projects {
-            excludes += listOf("app", "postman")
-        }
-    }
-
-    xmlReport {
-        onCheck.set(false)
-    }
-    htmlReport {
-        onCheck.set(false)
-    }
+dependencies {
+    kover(project(":infra"))
+    kover(project(":projects:ops"))
+    kover(project(":projects:club"))
 }
