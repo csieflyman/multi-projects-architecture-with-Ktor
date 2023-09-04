@@ -89,6 +89,8 @@ function runAllFoldersAndSuitesInSequence() {
 }
 
 function runAllFoldersInParallel(next) {
+    if(!fs.existsSync(`projects/${projectName}/data/folder`))
+        return
     console.log('==================== Run Folders Begin ====================');
     const runners = getAllFoldersRunners();
     async.parallel(runners, function (err, results) {
@@ -102,6 +104,8 @@ function runAllFoldersInParallel(next) {
 }
 
 function runAllSuitesInParallel(next) {
+    if(!fs.existsSync(`projects/${projectName}/data/suite`))
+        return
     console.log('==================== Run Suites Begin ====================');
     const runners = getAllSuitesRunners();
     async.parallel(runners, function (err, results) {
