@@ -7,7 +7,7 @@ import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.task.NodeTask
 
 plugins {
-    id("com.github.node-gradle.node") version "3.5.1"
+    id("com.github.node-gradle.node") version "7.0.0"
 }
 
 // ========== Configuration ==========
