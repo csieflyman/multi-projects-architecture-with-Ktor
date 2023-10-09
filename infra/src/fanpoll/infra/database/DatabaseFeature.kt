@@ -153,7 +153,6 @@ class DatabasePlugin(configuration: Configuration) {
                 baselineOnMigrate(externalFlywayConfig.baselineOnMigrate)
                 validateOnMigrate(externalFlywayConfig.validateOnMigrate)
                 externalFlywayConfig.table?.let { table(it) }
-                loggers("slf4j")// https://github.com/flyway/flyway/issues/3651
             }
         }
 

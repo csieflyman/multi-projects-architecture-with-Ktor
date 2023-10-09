@@ -11,7 +11,7 @@ dependencies {
     val koinVersion = "3.5.0"
     val exposedVersion = "0.44.0"
     val jacksonVersion = "2.15.2"
-    val opentelemetryVersion = "1.29.0"
+    val opentelemetryVersion = "1.31.0"
 
     // =============== kotlin, kotlinx ===============
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -54,7 +54,7 @@ dependencies {
     api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     api("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
-    api("com.github.jasync-sql:jasync-postgresql:2.2.3")
+    api("com.github.jasync-sql:jasync-postgresql:2.2.4")
 
     // =============== utils - feature ===============
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
@@ -85,8 +85,8 @@ dependencies {
     // =============== utils - trace ===============
     api("io.opentelemetry:opentelemetry-api:$opentelemetryVersion")
     api("io.opentelemetry:opentelemetry-extension-kotlin:$opentelemetryVersion")
-    api("io.opentelemetry:opentelemetry-semconv:$opentelemetryVersion-alpha")
-    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
+    api("io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha")
+    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.30.0")
 
     // =============== utils - general ===============
     implementation("com.github.kittinunf.result:result:5.4.0")
@@ -97,20 +97,20 @@ dependencies {
     //testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.flywaydb:flyway-core:9.22.0")
+    implementation("org.flywaydb:flyway-core:9.22.2")
 
     runtimeOnly("org.postgresql:postgresql:42.6.0")
 
     // ===============  third-party service ===============
-    implementation("com.google.firebase:firebase-admin:9.1.1")
+    implementation("com.google.firebase:firebase-admin:9.2.0")
     implementation("com.sendgrid:sendgrid-java:4.9.3")
-    implementation("io.sentry:sentry:6.18.1")
+    implementation("io.sentry:sentry:6.30.0")
 
     // =============== utils - feature ===============
     implementation("org.freemarker:freemarker:2.3.32")
 
-    implementation("org.apache.poi:poi:5.2.3")
-    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("org.apache.poi:poi:5.2.4")
+    implementation("org.apache.poi:poi-ooxml:5.2.4")
     implementation("org.apache.commons:commons-csv:1.10.0")
 
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")

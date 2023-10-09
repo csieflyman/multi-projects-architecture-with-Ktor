@@ -20,7 +20,7 @@ import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.extension.kotlin.asContextElement
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+import io.opentelemetry.semconv.SemanticAttributes
 import kotlinx.coroutines.withContext
 
 class OpenTracingServerPlugin(configuration: Configuration) {
@@ -62,7 +62,7 @@ class OpenTracingServerPlugin(configuration: Configuration) {
                     .setAttribute(SemanticAttributes.HTTP_METHOD, call.request.httpMethod.value)
                     .setAttribute(SemanticAttributes.HTTP_URL, call.request.uri)
                     .apply {
-                        call.request.publicRemoteHost?.let { setAttribute(SemanticAttributes.HTTP_CLIENT_IP, it) }
+                        call.request.publicRemoteHost?.let { setAttribute(SemanticAttributes.CLIENT_ADDRESS, it) }
                     }
                     .startSpan()
                 call.attributes.put(RequestAttributeKey.TRACE_ID, span.spanContext.traceId)
