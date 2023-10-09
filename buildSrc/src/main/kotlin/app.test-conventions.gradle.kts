@@ -13,8 +13,8 @@ dependencies {
     val testContainerVersion = "1.19.0"
 
     val kotlinVersion = "1.9.10"
-    val ktorVersion = "2.3.4"
-    val koinVersion = "3.4.3"
+    val ktorVersion = "2.3.5"
+    val koinVersion = "3.5.0"
 
     // ========== kotest ==========
     testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
