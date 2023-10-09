@@ -9,6 +9,7 @@ import fanpoll.infra.base.json.json
 import fanpoll.infra.main
 import integration.util.SinglePostgreSQLContainer
 import integration.util.SingleRedisContainer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.NamedTag
 import io.kotest.core.spec.style.FunSpec
@@ -21,7 +22,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.TestApplication
-import mu.KotlinLogging
 import org.koin.test.KoinTest
 
 @OptIn(ExperimentalKotest::class)

@@ -9,7 +9,7 @@ import fanpoll.infra.notification.NotificationLogConfig
 import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.channel.NotificationChannelSender
 import fanpoll.infra.notification.logging.NotificationMessageLog
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 data class MitakeConfig(
     val port9600Url: String,

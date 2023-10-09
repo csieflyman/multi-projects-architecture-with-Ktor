@@ -4,6 +4,7 @@
 
 package fanpoll.infra.logging.request
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.httpMethod
@@ -12,7 +13,6 @@ import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelinePhase
 import kotlinx.coroutines.ThreadContextElement
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
 import org.slf4j.MDC
 import kotlin.collections.component1
 import kotlin.collections.component2

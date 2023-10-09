@@ -23,6 +23,7 @@ import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.logging.writers.LokiLogWriter
 import fanpoll.infra.redis.RedisKeyspaceNotificationListener
 import fanpoll.infra.redis.ktorio.RedisClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.server.application.install
@@ -30,7 +31,6 @@ import io.ktor.server.sessions.SessionSerializer
 import io.ktor.server.sessions.Sessions
 import io.ktor.server.sessions.header
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.koin

@@ -11,7 +11,7 @@ import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.propName
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ExpressionAlias

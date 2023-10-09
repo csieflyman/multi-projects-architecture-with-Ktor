@@ -15,7 +15,7 @@ import fanpoll.infra.notification.NotificationConfig
 import fanpoll.infra.openapi.OpenApiConfig
 import fanpoll.infra.redis.RedisConfig
 import io.github.config4k.extract
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 data class MyApplicationConfig(
     val info: AppInfoConfig,

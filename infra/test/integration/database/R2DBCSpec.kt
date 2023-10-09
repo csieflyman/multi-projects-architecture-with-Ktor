@@ -16,9 +16,9 @@ import fanpoll.infra.database.jasync.*
 import fanpoll.infra.database.sql.UUIDTable
 import fanpoll.infra.database.util.ResultRowDTOMapper
 import integration.util.SinglePostgreSQLContainer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.FunSpec
 import kotlinx.serialization.Serializable
-import mu.KotlinLogging
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column

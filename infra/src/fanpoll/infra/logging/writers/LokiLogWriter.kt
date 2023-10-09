@@ -20,6 +20,7 @@ import fanpoll.infra.logging.request.ApplicationResponseLog
 import fanpoll.infra.logging.request.RequestLog
 import fanpoll.infra.logging.request.UserLog
 import fanpoll.infra.notification.logging.NotificationMessageLog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
@@ -31,7 +32,6 @@ import io.ktor.util.encodeBase64
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
-import mu.KotlinLogging
 
 data class LokiConfig(
     val username: String,

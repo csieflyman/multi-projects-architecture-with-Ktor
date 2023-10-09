@@ -14,6 +14,7 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.openapi.schema.operation.definitions.PropertyDef
 import fanpoll.infra.openapi.schema.operation.definitions.SchemaDataType
 import fanpoll.infra.openapi.schema.operation.support.converters.SchemaObjectConverter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.server.application.call
@@ -30,7 +31,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.koin

@@ -12,7 +12,7 @@ import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.redis.RedisKeyspaceNotificationListener
 import fanpoll.infra.redis.ktorio.RedisClient
 import fanpoll.infra.redis.ktorio.commands.*
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.util.*

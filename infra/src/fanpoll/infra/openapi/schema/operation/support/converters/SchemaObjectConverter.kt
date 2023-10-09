@@ -19,10 +19,10 @@ import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.Colle
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.JacksonJsonArrayKType
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.KotlinxJsonArrayKType
 import fanpoll.infra.openapi.schema.operation.support.utils.DataModelUtils.getSchemaName
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
-import mu.KotlinLogging
 import java.math.BigDecimal
 import java.time.*
 import java.util.*

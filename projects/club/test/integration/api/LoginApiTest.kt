@@ -18,6 +18,7 @@ import fanpoll.infra.auth.provider.UserRunAsToken
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.response.InfraResponseCode
 import integration.util.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
@@ -28,7 +29,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.json.jsonPrimitive
-import mu.KotlinLogging
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

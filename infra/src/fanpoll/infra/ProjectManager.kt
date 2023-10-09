@@ -12,7 +12,7 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.notification.NotificationType
 import fanpoll.infra.openapi.ProjectOpenApiManager
 import io.github.config4k.extract
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 
 class ProjectManager(

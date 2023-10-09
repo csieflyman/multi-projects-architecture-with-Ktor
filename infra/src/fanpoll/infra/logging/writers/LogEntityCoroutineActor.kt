@@ -8,9 +8,9 @@ import fanpoll.infra.base.async.CoroutineActor
 import fanpoll.infra.base.async.CoroutineActorConfig
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.logging.LogEntity
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import mu.KotlinLogging
 
 class LogEntityCoroutineActor(
     coroutineActorConfig: CoroutineActorConfig,

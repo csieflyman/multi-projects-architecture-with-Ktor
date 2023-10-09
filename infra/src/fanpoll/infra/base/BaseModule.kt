@@ -13,6 +13,7 @@ import fanpoll.infra.base.response.ResponseMessagesProvider
 import org.koin.core.KoinApplication
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import org.koin.ktor.plugin.RequestScope
 
 fun KoinApplication.koinBaseModule(appConfig: MyApplicationConfig): Module {
 
@@ -26,5 +27,7 @@ fun KoinApplication.koinBaseModule(appConfig: MyApplicationConfig): Module {
         single { availableLangs }
         single { responseMessagesProvider }
         single { I18nResponseCreator(responseMessagesProvider) }
+
+        scope<RequestScope> {}
     }
 }

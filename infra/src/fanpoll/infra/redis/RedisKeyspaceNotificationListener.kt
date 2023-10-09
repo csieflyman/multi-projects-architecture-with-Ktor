@@ -11,11 +11,11 @@ import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.redis.ktorio.commands.RedisPubSub
 import fanpoll.infra.redis.ktorio.commands.redisKeyspaceNotificationChannel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 
 class RedisKeyspaceNotificationListener(
     config: KeyspaceNotificationConfig,

@@ -19,10 +19,10 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.jasync.JasyncExposedAdapter
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.writers.LogWriter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.jetbrains.exposed.sql.transactions.transactionManager

@@ -6,7 +6,7 @@ package fanpoll.infra.logging.writers
 
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class FileLogWriter : LogWriter {
 

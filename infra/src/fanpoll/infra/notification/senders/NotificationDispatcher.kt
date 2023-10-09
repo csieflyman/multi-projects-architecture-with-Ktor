@@ -17,7 +17,7 @@ import fanpoll.infra.notification.channel.push.PushContent
 import fanpoll.infra.notification.channel.sms.SMSContent
 import fanpoll.infra.notification.i18n.I18nNotificationProjectMessages
 import fanpoll.infra.notification.util.NotificationTemplateProcessor
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
 class NotificationDispatcher(

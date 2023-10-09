@@ -7,6 +7,7 @@ package fanpoll.infra.logging.otel
 import fanpoll.infra.base.extension.publicRemoteHost
 import fanpoll.infra.logging.RequestAttributeKey
 import fanpoll.infra.logging.logApi
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.Headers
 import io.ktor.server.application.*
 import io.ktor.server.request.httpMethod
@@ -21,7 +22,6 @@ import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.extension.kotlin.asContextElement
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
 
 class OpenTracingServerPlugin(configuration: Configuration) {
 

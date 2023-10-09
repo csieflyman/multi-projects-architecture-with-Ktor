@@ -20,6 +20,7 @@ import fanpoll.infra.logging.request.RequestLog
 import fanpoll.infra.logging.request.RequestLogConfig
 import fanpoll.infra.logging.request.RequestLogDBWriter
 import fanpoll.infra.logging.writers.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.content.TextContent
@@ -33,7 +34,6 @@ import io.ktor.server.request.httpMethod
 import io.ktor.server.response.ApplicationSendPipeline
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelinePhase
-import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.koin

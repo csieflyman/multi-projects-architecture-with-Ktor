@@ -8,8 +8,8 @@ plugins {
 dependencies {
     val kotlinVersion = "1.9.10"
     val ktorVersion = "2.3.4"
-    val koinVersion = "3.4.3"
-    val exposedVersion = "0.43.0"
+    val koinVersion = "3.5.0"
+    val exposedVersion = "0.44.0"
     val jacksonVersion = "2.15.2"
     val opentelemetryVersion = "1.29.0"
 
@@ -44,9 +44,9 @@ dependencies {
     api("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
 
     // ===============  koin (DI) ===============
-    api("io.insert-koin:koin-core:$koinVersion")
-    api("io.insert-koin:koin-core-ext:3.0.2")
-    api("io.insert-koin:koin-ktor:$koinVersion")
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    api("io.insert-koin:koin-ktor:3.5.1")
+    //implementation("io.insert-koin:koin-logger-slf4j:$koinVersion") // use https://github.com/oshai/kotlin-logging
 
     // =============== database ===============
     api("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -79,7 +79,7 @@ dependencies {
     //api("com.bennyhuo.kotlin:deepcopy-runtime:1.3.72")
 
     // =============== utils - logging ===============
-    api("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    api("io.github.oshai:kotlin-logging-jvm:5.1.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.4.11")
 
     // =============== utils - trace ===============

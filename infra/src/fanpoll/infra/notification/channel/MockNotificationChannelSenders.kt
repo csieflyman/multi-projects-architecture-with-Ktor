@@ -8,7 +8,7 @@ import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.NotificationLogConfig
 import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.logging.NotificationMessageLog
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
 private fun toMockLog(message: NotificationMessage): NotificationMessageLog {

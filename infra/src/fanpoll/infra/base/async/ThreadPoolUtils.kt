@@ -4,7 +4,7 @@
 
 package fanpoll.infra.base.async
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.*
 
 object ThreadPoolUtils {

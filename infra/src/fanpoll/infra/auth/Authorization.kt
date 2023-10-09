@@ -6,6 +6,7 @@ package fanpoll.infra.auth
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.response.InfraResponseCode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.application.install
 import io.ktor.server.auth.AuthenticationChecked
@@ -14,7 +15,6 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
 import io.ktor.server.routing.Route
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

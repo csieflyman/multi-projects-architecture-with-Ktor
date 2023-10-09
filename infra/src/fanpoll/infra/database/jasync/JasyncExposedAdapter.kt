@@ -18,9 +18,9 @@ import fanpoll.infra.database.sql.propName
 import fanpoll.infra.database.sql.updateColumnMap
 import fanpoll.infra.database.util.toDTO
 import fanpoll.infra.database.util.toSingleDTO
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import mu.KotlinLogging
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.JavaInstantColumnType

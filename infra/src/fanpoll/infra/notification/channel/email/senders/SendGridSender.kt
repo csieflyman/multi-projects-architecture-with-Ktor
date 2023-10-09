@@ -19,7 +19,7 @@ import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.channel.NotificationChannelSender
 import fanpoll.infra.notification.channel.email.EmailContent
 import fanpoll.infra.notification.logging.NotificationMessageLog
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 

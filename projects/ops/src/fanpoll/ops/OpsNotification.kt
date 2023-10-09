@@ -27,9 +27,9 @@ import fanpoll.infra.report.data.ReportDataUtils
 import fanpoll.infra.report.data.Table
 import fanpoll.ops.features.OpsUserTable
 import fanpoll.ops.features.UserDTO
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import mu.KotlinLogging
 import org.jetbrains.exposed.sql.select
 import java.time.Instant
 import kotlin.reflect.KClass

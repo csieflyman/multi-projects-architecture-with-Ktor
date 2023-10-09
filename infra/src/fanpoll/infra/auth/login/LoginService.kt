@@ -16,8 +16,8 @@ import fanpoll.infra.database.sql.insert
 import fanpoll.infra.database.sql.update
 import fanpoll.infra.database.util.DBAsyncTaskCoroutineActor
 import fanpoll.infra.logging.writers.LogWriter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.JsonObject
-import mu.KotlinLogging
 import java.time.Instant
 
 class LoginService(

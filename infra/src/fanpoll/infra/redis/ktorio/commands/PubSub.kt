@@ -5,12 +5,12 @@ package fanpoll.infra.redis.ktorio.commands
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.redis.ktorio.Redis
 import fanpoll.infra.redis.ktorio.RedisInternalChannel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
-import mu.KotlinLogging
 
 interface RedisPubSub {
 

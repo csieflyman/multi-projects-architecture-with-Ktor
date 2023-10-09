@@ -17,11 +17,11 @@ import fanpoll.infra.base.i18n.PropertiesMessagesProvider
 import fanpoll.infra.base.response.ResponseMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationMessagesProvider
 import fanpoll.infra.notification.i18n.I18nNotificationProjectMessages
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.session
 import io.ktor.server.routing.routing
-import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.koin

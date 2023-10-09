@@ -18,6 +18,7 @@ import fanpoll.infra.redis.ktorio.commands.ping
 import fanpoll.infra.redis.ktorio.commands.psubscribe
 import fanpoll.infra.redis.ktorio.commands.quit
 import fanpoll.infra.redis.ktorio.commands.subscribe
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.server.application.Application
 import io.ktor.server.application.BaseApplicationPlugin
@@ -26,7 +27,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.koin

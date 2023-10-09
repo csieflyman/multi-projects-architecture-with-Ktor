@@ -17,6 +17,7 @@ import fanpoll.infra.base.json.json
 import fanpoll.infra.base.json.pathOrNull
 import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.IdentifiableObject
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.sessions.generateSessionId
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
@@ -24,7 +25,6 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.serializer
-import mu.KotlinLogging
 import java.time.Instant
 import java.util.*
 

@@ -25,6 +25,7 @@ import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.NotificationPlugin
 import fanpoll.infra.openapi.OpenApiPlugin
 import fanpoll.infra.redis.RedisPlugin
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -37,8 +38,6 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.dataconversion.DataConversion
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.plugins.statuspages.StatusPages
-import mu.KotlinLogging
-import org.koin.core.logger.Level
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
@@ -78,7 +77,7 @@ fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = nul
     install(Compression)
 
     install(Koin) {
-        logger(KoinLogger(Level.ERROR)) // set Level.ERROR as a workaround => https://github.com/InsertKoinIO/koin/issues/1188
+        logger(KoinLogger()) // use https://github.com/oshai/kotlin-logging
 
         modules(
             module(createdAtStart = true) {

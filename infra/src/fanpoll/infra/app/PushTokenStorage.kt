@@ -9,7 +9,7 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.sql.transaction
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.deleteWhere
 

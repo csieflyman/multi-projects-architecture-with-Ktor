@@ -7,7 +7,7 @@ package fanpoll.infra.base.response
 import fanpoll.infra.base.i18n.HoconMessagesProvider
 import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.i18n.MessagesProvider
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ResponseMessagesProvider(messagesProvider: HoconMessagesProvider) : MessagesProvider<ResponseMessages> {
 

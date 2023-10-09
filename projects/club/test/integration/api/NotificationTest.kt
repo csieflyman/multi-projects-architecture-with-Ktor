@@ -27,6 +27,7 @@ import integration.util.dataJsonObject
 import integration.util.getRunAsKey
 import integration.util.getServiceApiKey
 import integration.util.mergeRootPath
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
@@ -37,7 +38,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.jsonPrimitive
-import mu.KotlinLogging
 import org.jetbrains.exposed.sql.select
 import java.util.*
 import kotlin.test.assertEquals

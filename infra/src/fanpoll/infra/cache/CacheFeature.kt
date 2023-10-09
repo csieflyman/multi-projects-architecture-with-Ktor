@@ -7,10 +7,10 @@ package fanpoll.infra.cache
 import fanpoll.infra.MyApplicationConfig
 import fanpoll.infra.cache.redis.RedisCache
 import fanpoll.infra.redis.ktorio.RedisClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.ktor.ext.get

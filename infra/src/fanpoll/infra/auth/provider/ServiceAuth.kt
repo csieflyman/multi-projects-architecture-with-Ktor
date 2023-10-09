@@ -11,11 +11,11 @@ import fanpoll.infra.base.response.CodeResponseDTO
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.response.respond
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.header
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 
 data class ServiceAuthCredential(val apiKey: String, val host: String) : Credential
 

@@ -17,6 +17,7 @@ import fanpoll.infra.openapi.schema.operation.definitions.OperationObject
 import fanpoll.infra.openapi.schema.operation.support.converters.ParameterObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.RequestBodyObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpMethod
 import io.ktor.server.auth.AuthenticationRouteSelector
 import io.ktor.server.locations.KtorExperimentalLocationsAPI
@@ -25,7 +26,6 @@ import io.ktor.server.routing.PathSegmentConstantRouteSelector
 import io.ktor.server.routing.PathSegmentParameterRouteSelector
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.RouteSelector
-import mu.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf

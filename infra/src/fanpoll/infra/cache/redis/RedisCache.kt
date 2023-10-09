@@ -9,7 +9,7 @@ import fanpoll.infra.redis.ktorio.RedisClient
 import fanpoll.infra.redis.ktorio.commands.del
 import fanpoll.infra.redis.ktorio.commands.get
 import fanpoll.infra.redis.ktorio.commands.set
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 
 // Redis Client Impl => https://github.com/ktorio/ktor-clients

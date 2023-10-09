@@ -10,11 +10,11 @@ import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.writers.LogWriter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.trySendBlocking
-import mu.KotlinLogging
 
 class CoroutineActor<T : IdentifiableObject<*>>(
     val name: String,
