@@ -39,7 +39,7 @@ class UserRole(
 
         init {
             json.serializersModule.plus(SerializersModule {
-                polymorphicDefault(UserRole::class) { serializer() }
+                polymorphicDefaultSerializer(UserRole::class) { serializer() }
             })
         }
 

@@ -34,7 +34,7 @@ open class UserType(val projectId: String, val name: String) : IdentifiableObjec
 
         init {
             json.serializersModule.plus(SerializersModule {
-                polymorphicDefault(UserType::class) { serializer() }
+                polymorphicDefaultSerializer(UserType::class) { serializer() }
             })
         }
 

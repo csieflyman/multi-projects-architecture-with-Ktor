@@ -51,7 +51,7 @@ open class NotificationType(
 
         init {
             json.serializersModule.plus(SerializersModule {
-                polymorphicDefault(NotificationType::class) { serializer() }
+                polymorphicDefaultSerializer(NotificationType::class) { serializer() }
             })
         }
 

@@ -277,7 +277,7 @@ class DynamicQuery(
 
             init {
                 json.serializersModule.plus(SerializersModule {
-                    polymorphicDefault(Predicate::class) { serializer() }
+                    polymorphicDefaultSerializer(Predicate::class) { serializer() }
                 })
             }
 
