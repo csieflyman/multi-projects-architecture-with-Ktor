@@ -47,8 +47,8 @@ class CoroutineActor<T : IdentifiableObject<*>>(
 
         val result = channel.trySendBlocking(message)
         if (result.isFailure) {
-            var errorMsg = ""
             val e = result.exceptionOrNull()
+            lateinit var errorMsg: String
             if (result.isClosed) {
                 errorMsg = "$name is closed"
                 logger.warn { "$errorMsg => $message" }

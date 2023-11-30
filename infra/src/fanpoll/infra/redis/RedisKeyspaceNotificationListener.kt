@@ -39,7 +39,7 @@ class RedisKeyspaceNotificationListener(
                     try {
                         channel.send(message) // non-blocking if Channel.UNLIMITED
                     } catch (e: Throwable) { // ignore CancellationException because we don't call channel.cancel()
-                        var errorMsg = ""
+                        lateinit var errorMsg: String
                         if (e is ClosedSendChannelException) {
                             errorMsg = "$actorName is closed"
                             logger.warn { "$errorMsg => $message" }
