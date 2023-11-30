@@ -27,7 +27,7 @@ class OpenAPIObject(
     }
 
     fun addPath(path: String, method: HttpMethod, operation: OperationObject) {
-        paths.getOrPut(path) { mutableMapOf() }[method.value.toLowerCase()] = operation
+        paths.getOrPut(path) { mutableMapOf() }[method.value.lowercase()] = operation
     }
 
     fun complete() {
