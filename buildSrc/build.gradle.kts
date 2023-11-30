@@ -8,14 +8,9 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
-    implementation("org.jetbrains.kotlin:kotlin-serialization:1.9.10")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
+    implementation("org.jetbrains.kotlin:kotlin-serialization:1.9.21")
     implementation("com.github.johnrengelman:shadow:8.1.1")
-    implementation("com.bmuschko:gradle-docker-plugin:9.3.4")
-    implementation("org.jetbrains.kotlinx:kover-gradle-plugin:0.7.3")
-
-    // https://kotlinlang.org/docs/whatsnew18.html#resolution-of-kotlin-gradle-plugins-transitive-dependencies
-    constraints {
-        implementation("org.jetbrains.kotlin:kotlin-sam-with-receiver:1.9.10")
-    }
+    implementation("com.bmuschko:gradle-docker-plugin:9.4.0")
+    implementation("org.jetbrains.kotlinx:kover-gradle-plugin:0.7.5")
 }

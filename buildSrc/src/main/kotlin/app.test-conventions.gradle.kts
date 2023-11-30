@@ -9,11 +9,11 @@ plugins {
 
 dependencies {
 
-    val kotestVersion = "5.6.2"
-    val testContainerVersion = "1.19.0"
+    val kotestVersion = "5.8.0"
+    val testContainerVersion = "1.19.3"
 
-    val kotlinVersion = "1.9.10"
-    val ktorVersion = "2.3.5"
+    val kotlinVersion = "1.9.21"
+    val ktorVersion = "2.3.6"
     val koinVersion = "3.5.0"
 
     // ========== kotest ==========
@@ -21,19 +21,21 @@ dependencies {
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor-jvm:2.0.0")
+    testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:2.0.2")
+    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.3.0")
+
     // ========== ktor ==========
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    testImplementation("io.kotest.extensions:kotest-assertions-ktor-jvm:2.0.0")
 
     // ========== koin ==========
     testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
-    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.2.0")
 
-    // ========== testcontainer ==========
+    // ========== testcontainers ==========
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainerVersion"))
     testImplementation("org.testcontainers:postgresql")
 }
