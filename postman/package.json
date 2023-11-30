@@ -1,7 +1,6 @@
 {
   "devDependencies": {
     "async": "^3.2.5",
-    "async": "^3.2.5",
     "axios": "^1.6.2",
     "newman": "^6.0.0",
     "newman-reporter-htmlextra": "^1.22.11",
