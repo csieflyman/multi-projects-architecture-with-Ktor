@@ -59,8 +59,8 @@ class OpenTracingServerPlugin(configuration: Configuration) {
                 val span = tracer.spanBuilder(call.request.logApi())
                     .setParent(extractedContext)
                     .setSpanKind(SpanKind.SERVER)
-                    .setAttribute(SemanticAttributes.HTTP_METHOD, call.request.httpMethod.value)
-                    .setAttribute(SemanticAttributes.HTTP_URL, call.request.uri)
+                    .setAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, call.request.httpMethod.value)
+                    .setAttribute(SemanticAttributes.URL_FULL, call.request.uri)
                     .apply {
                         call.request.publicRemoteHost?.let { setAttribute(SemanticAttributes.CLIENT_ADDRESS, it) }
                     }
@@ -77,7 +77,7 @@ class OpenTracingServerPlugin(configuration: Configuration) {
                     span.recordException(e) // additionalAttributes
                     throw e
                 } finally {
-                    call.response.status()?.value?.let { span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, it) }
+                    call.response.status()?.value?.let { span.setAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, it) }
                     span.end()
                 }
             }
