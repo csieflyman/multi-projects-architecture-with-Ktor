@@ -102,15 +102,15 @@ class RedisPlugin(configuration: Configuration) {
 
             return plugin
         }
-        
+
         private fun initClient(config: RedisConfig) {
-            logger.info("========== init Redis Client... ==========")
+            logger.info { "========== init Redis Client... ==========" }
             try {
                 dispatcher = if (config.client.dispatcher != null)
                     CoroutineUtils.createDispatcher(dispatcherName, config.client.dispatcher)
                 else Dispatchers.IO
 
-                logger.info("connect to redis => $config")
+                logger.info { "connect to redis => $config" }
                 client = RedisClient(
                     address = InetSocketAddress(config.host, config.port),
                     password = config.password,
@@ -119,22 +119,22 @@ class RedisPlugin(configuration: Configuration) {
                 )
 
                 runBlocking {
-                    logger.info("ping...")
+                    logger.info { "ping..." }
                     val latency = measureTimeMillis {
                         client.ping()?.let {
-                            logger.info(it)
+                            logger.info { it }
                         }
                     }
-                    logger.info("ping latency = $latency milliseconds")
+                    logger.info { "ping latency = $latency milliseconds" }
                 }
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.REDIS_ERROR, "fail to init redis client", e)
             }
-            logger.info("========== init Redis Client completed ==========")
+            logger.info { "========== init Redis Client completed ==========" }
         }
 
         private fun initSubscriber(config: RedisConfig, logWriter: LogWriter) {
-            logger.info("========== init Redis PubSub subscriber... ==========")
+            logger.info { "========== init Redis PubSub subscriber... ==========" }
             try {
                 subscribeDispatcher = CoroutineUtils.createDispatcher(subscribeDispatcherName, ThreadPoolConfig(fixedPoolSize = 1))
                 subscribeClient = RedisClient(
@@ -162,7 +162,7 @@ class RedisPlugin(configuration: Configuration) {
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.REDIS_ERROR, "fail to init Redis PubSub subscriber", e)
             }
-            logger.info("========== init Redis PubSub subscriber completed ==========")
+            logger.info { "========== init Redis PubSub subscriber completed ==========" }
         }
 
         private fun shutdown() {
@@ -174,9 +174,9 @@ class RedisPlugin(configuration: Configuration) {
             if (config.subscribe != null) {
                 try {
                     runBlocking {
-                        logger.info("close Redis PubSub subscriber connection...")
+                        logger.info { "close Redis PubSub subscriber connection..." }
                         subscribeClient.quit()
-                        logger.info("Redis PubSub subscriber connection closed")
+                        logger.info { "Redis PubSub subscriber connection closed" }
                     }
 
                     CoroutineUtils.closeDispatcher(subscribeDispatcherName, subscribeDispatcher as ExecutorCoroutineDispatcher)
@@ -191,9 +191,9 @@ class RedisPlugin(configuration: Configuration) {
         private fun closeClient() {
             try {
                 runBlocking {
-                    logger.info("close redis connection...")
+                    logger.info { "close redis connection..." }
                     client.quit()
-                    logger.info("redis connection closed")
+                    logger.info { "redis connection closed" }
                 }
 
                 if (dispatcher is ExecutorCoroutineDispatcher) {

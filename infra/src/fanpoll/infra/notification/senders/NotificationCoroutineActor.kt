@@ -41,7 +41,7 @@ class NotificationCoroutineActor(
             notificationSender.send(notification)
         } catch (e: Throwable) {
             val errorMsg = "$actorName execute error"
-            logger.error("errorMsg => $notification", e)
+            logger.error(e) { "errorMsg => $notification" }
             logWriter.write(
                 ErrorLog.internal(
                     InternalServerException(

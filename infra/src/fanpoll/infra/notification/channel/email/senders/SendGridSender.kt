@@ -55,9 +55,9 @@ class SendGridSender(
     }
 
     override fun shutdown() {
-        logger.info("shutdown $senderName...")
+        logger.info { "shutdown $senderName..." }
         // do nothing
-        logger.info("shutdown $senderName completed")
+        logger.info { "shutdown $senderName completed" }
     }
 
     override fun send(message: NotificationMessage) {
@@ -78,7 +78,7 @@ class SendGridSender(
             log.success = false
             log.content = emailMessage.content.toJson().toString()
             log.errorMsg = "[$senderName] process email content error: ${ex.message}"
-            logger.error("${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}", ex)
+            logger.error(ex) { "${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
             writeLog(log)
             return
         }
@@ -97,14 +97,14 @@ class SendGridSender(
                     log.content = emailMessage.content.toJson().toString()
                 writeLog(log)
             }
-            logger.debug("[$senderName] sendEmail success: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}")
+            logger.debug { "[$senderName] sendEmail success: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
         } catch (ex: Throwable) {
             log.rspAt = Instant.now()
             log.duration = Duration.between(log.sendAt, log.rspAt)
             log.success = false
             log.content = emailMessage.content.toJson().toString()
             log.errorMsg = "[$senderName] sendEmail error: ${ex.message}"
-            logger.error("${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}", ex)
+            logger.error(ex) { "${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
             writeLog(log)
         }
     }

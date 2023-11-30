@@ -162,9 +162,9 @@ class DatabasePlugin(configuration: Configuration) {
 
         private fun connectWithHikari(config: com.zaxxer.hikari.HikariConfig) {
             try {
-                logger.info("===== connect database ${config.jdbcUrl}... =====")
+                logger.info { "===== connect database ${config.jdbcUrl}... =====" }
                 dataSource = HikariDataSource(config)
-                logger.info("===== database connected =====")
+                logger.info { "===== database connected =====" }
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to connect database: ${config.jdbcUrl}", e)
             }
@@ -188,10 +188,10 @@ class DatabasePlugin(configuration: Configuration) {
 
         private fun flywayMigrate(config: FluentConfiguration) {
             try {
-                logger.info("===== Flyway migrate... =====")
+                logger.info { "===== Flyway migrate... =====" }
                 flyway = config.dataSource(dataSource).load()
                 flyway.migrate()
-                logger.info("===== Flyway migrate finished =====")
+                logger.info { "===== Flyway migrate finished =====" }
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to migrate database", e)
             }
@@ -208,14 +208,14 @@ class DatabasePlugin(configuration: Configuration) {
         private fun closeHikariConnectionPool() {
             try {
                 if (dataSource.isRunning) {
-                    logger.info("close database connection pool...")
+                    logger.info { "close database connection pool..." }
                     dataSource.close()
-                    logger.info("database connection pool closed")
+                    logger.info { "database connection pool closed" }
                 } else {
-                    logger.warn("database connection pool had been closed")
+                    logger.warn { "database connection pool had been closed" }
                 }
             } catch (e: Throwable) {
-                logger.error("fail to close database connection pool", e)
+                logger.error(e) { "fail to close database connection pool" }
                 //throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to close database connection pool", e)
             }
         }
@@ -239,12 +239,12 @@ class DatabasePlugin(configuration: Configuration) {
 
         private fun connectWithJasync(config: ConnectionPoolConfiguration) {
             try {
-                logger.info("===== connect database with jasync ... =====")
+                logger.info { "===== connect database with jasync ... =====" }
                 jasyncConnection = ConnectionPool(
                     PostgreSQLConnectionFactory(config.connectionConfiguration), config
                 )
                 jasyncConnection.connect().get()
-                logger.info("===== jasync database connected =====")
+                logger.info { "===== jasync database connected =====" }
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to connect database With jasync", e)
             }
@@ -252,11 +252,11 @@ class DatabasePlugin(configuration: Configuration) {
 
         private fun closeJasyncConnectionPool() {
             try {
-                logger.info("close jasync database connection pool...")
+                logger.info { "close jasync database connection pool..." }
                 jasyncConnection.disconnect().get()
-                logger.info("jasync database connection pool closed")
+                logger.info { "jasync database connection pool closed" }
             } catch (e: Throwable) {
-                logger.error("fail to close jasync database connection pool", e)
+                logger.error(e) { "fail to close jasync database connection pool" }
                 //throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to close jasync database connection pool", e)
             }
         }

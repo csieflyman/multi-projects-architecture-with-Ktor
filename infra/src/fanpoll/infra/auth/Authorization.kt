@@ -54,7 +54,7 @@ val AuthorizationPlugin = createRouteScopedPlugin(
             if (pluginConfig.principalAuths.none { it.allow(principal, call) }) {
                 throw RequestException(InfraResponseCode.AUTH_ROLE_FORBIDDEN, "$principal is forbidden unable to access this api")
             } else {
-                logger.debug("$principal authenticated")
+                logger.debug { "$principal authenticated" }
             }
         } else {
             require(call.response.status() != null) { "Authenticator should response status code if unauthenticated" }

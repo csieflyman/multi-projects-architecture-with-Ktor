@@ -45,7 +45,7 @@ class MitakeSender(
     }
 
     override fun shutdown() {
-        logger.info("shutdown $senderName...")
-        logger.info("shutdown $senderName completed")
+        logger.info { "shutdown $senderName..." }
+        logger.info { "shutdown $senderName completed" }
     }
 }

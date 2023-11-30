@@ -46,7 +46,7 @@ class DBAsyncTaskCoroutineActor(
             }
         } catch (e: Throwable) {
             val errorMsg = "$actorName execute error"
-            logger.error("errorMsg => $task", e)
+            logger.error(e) { "errorMsg => $task" }
             logWriter.write(
                 ErrorLog.internal(
                     InternalServerException(

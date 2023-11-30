@@ -42,10 +42,10 @@ class RedisKeyspaceNotificationListener(
                         var errorMsg = ""
                         if (e is ClosedSendChannelException) {
                             errorMsg = "$actorName is closed"
-                            logger.warn("$errorMsg => $message")
+                            logger.warn { "$errorMsg => $message" }
                         } else {
                             errorMsg = "$actorName unexpected error"
-                            logger.error("$errorMsg => $message", e)
+                            logger.error(e) { "$errorMsg => $message" }
                         }
                         logWriter.write(
                             ErrorLog.internal(

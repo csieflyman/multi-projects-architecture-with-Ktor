@@ -36,10 +36,10 @@ object ExceptionUtils {
         val ee = wrapException(e)
         val message = "${call?.logString()} => "
         when (ee.code.type) {
-            ResponseCodeType.SUCCESS -> logger.debug("$message${ee.message}")
-            ResponseCodeType.CLIENT_INFO -> logger.info("$message${ee.message}")
-            ResponseCodeType.CLIENT_ERROR -> logger.warn(message, ee)
-            ResponseCodeType.SERVER_ERROR -> logger.error(message, ee)
+            ResponseCodeType.SUCCESS -> logger.debug { "$message${ee.message}" }
+            ResponseCodeType.CLIENT_INFO -> logger.info { "$message${ee.message}" }
+            ResponseCodeType.CLIENT_ERROR -> logger.warn(ee) { message }
+            ResponseCodeType.SERVER_ERROR -> logger.error(ee) { message }
         }
     }
 }

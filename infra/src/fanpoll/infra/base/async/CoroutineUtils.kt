@@ -26,23 +26,23 @@ object CoroutineUtils {
     }
 
     fun closeDispatcher(dispatcherName: String, dispatcher: ExecutorCoroutineDispatcher) {
-        logger.info("close $dispatcherName dispatcher...")
+        logger.info { "close $dispatcherName dispatcher..." }
         try {
             dispatcher.close()
         } catch (e: Throwable) {
             throw InternalServerException(InfraResponseCode.COROUTINE_ERROR, "could not close $dispatcherName dispatcher", e)
         }
-        logger.info("dispatcher $dispatcherName closed")
+        logger.info { "dispatcher $dispatcherName closed" }
     }
 
     fun closeChannel(channelName: String, channel: SendChannel<*>) {
-        logger.info("close $channelName channel...")
+        logger.info { "close $channelName channel..." }
         try {
             channel.close()
         } catch (e: Throwable) {
             throw InternalServerException(InfraResponseCode.COROUTINE_ERROR, "could not close $channelName channel", e)
         }
-        logger.info("channel $channelName closed")
+        logger.info { "channel $channelName closed" }
     }
 
     fun <E> createActor(

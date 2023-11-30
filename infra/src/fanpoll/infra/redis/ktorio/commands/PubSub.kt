@@ -74,7 +74,7 @@ private val logger = KotlinLogging.logger {}
 
 private fun CoroutineScope.mapToPacket(rawChannel: ReceiveChannel<Any>) = produce(capacity = Channel.UNLIMITED) {
     for (data in rawChannel) {
-        logger.debug("data = $data")
+        logger.debug { "data = $data" }
         val list = data as List<Any>
         val kind = String(list[0] as ByteArray)
         val channel = String(list[1] as ByteArray)
@@ -96,9 +96,10 @@ private fun CoroutineScope.mapToPacket(rawChannel: ReceiveChannel<Any>) = produc
                 val key = if (isKeyEvent) pMessage else info.substringAfterLast(":")
                 RedisPubSub.KeyspaceNotification(channel, isKeyEvent, event, key)
             }
+
             else -> error("Undefined Redis PubSub raw data: $list")
         }
-        logger.debug("packet = $packet")
+        logger.debug { "packet = $packet" }
         send(packet)
     }
 }

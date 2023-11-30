@@ -51,10 +51,10 @@ class CoroutineActor<T : IdentifiableObject<*>>(
             val e = result.exceptionOrNull()
             if (result.isClosed) {
                 errorMsg = "$name is closed"
-                logger.warn("$errorMsg => $message")
+                logger.warn { "$errorMsg => $message" }
             } else {
                 errorMsg = "$name unexpected error" // we never call channel.cancel()
-                logger.error("$errorMsg => $message", e)
+                logger.error(e) { "$errorMsg => $message" }
             }
             if (errorCode != InfraResponseCode.LOG_ERROR) {
                 logWriter?.write(
@@ -69,7 +69,7 @@ class CoroutineActor<T : IdentifiableObject<*>>(
     }
 
     init {
-        logger.info("========== init coroutine actor $name ... ==========")
+        logger.info { "========== init coroutine actor $name ... ==========" }
         try {
             dispatcher = if (coroutineActorConfig.dispatcher != null)
                 CoroutineUtils.createDispatcher(name, coroutineActorConfig.dispatcher)
@@ -77,7 +77,7 @@ class CoroutineActor<T : IdentifiableObject<*>>(
 
             // Note: block should catch all exceptions in most cases
             val exceptionHandler = CoroutineExceptionHandler { ctx, e ->
-                logger.error("coroutine actor uncaught exception => $ctx", e)
+                logger.error(e) { "coroutine actor uncaught exception => $ctx" }
             }
             val context = dispatcher + exceptionHandler
             coroutineScope = CoroutineScope(context)
@@ -90,17 +90,17 @@ class CoroutineActor<T : IdentifiableObject<*>>(
         } catch (e: Throwable) {
             throw InternalServerException(InfraResponseCode.LOG_ERROR, "fail to init coroutine actor $name", e)
         }
-        logger.info("========== init coroutine actor $name completed ==========")
+        logger.info { "========== init coroutine actor $name completed ==========" }
     }
 
     // call channel.close() to wait task completed when shutdown server (don't call channel.cancel())
     fun close() {
-        logger.info("coroutine actor $name close ...")
+        logger.info { "coroutine actor $name close ..." }
         CoroutineUtils.closeChannel(name, channel)
         coroutineScope.cancel(name)
         if (dispatcher is ExecutorCoroutineDispatcher) {
             CoroutineUtils.closeDispatcher(name, dispatcher)
         }
-        logger.info("coroutine actor $name closed")
+        logger.info { "coroutine actor $name closed" }
     }
 }

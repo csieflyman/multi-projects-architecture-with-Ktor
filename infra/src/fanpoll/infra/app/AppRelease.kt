@@ -94,7 +94,7 @@ class AppReleaseService {
             ) {
                 val clientVersion = call.attributes[ClientVersionAttributeKey.CLIENT_VERSION]
                 val appVersion = AppVersion(principalSource.id, clientVersion)
-                logger.debug("client appVersion = $appVersion")
+                logger.debug { "client appVersion = $appVersion" }
 
                 val result = check(appVersion)
                 call.attributes.put(ClientVersionAttributeKey.CHECK_RESULT, result)

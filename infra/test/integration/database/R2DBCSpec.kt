@@ -42,7 +42,7 @@ class R2DBCSpec : FunSpec({
     lateinit var jasyncConnection: Connection
 
     beforeSpec {
-        logger.info("========== Exposed Init ==========")
+        logger.info { "========== Exposed Init ==========" }
         dataSource = HikariDataSource(HikariConfig().apply {
             isAutoCommit = false
             driverClassName = postgresContainer.driverClassName
@@ -53,7 +53,7 @@ class R2DBCSpec : FunSpec({
         })
         val defaultDatabase = Database.connect(dataSource)
 
-        logger.info("========== Flyway Migrate ==========")
+        logger.info { "========== Flyway Migrate ==========" }
         val flyway = FluentConfiguration().apply {
             baselineOnMigrate(true)
         }.dataSource(dataSource)
@@ -61,7 +61,7 @@ class R2DBCSpec : FunSpec({
             .load()
         flyway.migrate()
 
-        logger.info("========== Jasync Connect ==========")
+        logger.info { "========== Jasync Connect ==========" }
         jasyncConnection = PostgreSQLConnectionBuilder.createConnectionPool(postgresContainer.jdbcUrl) {
             username = postgresContainer.username
             password = postgresContainer.password
@@ -73,10 +73,10 @@ class R2DBCSpec : FunSpec({
     }
 
     afterSpec {
-        logger.info("========== Jasync Close ==========")
+        logger.info { "========== Jasync Close ==========" }
         jasyncConnection.disconnect().get()
 
-        logger.info("========== Datasource Close ==========")
+        logger.info { "========== Datasource Close ==========" }
         dataSource.close()
     }
 

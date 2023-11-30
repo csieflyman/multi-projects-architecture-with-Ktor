@@ -25,7 +25,7 @@ class RedisCache<K : Any, V : Any>(
     private val cacheRootPrefix: String = client.rootKeyPrefix + ":cache:"
 
     override suspend fun get(key: K): V? {
-        logger.debug("[RedisCache:$keyPrefix] get: $key")
+        logger.debug { "[RedisCache:$keyPrefix] get: $key" }
         return getValue(key)
     }
 
@@ -34,14 +34,16 @@ class RedisCache<K : Any, V : Any>(
     }
 
     override suspend fun remove(key: K) {
-        logger.debug("[RedisCache:$keyPrefix] remove: $key")
+        logger.debug { "[RedisCache:$keyPrefix] remove: $key" }
         client.del(buildRedisKey(key))
     }
 
     private suspend fun setValue(key: K, value: V, expirationMs: Long?) {
         val stringValue = valueSerializer?.serialize(value) ?: value as String
-        logger.debug("[RedisCache:$keyPrefix] set: $key = $stringValue " +
-                "(${expirationMs?.let { Duration.ofMillis(it).toSeconds().toString() + "s" } ?: "No Expiry"})")
+        logger.debug {
+            "[RedisCache:$keyPrefix] set: $key = $stringValue " +
+                    "(${expirationMs?.let { Duration.ofMillis(it).toSeconds().toString() + "s" } ?: "No Expiry"})"
+        }
         return client.set(buildRedisKey(key), stringValue, expirationMs)
     }
 

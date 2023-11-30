@@ -79,6 +79,7 @@ class NotificationDispatcher(
                             NotificationCategory.Marketing -> emailConfig.marketingAddress ?: emailConfig.noReplyAddress
                         }
                     }
+
                     else -> null
                 }
 
@@ -102,6 +103,7 @@ class NotificationDispatcher(
                                     emailContent.body = templateProcessor.processEmail(type, templateArgs, lang)
                                 emailContent
                             }
+
                             NotificationChannel.Push -> {
                                 if (!content.push.containsKey(lang)) {
                                     content.push[lang] = PushContent(
@@ -161,10 +163,10 @@ class NotificationDispatcher(
     }
 
     override fun shutdown() {
-        logger.info("shutdown NotificationDispatcher...")
+        logger.info { "shutdown NotificationDispatcher..." }
         emailSender?.shutdown()
         pushSender?.shutdown()
         smsSender?.shutdown()
-        logger.info("shutdown NotificationDispatcher completed")
+        logger.info { "shutdown NotificationDispatcher completed" }
     }
 }

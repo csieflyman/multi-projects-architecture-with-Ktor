@@ -132,7 +132,7 @@ class DynamicQuery(
         // example: q=[a = 1 and b = 2 and (c = 3 or d = 4)]
         fun parseFilter(text: String): Predicate {
             var dsl = text.trim()
-            logger.debug("query filter: $dsl")
+            logger.debug { "query filter: $dsl" }
             if (!dsl.startsWith("[") || !dsl.endsWith("]"))
                 throw RequestException(
                     InfraResponseCode.BAD_REQUEST_QUERYSTRING,
@@ -140,7 +140,7 @@ class DynamicQuery(
                 )
             dsl = dsl.substring(1, dsl.length - 1)
             val predicate = Predicate.valueOf(dsl.trim())
-            logger.debug("query filter parsed = ${predicate}")
+            logger.debug { "query filter parsed = ${predicate}" }
             return predicate
         }
 

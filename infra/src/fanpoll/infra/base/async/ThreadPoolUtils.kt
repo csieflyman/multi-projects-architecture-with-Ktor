@@ -16,7 +16,7 @@ object ThreadPoolUtils {
         config: ThreadPoolConfig,
         handler: Thread.UncaughtExceptionHandler? = null
     ): ExecutorService {
-        logger.info("init thread pool $threadNamePrefix ... $config")
+        logger.info { "init thread pool $threadNamePrefix ... $config" }
         val factory = DefaultThreadFactory(threadNamePrefix, handler)
 
         return if (config.isFixedThreadPool())
@@ -44,7 +44,7 @@ object ThreadPoolUtils {
                 thread.uncaughtExceptionHandler = handler
             else
                 thread.setUncaughtExceptionHandler { t, e ->
-                    logger.error("Thread Uncaught Error => ${t.name}", e)
+                    logger.error(e) { "Thread Uncaught Error => ${t.name}" }
                 }
             return thread
         }

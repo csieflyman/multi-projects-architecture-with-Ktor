@@ -75,7 +75,7 @@ object ApplicationConfigLoader {
             //logger.debug(myConfig.getConfig("app").entrySet().toString())
             return myConfig.extract("app")
         } catch (e: Throwable) {
-            logger.error("fail to load project config file", e)
+            logger.error(e) { "fail to load project config file" }
             throw e
         }
     }

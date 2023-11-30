@@ -59,14 +59,14 @@ public class MyCallLoggingPlugin private constructor(
         }
     }
 
-    private val starting: (Application) -> Unit = { logger.info("Application starting: $it") }
-    private val started: (Application) -> Unit = { logger.info("Application started: $it") }
-    private val stopping: (Application) -> Unit = { logger.info("Application stopping: $it") }
+    private val starting: (Application) -> Unit = { logger.info { "Application starting: $it" } }
+    private val started: (Application) -> Unit = { logger.info { "Application started: $it" } }
+    private val stopping: (Application) -> Unit = { logger.info { "Application stopping: $it" } }
     private var stopped: (Application) -> Unit = {}
 
     init {
         stopped = {
-            logger.info("Application stopped: $it")
+            logger.info { "Application stopped: $it" }
             monitor.unsubscribe(ApplicationStarting, starting)
             monitor.unsubscribe(ApplicationStarted, started)
             monitor.unsubscribe(ApplicationStopping, stopping)

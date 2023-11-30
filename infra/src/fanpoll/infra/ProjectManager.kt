@@ -52,7 +52,7 @@ class ProjectManager(
                 //logger.debug(myConfig.getConfig(projectId).entrySet().toString())
                 return myConfig.extract(projectId)
             } catch (e: Throwable) {
-                logger.error("fail to load project config file: $projectConfigFile", e)
+                logger.error(e) { "fail to load project config file: $projectConfigFile" }
                 throw e
             }
         }

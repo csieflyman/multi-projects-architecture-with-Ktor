@@ -35,7 +35,7 @@ class LogEntityCoroutineActor(
         try {
             logWriter.write(logEntity)
         } catch (e: Throwable) {
-            logger.error("$actorName execute error => $logEntity", e)
+            logger.error(e) { "$actorName execute error => $logEntity" }
         }
     }
 

@@ -24,7 +24,7 @@ class PushTokenStorage(private val logWriter: LogWriter) {
             }
         } catch (e: Throwable) {
             val errorMsg = "deleteUnRegisteredTokens error"
-            logger.error("$errorMsg => $tokens", e)
+            logger.error(e) { "$errorMsg => $tokens" }
             logWriter.write(
                 ErrorLog.internal(
                     InternalServerException(InfraResponseCode.NOTIFICATION_ERROR, errorMsg, e, mapOf("tokens" to tokens)),

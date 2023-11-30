@@ -36,7 +36,7 @@ class RedisSessionStorage(
     }
 
     override suspend fun setSession(session: UserSession) {
-        logger.debug("login session: ${session.id}")
+        logger.debug { "login session: ${session.id}" }
 
         val sessionConfig = session.id.source.getAuthConfig().user!!.session ?: sessionConfig
         setSession(session, session.value.loginTime, sessionConfig.expireDuration)
@@ -50,13 +50,13 @@ class RedisSessionStorage(
             expireTime.isAfter(now) &&
             Duration.between(now, expireTime) <= sessionConfig.extendDuration
         ) {
-            logger.debug("extent session: ${session.id}")
+            logger.debug { "extent session: ${session.id}" }
             setSession(session, now, sessionConfig.expireDuration)
         }
     }
 
     override suspend fun deleteSession(session: UserSession) {
-        logger.debug("logout session: ${session.id}")
+        logger.debug { "logout session: ${session.id}" }
 
         val sessionKey = buildSessionKey(session)
         val sessionIdsKey = buildSessionIdKey(session.id.userId)
@@ -106,7 +106,7 @@ class RedisSessionStorage(
                     redisClient.hdel(buildSessionIdKey(userId), sessionKey)
                 } catch (e: Throwable) {
                     val errorMsg = "subscribeSessionKeyExpired error"
-                    logger.error("$errorMsg => $notification", e)
+                    logger.error(e) { "$errorMsg => $notification" }
                     logWriter.write(
                         ErrorLog.internal(
                             InternalServerException(

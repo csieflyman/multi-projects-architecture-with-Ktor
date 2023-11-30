@@ -73,9 +73,9 @@ class FCMSender(
     }
 
     override fun shutdown() {
-        logger.info("shutdown $senderName...")
+        logger.info { "shutdown $senderName..." }
         executor.shutdown()
-        logger.info("shutdown $senderName completed")
+        logger.info { "shutdown $senderName completed" }
     }
 
     override fun send(message: NotificationMessage) {
@@ -113,7 +113,7 @@ class FCMSender(
                     }
                     writeLog(log)
                 }
-                logger.debug("[$senderName] sendSingle success: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}")
+                logger.debug { "[$senderName] sendSingle success: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
             }
 
             override fun onFailure(ex: Throwable) {
@@ -189,7 +189,7 @@ class FCMSender(
                 if (!log.success || !log.invalidRecipientIds.isNullOrEmpty() || loggingConfig.logSuccess) {
                     writeLog(log)
                 }
-                logger.debug("[$senderName] sendMulticast: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}")
+                logger.debug { "[$senderName] sendMulticast: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
             }
 
             override fun onFailure(ex: Throwable) {
@@ -214,14 +214,14 @@ class FCMSender(
                 log.success = false
                 log.content = message.content.toJson().toString()
                 log.errorMsg = "[$senderName] send error: ${ex.message}"
-                logger.error("${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}", ex)
+                logger.error(ex) { "${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
             }
         } else {
             log.rspMsg = ex.message
             log.success = false
             log.content = message.content.toJson().toString()
             log.errorMsg = "[$senderName] send unexpected error: ${ex.message}"
-            logger.error("${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}", ex)
+            logger.error(ex) { "${log.errorMsg} => ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
         }
         writeLog(log)
     }
