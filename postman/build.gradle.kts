@@ -33,6 +33,7 @@ val npmInstallPostman by tasks.register<NpmTask>("npmInstallPostman") {
             "openapi-to-postmanv2",
             "newman",
             "newman-reporter-htmlextra",
+            "--legacy-peer-deps",
             "--save-dev"
         )
     )
