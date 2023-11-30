@@ -37,7 +37,7 @@ fun Application.opsMain() {
         Project(
             OpsConst.projectId,
             projectConfig.auth.principalSourceAuthConfigs,
-            OpsUserType.values().map { it.value },
+            OpsUserType.entries.map { it.value },
             OpsOpenApi.Instance,
             OpsNotification.AllTypes
         )

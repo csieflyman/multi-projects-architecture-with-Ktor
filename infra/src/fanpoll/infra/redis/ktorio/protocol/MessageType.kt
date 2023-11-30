@@ -13,7 +13,7 @@ internal enum class RedisType(val code: Byte) {
         fun fromCode(code: Byte): RedisType =
             types.find { it.code == code } ?: throw RedisException("No suitable message type found")
 
-        val types: Array<RedisType> = RedisType.values()
+        val types: Array<RedisType> = entries.toTypedArray()
     }
 }
 

@@ -263,7 +263,7 @@ class DynamicQuery(
         companion object {
 
             fun queryStringValueOf(expr: String): PredicateOperator = try {
-                values().first { it.sqlExpr == expr }
+                entries.first { it.sqlExpr == expr }
             } catch (e: NoSuchElementException) {
                 throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query predicate operator: $expr")
             }

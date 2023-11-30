@@ -38,7 +38,7 @@ fun Application.clubMain() {
         Project(
             ClubConst.projectId,
             projectConfig.auth.principalSourceAuthConfigs,
-            ClubUserType.values().map { it.value },
+            ClubUserType.entries.map { it.value },
             ClubOpenApi.Instance,
             ClubNotification.AllTypes
         )

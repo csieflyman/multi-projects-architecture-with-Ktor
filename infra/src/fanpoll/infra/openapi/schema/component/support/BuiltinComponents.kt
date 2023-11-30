@@ -35,7 +35,7 @@ object BuiltinComponents : ComponentLoader {
             PropertyDef("name", SchemaDataType.string),
             PropertyDef(
                 "type", SchemaDataType.string,
-                refName = "codeType", enum = ResponseCodeType.values().map { it.name }.toList(), kClass = ResponseCodeType::class
+                refName = "codeType", enum = ResponseCodeType.entries.map { it.name }.toList(), kClass = ResponseCodeType::class
             ),
         ).associate { it.valuePair() } as Map<String, Schema>
 
@@ -177,7 +177,7 @@ object BuiltinComponents : ComponentLoader {
 
     private val ClientVersionCheckResultSchema = PropertyDef(
         ClientVersionAttributeKey.CHECK_RESULT.name, SchemaDataType.string,
-        enum = ClientVersionCheckResult.values().toList(), kClass = ClientVersionCheckResult::class,
+        enum = ClientVersionCheckResult.entries, kClass = ClientVersionCheckResult::class,
         example = ClientVersionCheckResult.Latest
     )
 
@@ -202,7 +202,7 @@ object BuiltinComponents : ComponentLoader {
         ClientVersionAttributeKey.CLIENT_VERSION.name, SchemaDataType.string,
         pattern = AppVersion.NAME_PATTERN,
         description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => ${ClientVersionAttributeKey.CLIENT_ID.name} = ${
-            ClientVersionCheckResult.values().toList()
+            ClientVersionCheckResult.entries
         }",
         example = "1.0.0"
     )
