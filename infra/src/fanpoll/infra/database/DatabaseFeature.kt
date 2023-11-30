@@ -25,7 +25,6 @@ import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
-import org.jetbrains.exposed.sql.transactions.transactionManager
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.koin
@@ -172,15 +171,10 @@ class DatabasePlugin(configuration: Configuration) {
 
         private fun initExposed() {
             try {
-                defaultDatabase = ExposedDatabase.connect(dataSource)
-                /**
-                 * see https://github.com/JetBrains/Exposed/wiki/Transactions
-                 * After that any exception that happens within transaction block will not rollback the whole transaction
-                 * but only the code inside current transaction.
-                 * Exposed uses SQL SAVEPOINT functionality to mark current transaction at the beginning of transaction block and release it on exit from it.
-                 */
-                defaultDatabase.useNestedTransactions = false
-                defaultDatabase.transactionManager.defaultRepetitionAttempts = 0
+                val databaseConfig = org.jetbrains.exposed.sql.DatabaseConfig {
+                    defaultRepetitionAttempts = 0
+                }
+                defaultDatabase = ExposedDatabase.connect(dataSource, databaseConfig = databaseConfig)
             } catch (e: Throwable) {
                 throw InternalServerException(InfraResponseCode.DB_ERROR, "fail to init Exposed", e)
             }
