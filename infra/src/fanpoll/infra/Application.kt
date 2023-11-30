@@ -32,6 +32,7 @@ import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.principal
 import io.ktor.server.engine.ShutDownUrl
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
 import io.ktor.server.locations.Locations
 import io.ktor.server.plugins.compression.Compression
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -47,6 +48,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 private val logger = KotlinLogging.logger {}
 
+@OptIn(KtorExperimentalLocationsAPI::class)
 fun Application.main(configureAppConfig: (MyApplicationConfig.() -> Unit)? = null) {
 
     val appConfig = ApplicationConfigLoader.load()

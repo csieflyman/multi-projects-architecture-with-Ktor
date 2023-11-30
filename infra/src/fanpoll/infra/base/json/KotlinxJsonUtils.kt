@@ -8,13 +8,16 @@ package fanpoll.infra.base.json
 
 import fanpoll.infra.base.extension.copyPropsFrom
 import fanpoll.infra.base.util.DateTimeUtils
-import kotlinx.serialization.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
+import kotlinx.serialization.serializer
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.*
@@ -37,7 +40,6 @@ fun Any?.toJsonElement(): JsonElement = when (this) {
     is Boolean -> JsonPrimitive(this)
     is Number -> this.toJsonElement()
     is UUID -> this.toJsonElement()
-    is BigDecimal -> this.toJsonElement()
     is Instant -> this.toJsonElement()
     is ZonedDateTime -> this.toJsonElement()
     is LocalDateTime -> this.toJsonElement()
@@ -82,7 +84,6 @@ val JsonPrimitive.uuidOrNull: UUID?
         null
     }
 
-@Serializer(forClass = UUID::class)
 object UUIDSerializer : KSerializer<UUID> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.util.UUID", PrimitiveKind.STRING)
@@ -108,7 +109,6 @@ val JsonPrimitive.decimalOrNull: BigDecimal?
         null
     }
 
-@Serializer(forClass = BigDecimal::class)
 object BigDecimalSerializer : KSerializer<BigDecimal> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.math.BigDecimal", PrimitiveKind.DOUBLE)
@@ -122,7 +122,6 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
     }
 }
 
-@Serializer(forClass = Duration::class)
 object DurationMilliSerializer : KSerializer<Duration> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Duration.Milli", PrimitiveKind.LONG)
@@ -136,7 +135,6 @@ object DurationMilliSerializer : KSerializer<Duration> {
     }
 }
 
-@Serializer(forClass = Duration::class)
 object DurationMicroSerializer : KSerializer<Duration> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Duration.Micro", PrimitiveKind.LONG)
@@ -150,7 +148,6 @@ object DurationMicroSerializer : KSerializer<Duration> {
     }
 }
 
-@Serializer(forClass = Duration::class)
 object DurationNanoSerializer : KSerializer<Duration> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Duration.Nano", PrimitiveKind.LONG)
@@ -164,7 +161,6 @@ object DurationNanoSerializer : KSerializer<Duration> {
     }
 }
 
-@Serializer(forClass = Instant::class)
 object InstantSerializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Instant", PrimitiveKind.STRING)
@@ -178,7 +174,6 @@ object InstantSerializer : KSerializer<Instant> {
     }
 }
 
-@Serializer(forClass = Instant::class)
 object TaiwanInstantSerializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.Instant", PrimitiveKind.STRING)
@@ -192,7 +187,6 @@ object TaiwanInstantSerializer : KSerializer<Instant> {
     }
 }
 
-@Serializer(forClass = ZonedDateTime::class)
 object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
 
     override val descriptor: SerialDescriptor =
@@ -207,7 +201,6 @@ object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
     }
 }
 
-@Serializer(forClass = LocalDateTime::class)
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
@@ -222,7 +215,6 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
     }
 }
 
-@Serializer(forClass = LocalDate::class)
 object LocalDateSerializer : KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.LocalDate", PrimitiveKind.STRING)
@@ -236,7 +228,6 @@ object LocalDateSerializer : KSerializer<LocalDate> {
     }
 }
 
-@Serializer(forClass = LocalTime::class)
 object LocalTimeSerializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.LocalTime", PrimitiveKind.STRING)
@@ -250,7 +241,6 @@ object LocalTimeSerializer : KSerializer<LocalTime> {
     }
 }
 
-@Serializer(forClass = ZoneId::class)
 object ZoneIdSerializer : KSerializer<ZoneId> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("java.time.ZoneId", PrimitiveKind.STRING)

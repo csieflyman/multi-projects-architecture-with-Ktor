@@ -47,7 +47,7 @@ class ServiceAuthProvider(config: Configuration) : AuthenticationProvider(config
             val cause = if (credentials == null) AuthenticationFailedCause.NoCredentials
             else AuthenticationFailedCause.InvalidCredentials
 
-            context.challenge(providerName, cause) { challenge, call ->
+            context.challenge(providerName, cause) { challenge, _ ->
                 call.respond(
                     CodeResponseDTO(
                         if (credentials == null) InfraResponseCode.AUTH_BAD_KEY
@@ -68,7 +68,6 @@ class ServiceAuthProvider(config: Configuration) : AuthenticationProvider(config
             attributes.put(PrincipalSource.ATTRIBUTE_KEY, authConfig.principalSource)
 
             val hostAllowed = if (authConfig.allowHosts == null || authConfig.allowHosts == "*" || request.fromLocalhost()) true
-            else if (authConfig.allowHosts == "*" && request.fromLocalhost()) true
             else authConfig.allowHosts.split(",").any { it == credential.host }
 
             if (hostAllowed) {
