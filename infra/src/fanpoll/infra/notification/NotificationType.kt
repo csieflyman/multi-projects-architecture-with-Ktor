@@ -12,7 +12,9 @@ import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.notification.channel.NotificationChannel
 import fanpoll.infra.openapi.schema.operation.support.OpenApiIgnore
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -21,7 +23,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
 
-@Serializable
+@Serializable(NotificationType.Companion::class)
 open class NotificationType(
     val projectId: String,
     val name: String,
@@ -45,8 +47,6 @@ open class NotificationType(
     open fun findRecipients(userFilters: Map<UserType, String>?): Set<Recipient> =
         error("NotificationType $id findRecipients is not yet implemented")
 
-    @OptIn(ExperimentalSerializationApi::class)
-    @Serializer(forClass = NotificationType::class)
     companion object : KSerializer<NotificationType> {
 
         init {

@@ -10,10 +10,8 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.acceptLanguageItems
 import io.ktor.util.AttributeKey
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -35,8 +33,6 @@ class Lang(val locale: Locale) {
 
     override fun hashCode(): Int = myHashCode({ code })
 
-    @OptIn(ExperimentalSerializationApi::class)
-    @Serializer(forClass = Lang::class)
     companion object : KSerializer<Lang> {
 
         val ATTRIBUTE_KEY = AttributeKey<Lang>("lang")

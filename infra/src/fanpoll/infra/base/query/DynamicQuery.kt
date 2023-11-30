@@ -12,10 +12,8 @@ import fanpoll.infra.base.response.InfraResponseCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.util.toMap
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -272,11 +270,9 @@ class DynamicQuery(
         }
     }
 
-    @Serializable
+    @Serializable(Predicate.Companion::class)
     sealed class Predicate {
 
-        @OptIn(ExperimentalSerializationApi::class)
-        @Serializer(forClass = Predicate::class)
         companion object : KSerializer<Predicate> {
 
             init {

@@ -6,7 +6,9 @@ package fanpoll.infra.auth.principal
 
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.util.IdentifiableObject
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -15,7 +17,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
 
-@Serializable
+@Serializable(UserRole.Companion::class)
 class UserRole(
     private val userTypeId: String,
     override val name: String,
@@ -33,8 +35,6 @@ class UserRole(
             false
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
-    @Serializer(forClass = UserRole::class)
     companion object : KSerializer<UserRole> {
 
         init {

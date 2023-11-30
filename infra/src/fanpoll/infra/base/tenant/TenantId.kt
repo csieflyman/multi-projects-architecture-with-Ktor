@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-@Serializable
+@Serializable(TenantId.Companion::class)
 data class TenantId(val value: String) {
 
     override fun toString(): String = value

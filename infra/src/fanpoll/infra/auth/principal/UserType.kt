@@ -7,10 +7,8 @@ package fanpoll.infra.auth.principal
 import fanpoll.infra.auth.provider.RunAsUser
 import fanpoll.infra.base.json.json
 import fanpoll.infra.base.util.IdentifiableObject
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -20,7 +18,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
 import java.util.*
 
-@Serializable
+@Serializable(UserType.Companion::class)
 open class UserType(val projectId: String, val name: String) : IdentifiableObject<String>() {
 
     override val id: String = "${projectId}_${name}"
@@ -32,8 +30,6 @@ open class UserType(val projectId: String, val name: String) : IdentifiableObjec
     open fun findRunAsUserById(userId: UUID): RunAsUser =
         throw UnsupportedOperationException("userType $name runas is not supported")
 
-    @OptIn(ExperimentalSerializationApi::class)
-    @Serializer(forClass = UserType::class)
     companion object : KSerializer<UserType> {
 
         init {

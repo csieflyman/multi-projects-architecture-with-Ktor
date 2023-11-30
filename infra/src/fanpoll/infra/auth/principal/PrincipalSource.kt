@@ -7,17 +7,15 @@ package fanpoll.infra.auth.principal
 import fanpoll.infra.auth.provider.PrincipalSourceAuthConfig
 import fanpoll.infra.base.util.IdentifiableObject
 import io.ktor.util.AttributeKey
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-@Serializable
+@Serializable(PrincipalSource.Companion::class)
 class PrincipalSource(
     val projectId: String, val name: String,
     val type: PrincipalSourceType, val login: Boolean
@@ -31,8 +29,6 @@ class PrincipalSource(
 
     fun getAuthConfig(): PrincipalSourceAuthConfig = getAuthConfig(id)
 
-    @OptIn(ExperimentalSerializationApi::class)
-    @Serializer(forClass = PrincipalSource::class)
     companion object : KSerializer<PrincipalSource> {
 
         val ATTRIBUTE_KEY = AttributeKey<PrincipalSource>("principalSource")
