@@ -132,7 +132,7 @@ class FCMSender(
         val log = message.toNotificationMessageLog()
         log.sendAt = Instant.now()
 
-        ApiFutures.addCallback(client.sendMulticastAsync(fcmMessage), object : ApiFutureCallback<BatchResponse> {
+        ApiFutures.addCallback(client.sendEachForMulticastAsync(fcmMessage), object : ApiFutureCallback<BatchResponse> {
 
             override fun onSuccess(response: BatchResponse) {
                 log.rspAt = Instant.now()
