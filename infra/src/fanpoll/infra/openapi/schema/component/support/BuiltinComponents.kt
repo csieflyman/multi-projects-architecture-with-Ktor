@@ -37,7 +37,7 @@ object BuiltinComponents : ComponentLoader {
                 "type", SchemaDataType.string,
                 refName = "codeType", enum = ResponseCodeType.entries.map { it.name }.toList(), kClass = ResponseCodeType::class
             ),
-        ).associate { it.valuePair() } as Map<String, Schema>
+        ).associate { it.valuePair() }
 
         return ModelDef(
             ResponseCode::class.simpleName!!, requiredProperties, properties,
