@@ -5,6 +5,7 @@
 package fanpoll.infra.logging.request
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.events.Events
 import io.ktor.server.application.*
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.httpMethod
@@ -23,7 +24,7 @@ import kotlin.coroutines.CoroutineContext
  * Logs application lifecycle and call events.
  */
 public class MyCallLoggingPlugin private constructor(
-    private val monitor: ApplicationEvents,
+    private val monitor: Events,
     private val filters: List<(ApplicationCall) -> Boolean>,
     private val mdcEntries: List<MDCEntry>,
     private val writeLog: (ApplicationCall) -> Unit
