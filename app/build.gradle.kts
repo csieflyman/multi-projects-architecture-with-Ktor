@@ -29,7 +29,10 @@ dependencies {
 
 application {
     mainClass.set("fanpoll.infra.ApplicationKt")
-    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8", "-Duser.timezone=UTC")
+    applicationDefaultJvmArgs = listOf(
+        "-Dfile.encoding=UTF-8",
+        "-Duser.timezone=UTC"
+    )
     //-Xdebug => https://kotlinlang.org/docs/whatsnew18.html#a-new-compiler-option-for-disabling-optimizations
 }
 
@@ -112,6 +115,12 @@ tasks.runShadow {
         val configPath = "$appPath/src/dist"
         val swaggerUIPath = "$appPath/src/dist/swagger-ui"
         val firebaseKeyFilePath = "$configPath/firebase-key.json"
+
+        jvmArgs(
+            "-Dotel.javaagent.enabled=true",
+            "-Dotel.javaagent.configuration-file=$configPath/otel-javaagent.properties",
+            "-javaagent:$configPath/lib/opentelemetry-javaagent.jar"
+        )
 
         systemProperties(
             "file.encoding" to "UTF-8",
