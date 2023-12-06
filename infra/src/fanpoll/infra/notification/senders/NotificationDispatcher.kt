@@ -124,7 +124,6 @@ class NotificationDispatcher(
                             }
                         }!!
                         NotificationMessage(id, traceId, eventId, type, version, channel, lang, sender, receivers, langContent)
-                        NotificationMessage(id, traceId, eventId, type, version, channel, lang, sender, receivers, langContent)
                     } else null
                 }
             }
