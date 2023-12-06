@@ -76,6 +76,9 @@ dependencies {
     api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
     api("io.opentelemetry.semconv:opentelemetry-semconv:1.23.1-alpha")
 
+    // don't use opentelemetry-ktor-2.0 now due to blocking issue https://stackoverflow.com/questions/77499671
+    //implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-2.0:$opentelemetryVersion-alpha")
+
     // =============== utils ===============
     api("io.konform:konform-jvm:0.4.0")
     implementation("com.github.rocketraman:kpropmap:0.0.2")
