@@ -97,7 +97,7 @@ class SendGridSender(
                     log.content = emailMessage.content.toJson().toString()
                 writeLog(log)
             }
-            logger.debug { "[$senderName] sendEmail success: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
+            logger.debug { "[$senderName] sendEmail: ${json.encodeToJsonElement(NotificationMessageLog.serializer(), log)}" }
         } catch (ex: Throwable) {
             log.rspAt = Instant.now()
             log.duration = Duration.between(log.sendAt, log.rspAt)
@@ -126,7 +126,7 @@ class SendGridSender(
             attachments = myContent.attachments?.map {
                 Attachments.Builder(it.fileName, it.content.inputStream())
                     .withType(it.mimeType.value)
-                    .withDisposition("attachment; filename=${it.fileName};")
+                    .withDisposition("attachment")
                     .build()
             }
         }
