@@ -32,5 +32,7 @@ object ReportDataUtils {
     }
 
     fun toMap(obj: Any, columnIds: List<String>): Map<String, Any?> =
-        obj.javaClass.kotlin.memberProperties.filter { columnIds.contains(it.name) }.associate { it.name to it.get(obj) }
+        obj.javaClass.kotlin.memberProperties.filter { columnIds.contains(it.name) }
+            .sortedBy { columnIds.indexOf(it.name) }
+            .associate { it.name to it.get(obj) }
 }
