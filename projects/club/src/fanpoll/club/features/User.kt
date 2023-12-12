@@ -157,7 +157,7 @@ data class CreateUserForm(
             CreateUserForm::password required { run(ValidationUtils.PASSWORD_VALIDATOR) }
             CreateUserForm::name required { maxLength(USER_NAME_LENGTH) }
             CreateUserForm::email ifPresent { run(ValidationUtils.EMAIL_VALIDATOR) }
-            CreateUserForm::mobile ifPresent { run(ValidationUtils.TAIWAN_MOBILE_NUMBER_VALIDATOR) }
+            CreateUserForm::mobile ifPresent { run(ValidationUtils.MOBILE_NUMBER_VALIDATOR) }
         }
     }
 }
@@ -184,7 +184,7 @@ data class UpdateUserForm(
         private val VALIDATOR: Validation<UpdateUserForm> = Validation {
             UpdateUserForm::name ifPresent { maxLength(USER_NAME_LENGTH) }
             UpdateUserForm::email ifPresent { run(ValidationUtils.EMAIL_VALIDATOR) }
-            UpdateUserForm::mobile ifPresent { run(ValidationUtils.TAIWAN_MOBILE_NUMBER_VALIDATOR) }
+            UpdateUserForm::mobile ifPresent { run(ValidationUtils.MOBILE_NUMBER_VALIDATOR) }
         }
     }
 }
@@ -251,7 +251,7 @@ object ClubUserTable : UUIDTable(name = "club_user") {
     val gender = enumeration("gender", Gender::class).nullable()
     val birthYear = integer("birth_year").nullable()
     val email = varchar("email", ValidationUtils.EMAIL_MAX_LENGTH).nullable()
-    val mobile = varchar("mobile", ValidationUtils.TAIWAN_MOBILE_NUMBER_LENGTH).nullable()
+    val mobile = varchar("mobile", ValidationUtils.MOBILE_NUMBER_LENGTH).nullable()
     val lang = lang("lang").nullable()
 
     val password = varchar("password", 1000)
