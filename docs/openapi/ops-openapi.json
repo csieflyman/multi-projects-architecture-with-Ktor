@@ -1,0 +1,1888 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ops API (dev)",
+    "description": "<div><p></p><ul><li>Server Start Time: 2023-12-01 02:06:51</li><li>Build Time: 2023-12-01 01:31:31</li><li>Git Branch: main</li><li>Git Tag Name: </li><li>Git CommitId: fdea9f3e5a1d846accf6081ee226c3f2ed07c7be</li></ul></div>",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "/ops"
+    }
+  ],
+  "tags": [
+    {
+      "name": "appRelease"
+    },
+    {
+      "name": "user"
+    },
+    {
+      "name": "data"
+    },
+    {
+      "name": "monitor"
+    },
+    {
+      "name": "auth"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
+    },
+    "headers": {
+      "clientVersionCheckResult": {
+        "required": true,
+        "schema": {
+          "enum": [
+            "Latest",
+            "Update",
+            "ForceUpdate"
+          ],
+          "type": "string"
+        },
+        "example": "Latest"
+      }
+    },
+    "parameters": {
+      "sid": {
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "name": "sid"
+      },
+      "sid-optional": {
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "name": "sid"
+      },
+      "runAs-optional": {
+        "in": "header",
+        "required": false,
+        "schema": {
+          "description": "userType:userId:clientId:sessionData(jsonObjectString)",
+          "type": "string"
+        },
+        "description": "[schema => userType:userId:clientId:sessionData(jsonObjectString)]",
+        "name": "runAs"
+      },
+      "clientVersion-optional": {
+        "in": "header",
+        "required": false,
+        "schema": {
+          "description": "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => clientId = [Latest, Update, ForceUpdate]",
+          "pattern": "^(\\d)\\.(\\d)\\.(\\d{1,2})$",
+          "type": "string"
+        },
+        "description": "[schema => App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => clientId = [Latest, Update, ForceUpdate]]",
+        "example": "1.0.0",
+        "name": "clientVersion"
+      },
+      "q_fields-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "回傳欄位 => 可指定多個欄位，以逗號分隔。如果不指定則回傳所有欄位。",
+        "name": "q_fields"
+      },
+      "q_filter-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "查詢條件 DSL => 以 '[' 字元開始， ']' 字元結束，每個運算式 expression 的格式是 field operator value ，中間以空白字元分隔，多個條件以 and 或 or 連接 (目前不支援巢狀條件)。operator 支援 = != > >= < <= like in not_in is_null is_not_null 。範例: [name = james and age >= 18 and enabled = true and role in (admin, member) and createdAt >= 2021-01-01T00:00:00Z]",
+        "name": "q_filter"
+      },
+      "q_orderBy-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "指定排序欄位 => 可指定多個欄位，以逗號分隔, 例如 name,price- 代表先以 name 欄位 asc 排序，再以 price 欄位 desc 排序 (+ 號代表 asc 預設可省略, - 號代表 desc)",
+        "name": "q_orderBy"
+      },
+      "q_offset-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "限制回傳筆數 => 需一併指定 q_limit，從第 q_offset 筆(start from 0)，回傳 q_limit 筆資料",
+        "name": "q_offset"
+      },
+      "q_limit-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "限制回傳筆數 => 需一併指定 q_offset，從第 q_offset 筆(start from 0)，回傳 q_limit 筆資料",
+        "name": "q_limit"
+      },
+      "q_pageIndex-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "分頁查詢 => 需一併指定 q_itemsPerPage，回傳第 q_pageIndex 頁，每頁 q_itemsPerPage 筆",
+        "name": "q_pageIndex"
+      },
+      "q_itemsPerPage-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "分頁查詢 => 需一併指定 q_pageIndex，回傳第 q_pageIndex 頁，每頁 q_itemsPerPage 筆",
+        "name": "q_itemsPerPage"
+      },
+      "q_count-optional": {
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "僅回傳資料筆數 (預設值 false)",
+        "name": "q_count"
+      }
+    },
+    "requestBodies": {},
+    "responses": {
+      "EmptyBodyResponse": {
+        "description": "Success",
+        "headers": {}
+      },
+      "StringId-Response": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "object created and return object string id",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "LongId-Response": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "description": "object created and return object integer id",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "UUID-Response": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "format": "uuid",
+                      "type": "string"
+                    }
+                  },
+                  "description": "object created and return object uuid",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "FreeForm-Response": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "description": "JsonObject or JsonArray",
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "DefaultErrorResponse": {
+        "description": "Check out ResponseCode and ErrorResponse Schema",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "message",
+                "detail",
+                "reqId"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "message": {
+                  "description": "message for user",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "detail message for developer",
+                  "type": "string"
+                },
+                "reqId": {
+                  "description": "request unique id",
+                  "type": "string"
+                },
+                "data": {
+                  "description": "JsonObject or JsonArray",
+                  "type": "object",
+                  "additionalProperties": {}
+                },
+                "errors": {
+                  "$ref": "#/components/schemas/ErrorResponseDetailErrorArray"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "DynamicQueryPagingResponse-default": {
+        "description": "分頁查詢",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "required": [
+                    "total",
+                    "totalPages",
+                    "itemsPerPage",
+                    "pageIndex",
+                    "items"
+                  ],
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "totalPages": {
+                      "type": "integer"
+                    },
+                    "itemsPerPage": {
+                      "type": "integer"
+                    },
+                    "pageIndex": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "items": {
+                        "description": "JsonObject of JsonArray",
+                        "type": "object",
+                        "additionalProperties": {}
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "DynamicQueryItemsResponse-default": {
+        "description": "查詢資料",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "items": {
+                    "description": "JsonObject of JsonArray",
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "DynamicQueryTotalResponse": {
+        "description": "僅查詢筆數",
+        "content": {
+          "application/json": {
+            "schema": {
+              "required": [
+                "code",
+                "data"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ResponseCode"
+                },
+                "data": {
+                  "required": [
+                    "total"
+                  ],
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "headers": {}
+      }
+    },
+    "schemas": {
+      "ResponseCode": {
+        "required": [
+          "value",
+          "name",
+          "type"
+        ],
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "SUCCESS",
+              "CLIENT_INFO",
+              "CLIENT_ERROR",
+              "SERVER_ERROR"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InfraResponseCode": {
+        "description": "[SUCCESS] <br><br> 0000 => OK (200)<br><br>0034 => BATCH_SUCCESS (200)<br><br>[CLIENT_INFO] <br><br> 0010 => ENTITY_NOT_FOUND (404)<br><br>0011 => ENTITY_NOT_EXIST (404)<br><br>0012 => ENTITY_ALREADY_EXISTS (409)<br><br>0013 => ENTITY_PROP_VALUE_INVALID (422)<br><br>0014 => ENTITY_STATUS_DISABLED (409)<br><br>0015 => ENTITY_STATUS_CONFLICT (409)<br><br>0016 => ENTITY_VERSION_CONFLICT (409)<br><br>0017 => ENTITY_READ_FORBIDDEN (403)<br><br>0018 => ENTITY_UPDATE_FORBIDDEN (403)<br><br>0019 => ENTITY_DELETE_FORBIDDEN (403)<br><br>0030 => QUERY_RESULT_EMPTY (200)<br><br>0031 => QUERY_RESULT_SINGLE (200)<br><br>0032 => QUERY_RESULT_MULTIPLE (200)<br><br>0033 => QUERY_RESULT_NON_EMPTY (200)<br><br>0035 => BATCH_RESULT_FAILURE (200)<br><br>2005 => AUTH_SESSION_NOT_FOUND (401)<br><br>2006 => AUTH_PRINCIPAL_DISABLED (403)<br><br>2007 => AUTH_TENANT_DISABLED (403)<br><br>2008 => AUTH_LOGIN_UNAUTHENTICATED (401)<br><br>2009 => AUTH_BAD_PASSWORD (401)<br><br>2010 => AUTH_SESSION_INVALID (401)<br><br>2011 => AUTH_TENANT_FORBIDDEN (403)<br><br>2013 => AUTH_SESSION_NOT_FOUND_OR_EXPIRED (200)<br><br>[CLIENT_ERROR] <br><br> 1000 => BAD_REQUEST_HEADER (400)<br><br>1001 => BAD_REQUEST_PATH (400)<br><br>1002 => BAD_REQUEST_QUERYSTRING (400)<br><br>1003 => BAD_REQUEST_PATH_OR_QUERYSTRING (400)<br><br>1004 => BAD_REQUEST_BODY (400)<br><br>1005 => BAD_REQUEST_BODY_FIELD (422)<br><br>1006 => BAD_REQUEST (400)<br><br>1007 => BAD_REQUEST_LANG (400)<br><br>1008 => BAD_REQUEST_HASH_ID (400)<br><br>1009 => BAD_REQUEST_HASH_ID (400)<br><br>1010 => BAD_REQUEST_APP_VERSION (400)<br><br>2000 => AUTH_BAD_KEY (401)<br><br>2001 => AUTH_BAD_SOURCE (401)<br><br>2003 => AUTH_USER_TYPE_FORBIDDEN (403)<br><br>2004 => AUTH_ROLE_FORBIDDEN (403)<br><br>2012 => AUTH_BAD_HOST (401)<br><br>[SERVER_ERROR] <br><br> 2002 => AUTH_BAD_SOURCE (500)<br><br>8000 => REMOTE_SERVICE_CONNECT_ERROR (500)<br><br>8001 => REMOTE_SERVICE_CONNECT_TIMEOUT_ERROR (500)<br><br>8002 => REMOTE_SERVICE_REQUEST_TIMEOUT_ERROR (500)<br><br>8003 => REMOTE_SERVICE_SOCKET_TIMEOUT_ERROR (500)<br><br>8004 => REMOTE_SERVICE_RESPONSE_STATUS_ERROR (500)<br><br>8005 => REMOTE_SERVICE_RESPONSE_BODY_PARSE_ERROR (500)<br><br>8010 => REDIS_ERROR (500)<br><br>8012 => SES_ERROR (500)<br><br>8013 => FCM_ERROR (500)<br><br>8014 => SMS_MITAKE_ERROR (500)<br><br>9000 => SERVER_CONFIG_ERROR (500)<br><br>9001 => COROUTINE_ERROR (500)<br><br>9002 => LOG_ERROR (500)<br><br>9003 => DB_ERROR (500)<br><br>9004 => DB_SQL_ERROR (500)<br><br>9005 => CACHE_ERROR (500)<br><br>9006 => REDIS_KEY_NOTIFICATION_ERROR (500)<br><br>9007 => NOTIFICATION_ERROR (500)<br><br>9008 => IO_ERROR (500)<br><br>9009 => DB_ASYNC_TASK_ERROR (500)<br><br>9010 => DB_JASYNC_ERROR (500)<br><br>9100 => DATA_JSON_INVALID (500)<br><br>9995 => OPENAPI_ERROR (500)<br><br>9996 => DEV_ERROR (500)<br><br>9997 => NOT_IMPLEMENTED_ERROR (500)<br><br>9998 => UNSUPPORTED_OPERATION_ERROR (500)<br><br>9999 => UNEXPECTED_ERROR (500)",
+        "enum": [
+          "0000",
+          "0010",
+          "0011",
+          "0012",
+          "0013",
+          "0014",
+          "0015",
+          "0016",
+          "0017",
+          "0018",
+          "0019",
+          "0030",
+          "0031",
+          "0032",
+          "0033",
+          "0034",
+          "0035",
+          "1000",
+          "1001",
+          "1002",
+          "1003",
+          "1004",
+          "1005",
+          "1006",
+          "1007",
+          "1008",
+          "1009",
+          "1010",
+          "2000",
+          "2001",
+          "2002",
+          "2003",
+          "2004",
+          "2005",
+          "2006",
+          "2007",
+          "2008",
+          "2009",
+          "2010",
+          "2011",
+          "2012",
+          "2013",
+          "8000",
+          "8001",
+          "8002",
+          "8003",
+          "8004",
+          "8005",
+          "8010",
+          "8012",
+          "8013",
+          "8014",
+          "9000",
+          "9001",
+          "9002",
+          "9003",
+          "9004",
+          "9005",
+          "9006",
+          "9007",
+          "9008",
+          "9009",
+          "9010",
+          "9100",
+          "9995",
+          "9996",
+          "9997",
+          "9998",
+          "9999"
+        ],
+        "type": "string"
+      },
+      "ErrorResponseDTO": {
+        "required": [
+          "code",
+          "message",
+          "detail",
+          "reqId"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "message": {
+            "description": "message for user",
+            "type": "string"
+          },
+          "detail": {
+            "description": "detail message for developer",
+            "type": "string"
+          },
+          "reqId": {
+            "description": "request unique id",
+            "type": "string"
+          },
+          "data": {
+            "description": "JsonObject or JsonArray",
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ErrorResponseDetailErrorArray"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorResponseDetailErrorArray": {
+        "items": {
+          "required": [
+            "code",
+            "detail"
+          ],
+          "properties": {
+            "code": {
+              "$ref": "#/components/schemas/ResponseCode"
+            },
+            "detail": {
+              "description": "detail message for developer",
+              "type": "string"
+            },
+            "data": {
+              "description": "JsonObject or JsonArray",
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "type": "object"
+        },
+        "description": "all detail errors",
+        "type": "array"
+      },
+      "DynamicQueryPagingResponse-default": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "required": [
+              "total",
+              "totalPages",
+              "itemsPerPage",
+              "pageIndex",
+              "items"
+            ],
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              },
+              "itemsPerPage": {
+                "type": "integer"
+              },
+              "pageIndex": {
+                "type": "integer"
+              },
+              "items": {
+                "items": {
+                  "description": "JsonObject of JsonArray",
+                  "type": "object",
+                  "additionalProperties": {}
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "DynamicQueryItemsResponse-default": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "items": {
+              "description": "JsonObject of JsonArray",
+              "type": "object",
+              "additionalProperties": {}
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "DynamicQueryTotalResponse": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "required": [
+              "total"
+            ],
+            "properties": {
+              "total": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "UserType": {
+        "enum": [
+          "ops_user"
+        ],
+        "type": "string"
+      },
+      "NotificationType": {
+        "enum": [
+          "ops_dataReport",
+          "ops_sendNotification"
+        ],
+        "type": "string"
+      },
+      "OpsResponseCode": {
+        "description": "[SERVER_ERROR] <br><br> 3000 => OPS_ERROR (500)",
+        "enum": [
+          "3000"
+        ],
+        "type": "string"
+      },
+      "UserDTO": {
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "account": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "OpsTeam",
+              "AppTeam"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "lang": {
+            "description": "LanguageTag",
+            "type": "string"
+          },
+          "mobile": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DynamicQueryPagingResponse-UserDTO": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "required": [
+              "total",
+              "totalPages",
+              "itemsPerPage",
+              "pageIndex",
+              "items"
+            ],
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              },
+              "itemsPerPage": {
+                "type": "integer"
+              },
+              "pageIndex": {
+                "type": "integer"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/components/schemas/UserDTO"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "DynamicQueryItemsResponse-UserDTO": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UserDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AppReleaseDTO": {
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "appId": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "forceUpdate": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "os": {
+            "enum": [
+              "Android",
+              "iOS"
+            ],
+            "type": "string"
+          },
+          "releasedAt": {
+            "description": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "format": "date-time",
+            "type": "string"
+          },
+          "verName": {
+            "type": "string"
+          },
+          "verNum": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "DynamicQueryPagingResponse-AppReleaseDTO": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "required": [
+              "total",
+              "totalPages",
+              "itemsPerPage",
+              "pageIndex",
+              "items"
+            ],
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              },
+              "itemsPerPage": {
+                "type": "integer"
+              },
+              "pageIndex": {
+                "type": "integer"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/components/schemas/AppReleaseDTO"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "DynamicQueryItemsResponse-AppReleaseDTO": {
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AppReleaseDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "examples": {}
+  },
+  "paths": {
+    "/users": {
+      "post": {
+        "operationId": "CreateUser",
+        "tags": [
+          "user"
+        ],
+        "summary": "CreateUser　Auth => (ServiceAuth => authProvider = ops-service, allowSources = [root])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "account",
+                  "email",
+                  "enabled",
+                  "name",
+                  "password",
+                  "role"
+                ],
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "role": {
+                    "enum": [
+                      "OpsTeam",
+                      "AppTeam"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "lang": {
+                    "description": "LanguageTag",
+                    "type": "string"
+                  },
+                  "mobile": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UUID-Response"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": []
+      },
+      "get": {
+        "operationId": "FindUsers",
+        "tags": [
+          "user"
+        ],
+        "summary": "FindUsers　Auth => (ServiceAuth => authProvider = ops-service, allowSources = [root])",
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "僅查詢筆數 / 查詢資料 / 分頁查詢",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/DynamicQueryPagingResponse-UserDTO"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DynamicQueryItemsResponse-UserDTO"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DynamicQueryTotalResponse"
+                    }
+                  ],
+                  "id": "UserDTO"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/q_fields-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_filter-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_orderBy-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_offset-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_limit-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_pageIndex-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_itemsPerPage-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_count-optional"
+          }
+        ]
+      }
+    },
+    "/users/{entityId}": {
+      "put": {
+        "operationId": "UpdateUser",
+        "tags": [
+          "user"
+        ],
+        "summary": "UpdateUser　Auth => (ServiceAuth => authProvider = ops-service, allowSources = [root])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "role": {
+                    "enum": [
+                      "OpsTeam",
+                      "AppTeam"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "lang": {
+                    "description": "LanguageTag",
+                    "type": "string"
+                  },
+                  "mobile": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmptyBodyResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "name": "entityId"
+          }
+        ]
+      }
+    },
+    "/users/sendNotification": {
+      "post": {
+        "operationId": "SendNotification",
+        "tags": [
+          "user"
+        ],
+        "summary": "SendNotification　Auth => (ServiceAuth => authProvider = ops-service, allowSources = [root])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "content"
+                ],
+                "properties": {
+                  "content": {
+                    "required": [
+                      "email",
+                      "push",
+                      "sms"
+                    ],
+                    "properties": {
+                      "email": {
+                        "description": "Map<String, Any>",
+                        "type": "object",
+                        "additionalProperties": {}
+                      },
+                      "push": {
+                        "description": "Map<String, Any>",
+                        "type": "object",
+                        "additionalProperties": {}
+                      },
+                      "sms": {
+                        "description": "Map<String, Any>",
+                        "type": "object",
+                        "additionalProperties": {}
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "contentArgs": {
+                    "description": "Map<String, Any>",
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "recipients": {
+                    "items": {
+                      "required": [
+                        "id"
+                      ],
+                      "properties": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "lang": {
+                          "description": "LanguageTag",
+                          "type": "string"
+                        },
+                        "mobile": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pushTokens": {
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "userId": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "UserType": {
+                          "$ref": "#/components/schemas/UserType"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "userFilters": {
+                    "description": "Map<String, Any>",
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "type": "object"
+              },
+              "example": {
+                "recipients": [
+                  {
+                    "id": "tester@test.com",
+                    "name": "tester",
+                    "email": "tester@test.com"
+                  }
+                ],
+                "userFilters": {
+                  "ops_user": "[account = tester@test.com]"
+                },
+                "content": {
+                  "email": {
+                    "zh-TW": {
+                      "subject": "Test Email",
+                      "body": "This is a test"
+                    }
+                  },
+                  "push": {
+                    "zh-TW": {
+                      "title": "Test Push",
+                      "body": "This is a test"
+                    }
+                  },
+                  "sms": {
+                    "zh-TW": {
+                      "body": "Test SMS"
+                    }
+                  }
+                },
+                "contentArgs": {
+                  "data": "test"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UUID-Response"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": []
+      }
+    },
+    "/users/myPassword": {
+      "put": {
+        "operationId": "UpdateMyPassword",
+        "tags": [
+          "user"
+        ],
+        "summary": "UpdateMyPassword　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam,appTeam])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "newPassword",
+                  "oldPassword"
+                ],
+                "properties": {
+                  "newPassword": {
+                    "type": "string"
+                  },
+                  "oldPassword": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmptyBodyResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          }
+        ]
+      }
+    },
+    "/login": {
+      "post": {
+        "operationId": "Login",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login　Auth => (ServiceAuth => authProvider = ops-service, allowSources = [user])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "account",
+                  "password"
+                ],
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "deviceId": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "devicePushToken": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "tenantId": {
+                    "required": [
+                      "value"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "userAgent": {
+                    "type": "string"
+                  },
+                  "clientVersion": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "example": {
+                "account": "tester@test.com",
+                "password": "test123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "code",
+                    "data"
+                  ],
+                  "properties": {
+                    "code": {
+                      "$ref": "#/components/schemas/ResponseCode"
+                    },
+                    "data": {
+                      "required": [
+                        "sid"
+                      ],
+                      "properties": {
+                        "sid": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "[CLIENT_INFO] <br><br> 2008 => AUTH_LOGIN_UNAUTHENTICATED (401)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "code",
+                    "message",
+                    "detail",
+                    "reqId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "$ref": "#/components/schemas/ResponseCode"
+                    },
+                    "message": {
+                      "description": "message for user",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "detail message for developer",
+                      "type": "string"
+                    },
+                    "reqId": {
+                      "description": "request unique id",
+                      "type": "string"
+                    },
+                    "data": {
+                      "description": "JsonObject or JsonArray",
+                      "type": "object",
+                      "additionalProperties": {}
+                    },
+                    "errors": {
+                      "$ref": "#/components/schemas/ErrorResponseDetailErrorArray"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "[CLIENT_INFO] <br><br> 2006 => AUTH_PRINCIPAL_DISABLED (403)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "code",
+                    "message",
+                    "detail",
+                    "reqId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "$ref": "#/components/schemas/ResponseCode"
+                    },
+                    "message": {
+                      "description": "message for user",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "detail message for developer",
+                      "type": "string"
+                    },
+                    "reqId": {
+                      "description": "request unique id",
+                      "type": "string"
+                    },
+                    "data": {
+                      "description": "JsonObject or JsonArray",
+                      "type": "object",
+                      "additionalProperties": {}
+                    },
+                    "errors": {
+                      "$ref": "#/components/schemas/ErrorResponseDetailErrorArray"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": []
+      }
+    },
+    "/logout": {
+      "post": {
+        "operationId": "Logout",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam,appTeam])",
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmptyBodyResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          }
+        ]
+      }
+    },
+    "/monitor/healthCheck": {
+      "get": {
+        "operationId": "HealthCheck",
+        "tags": [
+          "monitor"
+        ],
+        "summary": "HealthCheck　Auth => (ServiceAuth => authProvider = ops-service, allowSources = [monitor])",
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmptyBodyResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": []
+      }
+    },
+    "/data/report": {
+      "post": {
+        "operationId": "DataReport",
+        "tags": [
+          "data"
+        ],
+        "summary": "DataReport　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "dataType",
+                  "query"
+                ],
+                "properties": {
+                  "dataType": {
+                    "enum": [
+                      "OpsUser"
+                    ],
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "query": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UUID-Response"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          }
+        ]
+      }
+    },
+    "/app/releases": {
+      "post": {
+        "operationId": "CreateAppRelease",
+        "tags": [
+          "appRelease"
+        ],
+        "summary": "CreateAppRelease　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam,appTeam])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "appId",
+                  "enabled",
+                  "forceUpdate",
+                  "verName"
+                ],
+                "properties": {
+                  "appId": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "forceUpdate": {
+                    "type": "boolean"
+                  },
+                  "releasedAt": {
+                    "description": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  "verName": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmptyBodyResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          }
+        ]
+      },
+      "put": {
+        "operationId": "UpdateAppRelease",
+        "tags": [
+          "appRelease"
+        ],
+        "summary": "UpdateAppRelease　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam,appTeam])",
+        "deprecated": false,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "appId",
+                  "verName"
+                ],
+                "properties": {
+                  "appId": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "forceUpdate": {
+                    "type": "boolean"
+                  },
+                  "releasedAt": {
+                    "description": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  "verName": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmptyBodyResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          }
+        ]
+      },
+      "get": {
+        "operationId": "FindAppReleases",
+        "tags": [
+          "appRelease"
+        ],
+        "summary": "FindAppReleases　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam,appTeam])",
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "僅查詢筆數 / 查詢資料 / 分頁查詢",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/DynamicQueryPagingResponse-AppReleaseDTO"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DynamicQueryItemsResponse-AppReleaseDTO"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DynamicQueryTotalResponse"
+                    }
+                  ],
+                  "id": "AppReleaseDTO"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          },
+          {
+            "$ref": "#/components/parameters/q_fields-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_filter-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_orderBy-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_offset-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_limit-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_pageIndex-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_itemsPerPage-optional"
+          },
+          {
+            "$ref": "#/components/parameters/q_count-optional"
+          }
+        ]
+      }
+    },
+    "/app/releases/check": {
+      "get": {
+        "operationId": "CheckAppRelease",
+        "tags": [
+          "appRelease"
+        ],
+        "summary": "CheckAppRelease　Auth => (UserAuth => authProvider = ops-user, allowSources = [user], userTypeRoles = [user => opsTeam,appTeam])",
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "code",
+                    "data"
+                  ],
+                  "properties": {
+                    "code": {
+                      "$ref": "#/components/schemas/ResponseCode"
+                    },
+                    "data": {
+                      "required": [
+                        "result"
+                      ],
+                      "properties": {
+                        "result": {
+                          "enum": [
+                            "Latest",
+                            "Update",
+                            "ForceUpdate"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sid"
+          },
+          {
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "name": "appId"
+          },
+          {
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "name": "verName"
+          }
+        ]
+      }
+    }
+  }
+}
