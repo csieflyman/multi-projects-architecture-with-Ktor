@@ -5,10 +5,8 @@
 package fanpoll.infra.auth.login.logging
 
 import fanpoll.infra.auth.login.LoginResultCode
-import fanpoll.infra.auth.principal.PrincipalSource
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
-import fanpoll.infra.base.tenant.TenantId
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
 import kotlinx.serialization.Serializable
@@ -17,21 +15,22 @@ import java.util.*
 
 @Serializable
 data class LoginLog(
-    override val traceId: String?,
     @Serializable(with = UUIDSerializer::class) val userId: UUID,
     val resultCode: LoginResultCode,
-    @Serializable(with = InstantSerializer::class) override val occurAt: Instant,
     override val project: String,
-    val source: PrincipalSource,
-    val tenantId: TenantId? = null,
+    val sourceName: String,
     val clientId: String? = null,
     val clientVersion: String?,
     val ip: String? = null,
+    override val traceId: String?,
     val sid: String? = null
 ) : LogEntity() {
 
     @Serializable(with = UUIDSerializer::class)
     override val id: UUID = UUID.randomUUID()
+
+    @Serializable(with = InstantSerializer::class)
+    override val occurAt: Instant = Instant.now()
 
     override val type: String = LOG_TYPE
 

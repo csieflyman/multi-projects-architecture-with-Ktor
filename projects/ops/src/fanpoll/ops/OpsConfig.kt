@@ -4,12 +4,10 @@
 
 package fanpoll.ops
 
-data class OpsConfig(
-    val auth: OpsAuthConfig,
-    val notification: OpsNotificationConfig
-)
+import fanpoll.ops.auth.AuthConfig
+import fanpoll.ops.database.OpsDatabasesConfig
 
-data class OpsNotificationConfig(
-    val infoEmail: String? = null,
-    val alertEmail: String? = null
+data class OpsConfig(
+    val databases: OpsDatabasesConfig,
+    val auth: AuthConfig
 )

@@ -4,8 +4,8 @@
 
 package fanpoll.infra.auth.provider
 
-import fanpoll.infra.auth.login.session.SessionConfig
 import fanpoll.infra.auth.principal.PrincipalSource
+import fanpoll.infra.session.SessionConfig
 
 data class UserAuthExternalConfig(
     val apiKey: String,

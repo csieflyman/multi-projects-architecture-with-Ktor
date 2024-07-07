@@ -40,8 +40,7 @@ class CoroutineActor<T : IdentifiableObject<*>>(
         channel.send(message)
     }
 
-    // not a suspend function and non-blocking due to Channel.UNLIMITED
-    fun sendToUnlimitedChannel(message: T, errorCode: ResponseCode) {
+    suspend fun sendToUnlimitedChannel(message: T, errorCode: ResponseCode) {
         require(!isProducer)
         require(isUnlimited)
 

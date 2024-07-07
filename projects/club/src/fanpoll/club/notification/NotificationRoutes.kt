@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2024. fanpoll All rights reserved.
+ */
+
+package fanpoll.club.notification
+
+import fanpoll.club.ClubConst
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.route
+
+fun Routing.notificationRoutes() {
+    route("${ClubConst.urlRootPath}/notification") {
+        sendDynamicNotification()
+    }
+}

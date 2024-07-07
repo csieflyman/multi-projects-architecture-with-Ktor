@@ -5,7 +5,7 @@
 package fanpoll.infra.openapi
 
 import fanpoll.infra.base.exception.RequestException
-import fanpoll.infra.base.json.Jackson
+import fanpoll.infra.base.json.jackson.Jackson
 import fanpoll.infra.base.response.InfraResponseCode
 import kotlin.collections.set
 

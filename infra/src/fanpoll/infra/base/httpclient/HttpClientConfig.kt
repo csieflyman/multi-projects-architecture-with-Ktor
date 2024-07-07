@@ -23,21 +23,4 @@ data class CIOHttpClientConfig(
     val connectTimeout: Long = 5000,
     val connectAttempts: Int = 1,
     val keepAliveTime: Long = 5000
-) : HttpClientConfig {
-
-    class Builder {
-
-        var threadsCount: Int = 1
-        var logLevel: LogLevel = LogLevel.NONE
-        var maxConnectionsCount: Int = 1000
-        var requestTimeout: Long = 15000
-        var connectTimeout: Long = 5000
-        var connectAttempts: Int = 1
-        var keepAliveTime: Long = 5000
-
-        fun build(): CIOHttpClientConfig = CIOHttpClientConfig(
-            threadsCount, logLevel, maxConnectionsCount,
-            requestTimeout, connectTimeout, connectAttempts, keepAliveTime
-        )
-    }
-}
+) : HttpClientConfig

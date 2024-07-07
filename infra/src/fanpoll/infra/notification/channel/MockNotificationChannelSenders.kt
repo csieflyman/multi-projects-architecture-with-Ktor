@@ -6,8 +6,8 @@ package fanpoll.infra.notification.channel
 
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.NotificationLogConfig
-import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.logging.NotificationMessageLog
+import fanpoll.infra.notification.message.NotificationMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
@@ -29,7 +29,7 @@ class MockNotificationChannelSender(
 
     override val maxReceiversPerRequest: Int = 1
 
-    override fun send(message: NotificationMessage) {
+    override suspend fun send(message: NotificationMessage) {
         logger.debug { "sendNotification: ${message.debugString()}" }
         logger.debug { "content: ${message.content.toJson()}" }
 

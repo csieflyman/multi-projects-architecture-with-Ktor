@@ -7,16 +7,17 @@ package integration.api
 import fanpoll.club.ClubAuth
 import fanpoll.club.ClubUserRole
 import fanpoll.club.ClubUserType
-import fanpoll.club.features.CreateUserForm
-import fanpoll.club.features.Gender
-import fanpoll.club.features.UpdateUserForm
+import fanpoll.club.auth.login.AppLoginForm
+import fanpoll.club.user.domain.Gender
+import fanpoll.club.user.dtos.CreateUserForm
+import fanpoll.club.user.dtos.UpdateUserForm
 import fanpoll.infra.auth.AuthConst
-import fanpoll.infra.auth.login.AppLoginForm
 import fanpoll.infra.auth.login.AppLoginResponse
 import fanpoll.infra.auth.provider.UserRunAsAuthProvider
 import fanpoll.infra.auth.provider.UserRunAsToken
-import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.response.InfraResponseCode
+import fanpoll.infra.i18n.Lang
+import fanpoll.infra.release.app.domain.AppOS
 import integration.util.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
@@ -43,14 +44,13 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
 
     val loginUser1Form = CreateUserForm(
         "login-user_1@test.com", "123456",
-        true, ClubUserRole.Admin, "login-user_1",
-        Gender.Male, 2000, "login-user_1@test.com", "0987654321", Lang.zh_TW
+        true, "login-user_1", Gender.Male, 2000, "login-user_1@test.com", "0987654321", Lang.zh_TW,
+        setOf(ClubUserRole.Admin)
     )
 
-    val loginUser1DeviceId1 = UUID.randomUUID()
     val loginForm = AppLoginForm(
-        loginUser1Form.account, loginUser1Form.password, null,
-        loginUser1DeviceId1, "pushToken", "Android 9.0"
+        loginUser1Form.account, loginUser1Form.password, null, AppOS.Android,
+        "device1", "pushToken"
     )
 
     test("user login success") {
@@ -64,9 +64,9 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
         assertNotNull(userIdStr)
 
         userId = UUID.fromString(userIdStr)
-        runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
+        runAsToken = UserRunAsToken(ClubUserType.User, userId)
 
-        val loginResponse = client.post(mergeRootPath("/login")) {
+        val loginResponse = client.post(mergeRootPath("/auth/login")) {
             contentType(ContentType.Application.Json)
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
             setBody(loginForm)
@@ -79,7 +79,7 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
     }
 
     test("account doesn't exist should login failed") {
-        val response = client.post(mergeRootPath("/login")) {
+        val response = client.post(mergeRootPath("/auth/login")) {
             contentType(ContentType.Application.Json)
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
             setBody(loginForm.copy(account = "inExistAccount@test.com"))
@@ -89,7 +89,7 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
     }
 
     test("incorrect password should login failed") {
-        val response = client.post(mergeRootPath("/login")) {
+        val response = client.post(mergeRootPath("/auth/login")) {
             contentType(ContentType.Application.Json)
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
             setBody(loginForm.copy(password = "incorrect password"))
@@ -99,7 +99,7 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
     }
 
     test("user logout without sessionId") {
-        val response = client.post(mergeRootPath("/logout")) {
+        val response = client.post(mergeRootPath("/auth/logout")) {
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
         }
         assertEquals(HttpStatusCode.OK, response.status)
@@ -107,7 +107,7 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
     }
 
     test("user logout with wrong sessionId") {
-        val response = client.post(mergeRootPath("/logout")) {
+        val response = client.post(mergeRootPath("/auth/logout")) {
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
             header(AuthConst.SESSION_ID_HEADER_NAME, "wrong sessionId")
         }
@@ -116,7 +116,7 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
     }
 
     test("user logout success") {
-        val response = client.post(mergeRootPath("/logout")) {
+        val response = client.post(mergeRootPath("/auth/logout")) {
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
             header(AuthConst.SESSION_ID_HEADER_NAME, sessionId)
         }
@@ -132,7 +132,7 @@ val loginApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client 
         }
         assertEquals(HttpStatusCode.OK, updateUserResponse.status)
 
-        val loginResponse = client.post(mergeRootPath("/login")) {
+        val loginResponse = client.post(mergeRootPath("/auth/login")) {
             contentType(ContentType.Application.Json)
             header(AuthConst.API_KEY_HEADER_NAME, getServiceApiKey(ClubAuth.Android))
             setBody(loginForm)

@@ -7,7 +7,7 @@ package fanpoll.infra.openapi.schema.operation.definitions
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
-import fanpoll.infra.base.json.Jackson
+import fanpoll.infra.base.json.jackson.Jackson
 import fanpoll.infra.openapi.schema.operation.support.Definition
 import fanpoll.infra.openapi.schema.operation.support.Element
 import fanpoll.infra.openapi.schema.operation.support.Example

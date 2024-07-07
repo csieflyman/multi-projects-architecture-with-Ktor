@@ -4,14 +4,13 @@
 
 package fanpoll.infra.openapi.schema.operation.support
 
-import fanpoll.infra.base.util.Identifiable
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 
-interface Element : Identifiable<String> {
+interface Element {
 
     val name: String
 
-    override fun getId(): String = name
+    fun getId(): String = name
 
     fun getDefinition(): Definition
 

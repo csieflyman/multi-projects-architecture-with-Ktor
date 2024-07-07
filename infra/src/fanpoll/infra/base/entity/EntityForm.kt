@@ -6,15 +6,9 @@ package fanpoll.infra.base.entity
 
 import fanpoll.infra.base.form.Form
 
-abstract class EntityForm<Self : EntityForm<Self, DID, EID>, DID : Any, EID : Comparable<EID>> : Form<Self>() {
+abstract class EntityForm<Self : EntityForm<Self, E, EID>, E : Entity<EID>, EID : Comparable<EID>> : Form<Self>() {
 
-    open fun getDtoId(): DID? = null
+    abstract fun getEntityId(): EID?
 
-    open fun getEntityId(): EID? = null
-
-    fun getId(): Any = tryGetId() ?: error("${javaClass.name} Both entityId and dtoId can't be null")
-
-    fun tryGetId(): Any? = getEntityId() ?: getDtoId()
-
-    open fun toEntity(): Entity<EID> = error("subclass must override this")
+    abstract fun toEntity(): Entity<EID>
 }

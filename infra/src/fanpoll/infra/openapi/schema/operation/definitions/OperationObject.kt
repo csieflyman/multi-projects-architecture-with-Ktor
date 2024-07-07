@@ -6,8 +6,8 @@ package fanpoll.infra.openapi.schema.operation.definitions
 
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
-import fanpoll.infra.base.json.Jackson
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.jackson.Jackson
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.response.ResponseCode
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents.ErrorResponseSchema

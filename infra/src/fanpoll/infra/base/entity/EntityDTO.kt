@@ -4,6 +4,4 @@
 
 package fanpoll.infra.base.entity
 
-import fanpoll.infra.base.util.Identifiable
-
-interface EntityDTO<ID : Any> : Identifiable<ID>
+interface EntityDTO<ID : Comparable<ID>> : Identifiable<ID>

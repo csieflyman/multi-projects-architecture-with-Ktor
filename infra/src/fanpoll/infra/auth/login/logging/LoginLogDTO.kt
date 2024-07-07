@@ -7,10 +7,8 @@ package fanpoll.infra.auth.login.logging
 import fanpoll.infra.auth.login.LoginResultCode
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.base.entity.EntityDTO
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
-import fanpoll.infra.base.tenant.TenantId
-import fanpoll.infra.database.util.ResultRowDTOMapper
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.*
@@ -32,15 +30,10 @@ data class LoginLogDTO(
 
     var project: String? = null
     var source: PrincipalSource? = null
-    var tenantId: TenantId? = null
     var clientId: String? = null
     var clientVersion: String? = null
     var ip: String? = null
     var sid: String? = null
 
     override fun getId(): UUID = id
-
-    companion object {
-        val mapper: ResultRowDTOMapper<LoginLogDTO> = ResultRowDTOMapper(LoginLogDTO::class, LoginLogTable)
-    }
 }

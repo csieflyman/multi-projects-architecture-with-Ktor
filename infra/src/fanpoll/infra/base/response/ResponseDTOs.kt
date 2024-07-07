@@ -8,21 +8,16 @@ package fanpoll.infra.base.response
 
 import fanpoll.infra.base.exception.InternalServerException
 import fanpoll.infra.base.form.Form
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.query.DynamicQuery
 import fanpoll.infra.base.util.IdentifiableObject
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.response.respond
 import kotlinx.serialization.*
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
-
-suspend fun ApplicationCall.respond(responseDTO: ResponseDTO) {
-    this.respond(responseDTO.code.httpStatusCode, responseDTO)
-}
 
 @Serializable
 sealed class ResponseDTO {
@@ -137,16 +132,22 @@ class PagingDataResponseDTO(
 class ErrorResponseDTO(
     override val code: ResponseCode,
     override val message: String,
-    val detail: String,
+    var detail: String,
     val reqId: String,
     override val data: JsonObject? = null,
     val errors: MutableList<ErrorResponseDetailError>? = null
-) : ResponseDTO()
+) : ResponseDTO() {
+
+    fun clearDetailMessage() {
+        detail = ""
+        errors?.forEach { it.detail = "" }
+    }
+}
 
 @Serializable
 class ErrorResponseDetailError(
     val code: ResponseCode,
-    val detail: String,
+    var detail: String,
     val data: JsonObject? = null
 )
 

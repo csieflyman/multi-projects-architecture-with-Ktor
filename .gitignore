@@ -1,5 +1,6 @@
 /.gradle
 /.idea
+/.kotlin
 local-dev.properties
 local-test.properties
 /build
@@ -11,6 +12,7 @@ local-test.properties
 /app/dist/config/common/otel-javaagent.properties
 /app/dist/config/local-dev/firebase-key.json
 /app/dist/config/local-test/firebase-key.json
+/app/docker-compose-local-dev.yml
 /postman/node_modules
 /postman/projects/**/*-openapi.json
 /postman/projects/**/*-collection.json

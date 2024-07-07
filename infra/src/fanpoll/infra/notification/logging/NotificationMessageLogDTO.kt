@@ -5,11 +5,10 @@
 package fanpoll.infra.notification.logging
 
 import fanpoll.infra.base.entity.EntityDTO
-import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.json.DurationMicroSerializer
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
-import fanpoll.infra.database.util.ResultRowDTOMapper
+import fanpoll.infra.base.json.kotlinx.DurationMicroSerializer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
+import fanpoll.infra.i18n.Lang
 import fanpoll.infra.notification.channel.NotificationChannel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -55,9 +54,4 @@ data class NotificationMessageLogDTO(
     var rspBody: String? = null
 
     override fun getId(): UUID = id
-
-    companion object {
-        val mapper: ResultRowDTOMapper<NotificationMessageLogDTO> =
-            ResultRowDTOMapper(NotificationMessageLogDTO::class, NotificationMessageLogTable)
-    }
 }

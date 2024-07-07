@@ -6,12 +6,10 @@ package fanpoll.infra.logging.error
 
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.auth.principal.PrincipalSource
-import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.base.exception.BaseException
 import fanpoll.infra.base.exception.RemoteServiceException
-import fanpoll.infra.base.json.DurationMicroSerializer
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.tenant.tenantId
+import fanpoll.infra.base.json.kotlinx.DurationMicroSerializer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
 import fanpoll.infra.logging.RequestAttributeKey
@@ -20,8 +18,11 @@ import fanpoll.infra.logging.logFunction
 import fanpoll.infra.logging.request.ApplicationRequestLog
 import fanpoll.infra.logging.request.ApplicationResponseLog
 import fanpoll.infra.logging.request.UserLog
+import fanpoll.infra.session.UserSession
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.principal
+import io.ktor.server.sessions.get
+import io.ktor.server.sessions.sessions
 import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
@@ -43,10 +44,9 @@ class ErrorLog private constructor(
     private val principal = call?.principal<MyPrincipal>()
     override val project = principal?.source?.projectId ?: "infra"
     val source = principal?.source ?: PrincipalSource.System
-    val tenantId = call?.tenantId ?: exception.tenantId
     val principalId = principal?.id
 
-    val user = call?.principal<UserPrincipal>()?.let { UserLog(it) }
+    val user = if (principal != null) call?.sessions?.get<UserSession>()?.let { UserLog(it) } else null
     val request = call?.let { ApplicationRequestLog(it, includeHeaders = true, includeQueryString = true) }
     val response = request?.let { ApplicationResponseLog(call!!, request) }
     val serviceRequest = (exception as? RemoteServiceException)?.let { ServiceRequestLog(it) }

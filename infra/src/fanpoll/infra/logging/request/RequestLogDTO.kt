@@ -7,11 +7,9 @@ package fanpoll.infra.logging.request
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.entity.EntityDTO
-import fanpoll.infra.base.json.DurationMicroSerializer
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
-import fanpoll.infra.base.tenant.TenantId
-import fanpoll.infra.database.util.ResultRowDTOMapper
+import fanpoll.infra.base.json.kotlinx.DurationMicroSerializer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
 import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
@@ -25,7 +23,6 @@ data class RequestLogDTO(
     var project: String? = null
     var function: String? = null
     var source: PrincipalSource? = null
-    var tenantId: TenantId? = null
     var principalId: String? = null
     var tags: String? = null
 
@@ -57,8 +54,4 @@ data class RequestLogDTO(
     var duration: Duration? = null
 
     override fun getId(): UUID = id
-
-    companion object {
-        val mapper: ResultRowDTOMapper<RequestLogDTO> = ResultRowDTOMapper(RequestLogDTO::class, RequestLogTable)
-    }
 }

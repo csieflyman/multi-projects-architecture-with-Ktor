@@ -5,21 +5,23 @@
 package fanpoll.infra.auth.provider
 
 import fanpoll.infra.auth.AuthConst
-import fanpoll.infra.auth.login.session.UserSession
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.auth.principal.UserRole
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.exception.RequestException
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.response.InfraResponseCode
-import fanpoll.infra.base.tenant.TenantId
 import fanpoll.infra.base.util.IdentifiableObject
+import fanpoll.infra.session.UserSession
 import io.ktor.server.auth.*
 import io.ktor.server.request.header
+import io.ktor.server.sessions.sessions
+import io.ktor.server.sessions.set
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import java.time.Instant
 import java.util.*
 
 data class UserRunAsAuthCredential(val runAsKey: String, val runAsToken: String) : Credential
@@ -30,7 +32,7 @@ data class UserRunAsToken(
     val clientId: String? = null,
     val sessionData: JsonObject? = null
 ) {
-    val value = "${userType.id}:$userId:${clientId ?: "?"}${sessionData?.let { ":${json.encodeToString(it)}" } ?: ""}"
+    val value = "${userType.getId()}:$userId:${clientId ?: "?"}${sessionData?.let { ":${json.encodeToString(it)}" } ?: ""}"
 }
 
 data class UserRunAsAuthConfig(
@@ -47,6 +49,8 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
 
     private val authConfigs: List<UserRunAsAuthConfig> = config.authConfigs
 
+    private val findUserByTypeIdFunction: (UserType, UUID) -> RunAsUser = config.findUserByTypeIdFunction
+
     override suspend fun onAuthenticate(context: AuthenticationContext) {
         val call = context.call
         val apiKey = call.request.header(AuthConst.API_KEY_HEADER_NAME)
@@ -56,33 +60,32 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
             val principal = (authenticationFunction)(call, UserRunAsAuthCredential(apiKey, runAsToken)) as UserPrincipal?
             if (principal != null) {
                 context.principal(principal)
+                call.sessions.set<UserSession>(principal as UserSession)
             }
         }
     }
 
     private val authenticationFunction: AuthenticationFunction<UserRunAsAuthCredential> = { credentials ->
-
-        var principal: UserPrincipal? = null
+        var session: UserSession? = null
         run loop@{
             authConfigs.forEach { runAsConfig ->
                 if (runAsConfig.runAsKey == credentials.runAsKey) {
                     val token = parseRunAsToken(credentials.runAsToken)
-                    val user = token.userType.findRunAsUserById(token.userId)
-                    principal = UserPrincipal(
-                        token.userType, token.userId,
-                        user.roles, runAsConfig.principalSource,
-                        token.clientId, user.tenantId, true
+                    val user = findUserByTypeIdFunction(token.userType, token.userId)
+                    val source = runAsConfig.principalSource
+                    session = UserSession(
+                        user.account, source,
+                        user.id, user.type, user.roles,
+                        true, token.clientId, null, Instant.now(), null, token.sessionData
                     )
-                    if (principal != null && token.sessionData != null)
-                        principal!!.session = UserSession(principal!!, null, token.sessionData)
                     return@loop
                 }
             }
         }
-        if (principal != null) {
-            attributes.put(PrincipalSource.ATTRIBUTE_KEY, principal!!.source)
+        if (session != null) {
+            attributes.put(PrincipalSource.ATTRIBUTE_KEY, session!!.source)
         }
-        principal
+        session
     }
 
     private fun parseRunAsToken(text: String): UserRunAsToken {
@@ -90,7 +93,7 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
             val segments = text.split(":")
             require(segments.size in 2..3)
 
-            val userType = UserType.lookup(segments[0])
+            val userType = UserType.getTypeById(segments[0])
             val userId = UUID.fromString(segments[1])
             val clientId = if (segments.size >= 3 && segments[2] != "?") segments[2] else null
             val sessionData = if (segments.size >= 4)
@@ -102,20 +105,28 @@ class UserRunAsAuthProvider(config: Configuration) : AuthenticationProvider(conf
         }
     }
 
-    class Configuration constructor(providerName: String, val authConfigs: List<UserRunAsAuthConfig>) : Config(providerName) {
+    class Configuration(
+        providerName: String,
+        val authConfigs: List<UserRunAsAuthConfig>,
+        val findUserByTypeIdFunction: (UserType, UUID) -> RunAsUser
+    ) : Config(providerName) {
 
         fun build() = UserRunAsAuthProvider(this)
     }
 }
 
-fun AuthenticationConfig.runAs(providerName: String, authConfigs: List<UserRunAsAuthConfig>) {
-    val provider = UserRunAsAuthProvider.Configuration(providerName, authConfigs).build()
+fun AuthenticationConfig.runAs(
+    providerName: String,
+    authConfigs: List<UserRunAsAuthConfig>,
+    findUserByTypeIdFunction: (UserType, UUID) -> RunAsUser
+) {
+    val provider = UserRunAsAuthProvider.Configuration(providerName, authConfigs, findUserByTypeIdFunction).build()
     register(provider)
 }
 
 data class RunAsUser(
     override val id: UUID,
+    val account: String,
     val type: UserType,
-    val roles: Set<UserRole>? = null,
-    val tenantId: TenantId? = null
+    val roles: Set<UserRole>
 ) : IdentifiableObject<UUID>()

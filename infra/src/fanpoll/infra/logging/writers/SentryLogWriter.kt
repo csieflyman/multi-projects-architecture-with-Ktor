@@ -4,9 +4,9 @@
 
 package fanpoll.infra.logging.writers
 
-import fanpoll.infra.AppInfoConfig
-import fanpoll.infra.ServerConfig
-import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.base.datetime.DateTimeUtils
+import fanpoll.infra.config.AppInfoConfig
+import fanpoll.infra.config.ServerConfig
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
 import fanpoll.infra.logging.error.ErrorLog
@@ -17,18 +17,7 @@ import io.sentry.protocol.Message
 import io.sentry.protocol.Request
 import io.sentry.protocol.User
 
-data class SentryConfig(val dsn: String, val debug: Boolean = false) {
-
-    class Builder {
-
-        private lateinit var dsn: String
-        private var debug: Boolean = false
-
-        fun build(): SentryConfig {
-            return SentryConfig(dsn, debug)
-        }
-    }
-}
+data class SentryConfig(val dsn: String, val debug: Boolean = false)
 
 class SentryLogWriter(
     private val sentryConfig: SentryConfig,
@@ -41,7 +30,8 @@ class SentryLogWriter(
             // https://docs.sentry.io/platforms/java/configuration/
             with(options) {
                 dsn = sentryConfig.dsn
-                setDebug(sentryConfig.debug)
+                isDebug = sentryConfig.debug
+                //setDiagnosticLevel(SentryLevel.ERROR)
                 release = appInfoConfig.git.tag
                 environment = serverConfig.env.name
                 serverName = serverConfig.instanceId
@@ -52,7 +42,7 @@ class SentryLogWriter(
         }
     }
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val errorLog = logEntity as ErrorLog
         val event = toSentryEvent(errorLog)
         Sentry.captureEvent(event)
@@ -95,7 +85,6 @@ class SentryLogWriter(
             tags?.let { putAll(it) }
 
             principalId?.let { put("principalId", it) }
-            tenantId?.let { put("tenantId", it.value) }
 
             request?.let { req ->
                 put("reqId", req.id)

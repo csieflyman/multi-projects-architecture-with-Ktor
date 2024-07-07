@@ -27,11 +27,11 @@ class LogEntityCoroutineActor(
         this::execute
     )
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         actor.sendToUnlimitedChannel(logEntity, InfraResponseCode.LOG_ERROR) // non-blocking by Channel.UNLIMITED
     }
 
-    private fun execute(logEntity: LogEntity) {
+    private suspend fun execute(logEntity: LogEntity) {
         try {
             logWriter.write(logEntity)
         } catch (e: Throwable) {

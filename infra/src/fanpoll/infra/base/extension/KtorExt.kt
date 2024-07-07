@@ -4,12 +4,14 @@
 
 package fanpoll.infra.base.extension
 
-import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.base.datetime.DateTimeUtils
 import io.ktor.http.Headers
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.receiveChannel
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.getAllRoutes
 import io.ktor.util.date.GMTDate
 import io.ktor.util.toByteArray
 import kotlinx.coroutines.runBlocking
@@ -48,3 +50,8 @@ fun GMTDate.toInstant(): Instant = ZonedDateTime.of(
     hours, minutes, seconds, 0,
     DateTimeUtils.UTC_ZONE_ID
 ).toInstant()
+
+fun Routing.listProjectAllRoutes(projectId: String, urlRootPath: String): String {
+    return "========== $projectId Routes ===========\n" +
+            getAllRoutes().map { it.toString() }.filter { it.startsWith(urlRootPath) }.joinToString("\n")
+}

@@ -7,7 +7,7 @@ package fanpoll.infra.base.query
 import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.extension.myEquals
 import fanpoll.infra.base.extension.myHashCode
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.response.InfraResponseCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.request.ApplicationRequest
@@ -93,7 +93,7 @@ class DynamicQuery(
             from(request.queryParameters.toMap().mapValues { it.value[0] })
 
         fun from(text: String): DynamicQuery =
-            from(text.split("&").map { it.substringBefore("=") to it.substringAfter("=") }.toMap())
+            from(text.split("&").associate { it.substringBefore("=") to it.substringAfter("=") })
 
         private fun from(map: Map<String, String>): DynamicQuery = DynamicQuery(
             map[QUERY_FIELDS]?.let { parseFields(it) },

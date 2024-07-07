@@ -18,24 +18,5 @@ data class RequestLogConfig(
     val excludePaths: MutableList<String> = mutableListOf(),
     val excludeRequestBodyPaths: MutableList<String> = mutableListOf()
 ) {
-
-    class Builder {
-        var enabled: Boolean = true
-        var destination: LogDestination = LogDestination.File
-        var includeHeaders: Boolean = false
-        var includeQuerystring: Boolean = false
-        var includeResponseBody: Boolean = false
-        var includeGetMethod: Boolean = false
-        var excludePaths: MutableList<String> = mutableListOf()
-        var excludeRequestBodyPaths: MutableList<String> = mutableListOf()
-
-        fun build(): RequestLogConfig = RequestLogConfig(
-            enabled, destination,
-            includeHeaders, includeQuerystring, includeResponseBody,
-            includeGetMethod,
-            excludePaths, excludeRequestBodyPaths
-        )
-    }
-
     fun isExcludePath(call: ApplicationCall) = excludePaths.any { call.request.path().startsWith(it) }
 }

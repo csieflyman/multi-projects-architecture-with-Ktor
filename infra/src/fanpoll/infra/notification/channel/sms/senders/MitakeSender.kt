@@ -6,9 +6,9 @@ package fanpoll.infra.notification.channel.sms.senders
 
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.NotificationLogConfig
-import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.channel.NotificationChannelSender
 import fanpoll.infra.notification.logging.NotificationMessageLog
+import fanpoll.infra.notification.message.NotificationMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 data class MitakeConfig(
@@ -30,16 +30,11 @@ class MitakeSender(
     private val senderName = "MitakeSender"
 
     override val maxReceiversPerRequest: Int = 500
-
-    init {
-
-    }
-
-    override fun send(message: NotificationMessage) {
+    override suspend fun send(message: NotificationMessage) {
         TODO("Not yet implemented")
     }
 
-    private fun writeLog(notificationMessageLog: NotificationMessageLog) {
+    private suspend fun writeLog(notificationMessageLog: NotificationMessageLog) {
         if (loggingConfig.enabled)
             logWriter.write(notificationMessageLog)
     }

@@ -18,7 +18,7 @@ class LogEntityDispatcher(private val defaultLogWriter: LogWriter? = null) : Log
         logWriters[logType] = logWriter
     }
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val logWriter = logWriters[logEntity.type] ?: defaultLogWriter ?: throw InternalServerException(
             InfraResponseCode.SERVER_CONFIG_ERROR, "logType ${logEntity.type} logWriter is not registered"
         )

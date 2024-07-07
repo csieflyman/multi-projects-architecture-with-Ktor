@@ -5,6 +5,8 @@
 package fanpoll.infra.openapi.schema.operation.support
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import fanpoll.infra.base.extension.myEquals
+import fanpoll.infra.base.extension.myHashCode
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 
 abstract class Definition(
@@ -36,6 +38,6 @@ abstract class Definition(
 
     fun createRef(refName: String): ReferenceObject = ReferenceObject(refName, this)
 
-    override fun equals(other: Any?): Boolean = idEquals(other)
-    override fun hashCode(): Int = idHashCode()
+    override fun equals(other: Any?) = myEquals(other, { getId() })
+    override fun hashCode() = myHashCode({ getId() })
 }

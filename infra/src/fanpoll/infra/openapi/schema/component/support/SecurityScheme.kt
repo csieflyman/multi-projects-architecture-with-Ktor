@@ -12,14 +12,6 @@ interface SecurityScheme {
     val name: String
     val value: SecuritySchemeObject
 
-    companion object {
-
-        fun apiKeyAuth(schemeName: String, headerName: String) = object : SecurityScheme {
-            override val name: String = schemeName
-            override val value: SecuritySchemeObject = SecuritySchemeObject(type = "apiKey", `in` = "header", name = headerName)
-        }
-    }
-
     fun createSecurity(scopes: List<String> = listOf()) = SecurityRequirementObject(this, scopes)
 }
 

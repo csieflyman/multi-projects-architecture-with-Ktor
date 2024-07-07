@@ -4,10 +4,10 @@
 
 package fanpoll.infra.notification.logging
 
-import fanpoll.infra.base.i18n.Lang
-import fanpoll.infra.base.json.DurationMicroSerializer
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
+import fanpoll.infra.base.json.kotlinx.DurationMicroSerializer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
+import fanpoll.infra.i18n.Lang
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.LogLevel
 import fanpoll.infra.notification.NotificationType
@@ -22,6 +22,7 @@ import java.util.*
 data class NotificationMessageLog(
     @Serializable(with = UUIDSerializer::class) override val id: UUID,
     @Serializable(with = UUIDSerializer::class) val notificationId: UUID,
+    override val project: String,
     override val traceId: String?,
     @Serializable(with = UUIDSerializer::class) val eventId: UUID,
     val notificationType: NotificationType,
@@ -44,8 +45,6 @@ data class NotificationMessageLog(
 
     @Serializable(with = InstantSerializer::class)
     override val occurAt: Instant = Instant.now()
-
-    override val project: String = notificationType.projectId
 
     var content: String? = null
     var success: Boolean = true

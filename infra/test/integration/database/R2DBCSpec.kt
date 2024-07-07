@@ -9,50 +9,63 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnectionBuilder
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fanpoll.infra.base.entity.EntityDTO
-import fanpoll.infra.base.entity.EntityForm
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
-import fanpoll.infra.database.jasync.*
-import fanpoll.infra.database.sql.UUIDTable
-import fanpoll.infra.database.util.ResultRowDTOMapper
-import integration.util.SinglePostgreSQLContainer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
+import fanpoll.infra.config.ApplicationConfigLoader
+import fanpoll.infra.config.MyApplicationConfig
+import fanpoll.infra.database.exposed.jasync.*
+import fanpoll.infra.database.exposed.sql.createdAtColumn
+import fanpoll.infra.database.exposed.sql.updatedAtColumn
+import fanpoll.infra.database.exposed.util.ResultRowMapper
+import fanpoll.infra.database.exposed.util.ResultRowMappers
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.FunSpec
 import kotlinx.serialization.Serializable
 import org.flywaydb.core.api.configuration.FluentConfiguration
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.javatime.timestamp
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.selectAll
+import org.koin.test.KoinTest
+import testcontainers.PostgresSQLContainerManager
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class R2DBCSpec : FunSpec({
+class R2DBCSpec : KoinTest, FunSpec({
 
     val logger = KotlinLogging.logger {}
 
-    val postgresContainer = SinglePostgreSQLContainer.instance
-
+    lateinit var appConfig: MyApplicationConfig
+    lateinit var hikariConfig: fanpoll.infra.database.hikari.HikariConfig
     lateinit var dataSource: HikariDataSource
+    lateinit var database: Database
     lateinit var jasyncConnection: Connection
 
-    beforeSpec {
+    fun initDBTestContainers() {
+        appConfig = ApplicationConfigLoader.load()
+        val infraDatabaseConfig = appConfig.infra.databases.infra
+        val infraDBContainer = PostgresSQLContainerManager.create("infra", hikariConfig = infraDatabaseConfig.hikari)
+        infraDatabaseConfig.hikari = infraDatabaseConfig.hikari.copy(jdbcUrl = infraDBContainer.jdbcUrl)
+        hikariConfig = infraDatabaseConfig.hikari
+    }
+
+    fun initExposed() {
         logger.info { "========== Exposed Init ==========" }
         dataSource = HikariDataSource(HikariConfig().apply {
             isAutoCommit = false
-            driverClassName = postgresContainer.driverClassName
-            jdbcUrl = postgresContainer.jdbcUrl
-            username = postgresContainer.username
-            password = postgresContainer.password
+            driverClassName = hikariConfig.driverClassName
+            jdbcUrl = hikariConfig.jdbcUrl
+            username = hikariConfig.username
+            password = hikariConfig.password
             maximumPoolSize = 3
         })
-        val defaultDatabase = Database.connect(dataSource)
+        database = Database.connect(dataSource)
+    }
 
+    fun initFlyway() {
         logger.info { "========== Flyway Migrate ==========" }
         val flyway = FluentConfiguration().apply {
             baselineOnMigrate(true)
@@ -60,16 +73,25 @@ class R2DBCSpec : FunSpec({
             .locations("db/test/r2dbc_spec")
             .load()
         flyway.migrate()
+    }
 
+    fun initJasync() {
         logger.info { "========== Jasync Connect ==========" }
-        jasyncConnection = PostgreSQLConnectionBuilder.createConnectionPool(postgresContainer.jdbcUrl) {
-            username = postgresContainer.username
-            password = postgresContainer.password
+        jasyncConnection = PostgreSQLConnectionBuilder.createConnectionPool(hikariConfig.jdbcUrl) {
+            username = hikariConfig.username
+            password = hikariConfig.password
             maxActiveConnections = 3
         }
         jasyncConnection.connect().get()
 
-        JasyncExposedAdapter.bind(defaultDatabase, jasyncConnection)
+        JasyncExposedAdapter.bind(database, jasyncConnection)
+    }
+
+    beforeSpec {
+        initDBTestContainers()
+        initExposed()
+        initFlyway()
+        initJasync()
     }
 
     afterSpec {
@@ -85,52 +107,64 @@ class R2DBCSpec : FunSpec({
 
         val user1Id = UUID.randomUUID()
         val user2Id = UUID.randomUUID()
-        val createUser1Form = UserForm(user1Id, "user1", true, Gender.Male, 2000)
-        val createUser2Form = UserForm(user2Id, "user2", false, Gender.Female, 2001)
+        val createUser1 = User(user1Id, "user1", true, Gender.Male, 2000)
+        val createUser2 = User(user2Id, "user2", false, Gender.Female, 2001)
 
-        dbTransactionAsync {
+        jasyncTransaction(database) {
             logger.debug { "========== Insert ==========" }
-            R2DBCTestUserTable.insertAsync(createUser1Form)
-            R2DBCTestUserTable.insertAsync(createUser2Form)
+            R2DBCTestUserTable.jasyncInsert(createUser1)
+            R2DBCTestUserTable.jasyncInsert(createUser2)
 
-            val createdUser1 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user1Id }.toSingleDTOOrNull<UserDTO>()
-            val createdUser2 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user2Id }.toSingleDTOOrNull<UserDTO>()
+            val createdUser1 = R2DBCTestUserTable.selectAll()
+                .where { R2DBCTestUserTable.id eq user1Id }
+                .jasyncSingleDTOOrNull(UserDTO::class)
+            val createdUser2 = R2DBCTestUserTable.selectAll()
+                .where { R2DBCTestUserTable.id eq user2Id }
+                .jasyncSingleDTOOrNull(UserDTO::class)
             assertNotNull(createdUser1)
             assertNotNull(createdUser2)
 
             logger.debug { "========== Update ==========" }
-            val updateUser1Form = createUser1Form.copy(gender = Gender.Female)
-            val updateUser2Form = createUser2Form.copy(gender = Gender.Male)
-            R2DBCTestUserTable.updateAsync(updateUser1Form)
-            R2DBCTestUserTable.updateAsync(updateUser2Form)
-
-            val updatedUser1 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user1Id }.toSingleDTOOrNull<UserDTO>()
-            val updatedUser2 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user2Id }.toSingleDTOOrNull<UserDTO>()
-            assertNotNull(updatedUser1)
-            assertNotNull(updatedUser2)
-            assertEquals(Gender.Female, updatedUser1.gender)
-            assertEquals(Gender.Male, updatedUser2.gender)
-        }
+            val updateUser1Form = createUser1.copy(gender = Gender.Female)
+            val updateUser2Form = createUser2.copy(gender = Gender.Male)
+            R2DBCTestUserTable.jasyncUpdate(updateUser1Form, (R2DBCTestUserTable.id eq user1Id))
+            R2DBCTestUserTable.jasyncUpdate(updateUser2Form, (R2DBCTestUserTable.id eq user2Id))
+        }.await()
 
         logger.debug { "========== Select ==========" }
-        dbQueryAsync {
-            val user1 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user1Id }.toSingleDTOOrNull<UserDTO>()
-            val user2 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user2Id }.toSingleDTOOrNull<UserDTO>()
-            val allUsers = R2DBCTestUserTable.selectAll().toDTO<UserDTO>()
+        jasyncQuery(database) {
+            val user1 = R2DBCTestUserTable.selectAll()
+                .where { R2DBCTestUserTable.id eq user1Id }
+                .jasyncSingleDTOOrNull(UserDTO::class)
+            val user2 = R2DBCTestUserTable.selectAll()
+                .where { R2DBCTestUserTable.id eq user2Id }
+                .jasyncSingleDTOOrNull(UserDTO::class)
+            val allUsers = R2DBCTestUserTable.selectAll()
+                .jasyncToList(UserDTO::class)
             assertEquals(allUsers, listOf(user1, user2))
+            assertNotNull(user1)
+            assertNotNull(user2)
+            assertEquals(Gender.Female, user1.gender)
+            assertEquals(Gender.Male, user2.gender)
             allUsers
         }.await()
 
         logger.debug { "========== Delete ==========" }
-        dbTransactionAsync {
-            R2DBCTestUserTable.deleteAsync { R2DBCTestUserTable.id eq user1Id }
-            R2DBCTestUserTable.deleteAsync { R2DBCTestUserTable.id eq user2Id }
+        jasyncTransaction(database) {
+            R2DBCTestUserTable.jasyncDelete { R2DBCTestUserTable.id eq user1Id }
+            R2DBCTestUserTable.jasyncDelete { R2DBCTestUserTable.id eq user2Id }
+        }.await()
 
-            val createdUser1 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user1Id }.toSingleDTOOrNull<UserDTO>()
-            val createdUser2 = R2DBCTestUserTable.select { R2DBCTestUserTable.id eq user2Id }.toSingleDTOOrNull<UserDTO>()
-            assertNull(createdUser1)
-            assertNull(createdUser2)
-        }
+        jasyncQuery(database) {
+            val user1 = R2DBCTestUserTable.selectAll()
+                .where { R2DBCTestUserTable.id eq user1Id }
+                .jasyncSingleDTOOrNull(UserDTO::class)
+            val user2 = R2DBCTestUserTable.selectAll()
+                .where { R2DBCTestUserTable.id eq user2Id }
+                .jasyncSingleDTOOrNull(UserDTO::class)
+            assertNull(user1)
+            assertNull(user2)
+        }.await()
 
         logger.info { "========== R2DBC Test End ==========" }
     }
@@ -139,33 +173,29 @@ class R2DBCSpec : FunSpec({
 object R2DBCTestUserTable : UUIDTable(name = "r2dbc_test_user") {
     val account = varchar("account", 64) //unique
     val enabled = bool("enabled")
-    val gender = enumeration("gender", Gender::class).nullable()
-    val birthYear = integer("birth_year").nullable()
-    val createdAt = timestamp("created_at")
-        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
-    val updatedAt = timestamp("updated_at")
-        .defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp())
 
-    override val naturalKeys: List<Column<out Any>> = listOf(account)
-    override val surrogateKey: Column<EntityID<UUID>> = id
+    // gender use enumerationByName because what we get exposed statement.argValues() is string type
+    val gender = enumerationByName<Gender>("gender", 10).nullable()
+    val birthYear = integer("birth_year").nullable()
+    val createdAt = createdAtColumn()
+    val updatedAt = updatedAtColumn()
+
+    init {
+        ResultRowMappers.register(ResultRowMapper(UserDTO::class, R2DBCTestUserTable))
+    }
 }
 
 enum class Gender {
     Male, Female
 }
 
-data class UserForm(
+data class User(
     val id: UUID = UUID.randomUUID(),
     val account: String,
     val enabled: Boolean = true,
     val gender: Gender? = null,
     val birthYear: Int? = null
-) : EntityForm<UserForm, String, UUID>() {
-
-    override fun getEntityId(): UUID = id
-
-    override fun getDtoId(): String = account
-}
+)
 
 @Serializable
 data class UserDTO(@JvmField @Serializable(with = UUIDSerializer::class) val id: UUID) : EntityDTO<UUID> {
@@ -179,11 +209,7 @@ data class UserDTO(@JvmField @Serializable(with = UUIDSerializer::class) val id:
     var createdAt: Instant? = null
 
     @Serializable(with = InstantSerializer::class)
-    var updateAt: Instant? = null
+    var updatedAt: Instant? = null
 
     override fun getId(): UUID = id
-
-    companion object {
-        val mapper: ResultRowDTOMapper<UserDTO> = ResultRowDTOMapper(UserDTO::class, R2DBCTestUserTable)
-    }
 }

@@ -1,19 +1,15 @@
 /*
- * Copyright (c) 2021. fanpoll All rights reserved.
+ * Copyright (c) 2024. fanpoll All rights reserved.
  */
 
 package fanpoll.infra
 
-import fanpoll.infra.auth.principal.UserType
-import fanpoll.infra.auth.provider.PrincipalSourceAuthConfig
-import fanpoll.infra.base.util.IdentifiableObject
-import fanpoll.infra.notification.NotificationType
-import fanpoll.infra.openapi.ProjectOpenApi
+import com.typesafe.config.Config
+import fanpoll.infra.base.extension.myEquals
+import fanpoll.infra.base.extension.myHashCode
 
-class Project(
-    override val id: String,
-    val principalSourceAuthConfigs: List<PrincipalSourceAuthConfig>,
-    val userTypes: List<UserType>,
-    val projectOpenApi: ProjectOpenApi,
-    val notificationTypes: List<NotificationType>? = null
-) : IdentifiableObject<String>()
+class Project(val id: String, val config: Config) {
+    override fun equals(other: Any?) = myEquals(other, { id })
+    override fun hashCode() = myHashCode({ id })
+    override fun toString(): String = id
+}

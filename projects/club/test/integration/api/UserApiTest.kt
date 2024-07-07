@@ -7,12 +7,16 @@ package integration.api
 import fanpoll.club.ClubAuth
 import fanpoll.club.ClubUserRole
 import fanpoll.club.ClubUserType
-import fanpoll.club.features.*
+import fanpoll.club.user.domain.Gender
+import fanpoll.club.user.dtos.CreateUserForm
+import fanpoll.club.user.dtos.UpdateUserForm
+import fanpoll.club.user.dtos.UpdateUserPasswordForm
+import fanpoll.club.user.dtos.UserDTO
 import fanpoll.infra.auth.AuthConst
 import fanpoll.infra.auth.provider.UserRunAsAuthProvider
 import fanpoll.infra.auth.provider.UserRunAsToken
-import fanpoll.infra.base.i18n.Lang
 import fanpoll.infra.base.response.InfraResponseCode
+import fanpoll.infra.i18n.Lang
 import integration.util.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
@@ -34,9 +38,9 @@ val userApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client -
     lateinit var runAsToken: UserRunAsToken
 
     val userAdmin1Form = CreateUserForm(
-        "user-admin_1@test.com", "123456",
-        true, ClubUserRole.Admin, "user-admin_1",
-        Gender.Male, 2000, "user-admin_1@test.com", "0987654321", Lang.zh_TW
+        "admin1@test.com", "123456",
+        true, "admin1", Gender.Male, 2000, "admin1@test.com", "0987654321", Lang.zh_TW,
+        setOf(ClubUserRole.Admin, ClubUserRole.User)
     )
 
     test("create admin user") {
@@ -50,7 +54,7 @@ val userApiTest: suspend FunSpecContainerScope.(HttpClient) -> Unit = { client -
         assertNotNull(userIdStr)
 
         userId = UUID.fromString(userIdStr)
-        runAsToken = UserRunAsToken(ClubUserType.User.value, userId)
+        runAsToken = UserRunAsToken(ClubUserType.User, userId)
 
         val getAdminResponse = client.get(mergeRootPath("/users")) {
             header(AuthConst.API_KEY_HEADER_NAME, getRunAsKey(ClubAuth.Android))

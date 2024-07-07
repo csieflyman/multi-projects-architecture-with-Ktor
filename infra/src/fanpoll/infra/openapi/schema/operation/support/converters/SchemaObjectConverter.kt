@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.base.datetime.DateTimeUtils
+import fanpoll.infra.i18n.Lang
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
 import fanpoll.infra.openapi.schema.operation.definitions.*
 import fanpoll.infra.openapi.schema.operation.support.OpenApiIgnore
@@ -37,6 +38,15 @@ object SchemaObjectConverter {
     private val logger = KotlinLogging.logger {}
 
     private val propertyConverters: MutableMap<KClass<*>, (String) -> PropertyDef> = mutableMapOf()
+
+    init {
+        registerPropertyConverter(Lang::class) {
+            PropertyDef(
+                "lang", SchemaDataType.string, description = "LanguageTag",
+                kClass = Lang::class
+            )
+        }
+    }
 
     fun registerPropertyConverter(propertyClass: KClass<*>, converter: (String) -> PropertyDef) {
         val currentConverter = propertyConverters.putIfAbsent(propertyClass, converter)
@@ -70,6 +80,7 @@ object SchemaObjectConverter {
                     arrayModelDefKType.isSubtypeOf(JacksonJsonArrayKType) -> DictionaryPropertyDef(
                 name, description = "JsonObject of JsonArray"
             )
+
             else -> toModelDef(components, name, arrayModelDefKType)
         }
         return ArrayModelDef(name, modelDef, kClass = arrayModelDefKType.classifier as KClass<*>)

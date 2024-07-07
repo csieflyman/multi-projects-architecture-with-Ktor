@@ -4,11 +4,11 @@
 
 package fanpoll.infra.notification.channel
 
-import fanpoll.infra.notification.NotificationMessage
+import fanpoll.infra.notification.message.NotificationMessage
 
 interface NotificationChannelSender {
 
-    fun send(message: NotificationMessage)
+    suspend fun send(message: NotificationMessage)
 
     val maxReceiversPerRequest: Int
 

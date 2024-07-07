@@ -4,12 +4,10 @@
 
 package fanpoll.infra.base.exception
 
+import fanpoll.infra.base.datetime.DateTimeUtils
+import fanpoll.infra.base.datetime.toMicros
 import fanpoll.infra.base.entity.Entity
-import fanpoll.infra.base.extension.toMicros
 import fanpoll.infra.base.response.ResponseCode
-import fanpoll.infra.base.tenant.TenantEntity
-import fanpoll.infra.base.tenant.TenantId
-import fanpoll.infra.base.util.DateTimeUtils
 import io.konform.validation.Invalid
 import java.time.Duration
 import java.time.Instant
@@ -18,31 +16,27 @@ abstract class BaseException(
     val code: ResponseCode,
     message: String? = code.name,
     cause: Throwable? = null,
-    val dataMap: Map<String, Any>? = null,
-    var tenantId: TenantId? = null
+    val dataMap: Map<String, Any>? = null
 ) : RuntimeException(
-    "[${code.name}] ${message ?: ""}" +
-            (if (!dataMap.isNullOrEmpty()) "dataMap = $dataMap" else "") +
-            (if (tenantId != null) "tenantId = $tenantId" else ""), cause
+    "[${code.name}] ${message ?: ""}" + (if (!dataMap.isNullOrEmpty()) "dataMap = $dataMap" else ""), cause
 ) {
     val occurAt: Instant = Instant.now()
 }
 
 class RequestException : BaseException {
 
-    val invalidResult: Invalid<*>?
+    val invalidResult: Invalid?
 
     constructor(
         code: ResponseCode,
         message: String? = null,
         cause: Throwable? = null,
-        dataMap: Map<String, Any>? = null,
-        tenantId: TenantId? = null
-    ) : super(code, message, cause, dataMap, tenantId) {
+        dataMap: Map<String, Any>? = null
+    ) : super(code, message, cause, dataMap) {
         this.invalidResult = null
     }
 
-    constructor(code: ResponseCode, invalidResult: Invalid<*>) : super(code, invalidResult.toString()) {
+    constructor(code: ResponseCode, invalidResult: Invalid) : super(code, invalidResult.toString()) {
         this.invalidResult = invalidResult
     }
 }
@@ -61,9 +55,6 @@ class EntityException(
 ) {
     init {
         require(!(entityId == null && entity == null)) { "Both entityId and entity can't be null" }
-        if (entity is TenantEntity) {
-            tenantId = entity.tenantId
-        }
     }
 }
 
@@ -71,16 +62,14 @@ class InternalServerException(
     code: ResponseCode,
     message: String? = null,
     cause: Throwable? = null,
-    dataMap: Map<String, Any>? = null,
-    tenantId: TenantId? = null
-) : BaseException(code, message, cause, dataMap, tenantId)
+    dataMap: Map<String, Any>? = null
+) : BaseException(code, message, cause, dataMap)
 
 open class RemoteServiceException(
     code: ResponseCode,
     message: String? = null,
     cause: Throwable? = null,
     dataMap: Map<String, Any>? = null,
-    tenantId: TenantId? = null,
     val name: String,
     val api: String,
     val reqId: String,
@@ -103,5 +92,5 @@ open class RemoteServiceException(
         reqBody = [$reqBody],
         rspBody = [$rspBody]
     """,
-    cause, dataMap, tenantId
+    cause, dataMap
 )

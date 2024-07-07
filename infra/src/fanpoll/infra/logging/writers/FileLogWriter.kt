@@ -12,7 +12,7 @@ class FileLogWriter : LogWriter {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val messageString = "[${logEntity.type}] => ${logEntity.toJson()}"
         when (logEntity.level) {
             LogLevel.DEBUG -> logger.debug { messageString }

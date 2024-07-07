@@ -4,34 +4,21 @@
 
 package fanpoll.infra.notification.channel.sms
 
-import fanpoll.infra.base.config.ValidateableConfig
+import fanpoll.infra.config.ValidateableConfig
 import fanpoll.infra.notification.NotificationLogConfig
 import fanpoll.infra.notification.channel.sms.senders.MitakeConfig
+import fanpoll.infra.notification.channel.sms.senders.TwilioSMSConfig
 
 data class SMSConfig(
-    val logging: NotificationLogConfig? = null,
+    var logging: NotificationLogConfig? = null,
     val mock: Boolean? = false,
+    val twilio: TwilioSMSConfig? = null,
     val mitake: MitakeConfig? = null
 ) : ValidateableConfig {
 
     override fun validate() {
-        require(mock == true || mitake != null) {
+        require(mock == true || twilio != null || mitake != null) {
             "at least one sms service provider should be configured"
-        }
-    }
-
-    class Builder {
-
-        private var logging: NotificationLogConfig? = null
-        var mock: Boolean? = false
-        var mitake: MitakeConfig? = null
-
-        fun logging(configure: NotificationLogConfig.Builder.() -> Unit) {
-            logging = NotificationLogConfig.Builder().apply(configure).build()
-        }
-
-        fun build(): SMSConfig {
-            return SMSConfig(logging, mock, mitake).apply { validate() }
         }
     }
 }

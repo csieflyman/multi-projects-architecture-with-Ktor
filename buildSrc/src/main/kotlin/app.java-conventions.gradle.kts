@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -18,21 +20,13 @@ kotlin.sourceSets["test"].kotlin.srcDirs("test")
 sourceSets["main"].resources.srcDirs("resources")
 sourceSets["test"].resources.srcDirs("testresources")
 
-// =============================== Compile ===============================
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
-        kotlinOptions.languageVersion = "1.9"
-        kotlinOptions.javaParameters = true
-        kotlinOptions.suppressWarnings = true
-        compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.ExperimentalStdlibApi")
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "17"
-        kotlinOptions.languageVersion = "1.9"
-        kotlinOptions.javaParameters = true
-        kotlinOptions.suppressWarnings = true
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+        javaParameters = true
+        suppressWarnings = true
+        freeCompilerArgs.add("-opt-in=kotlin.ExperimentalStdlibApi")
     }
 }
 
@@ -44,18 +38,21 @@ tasks.shadowJar {
     mergeServiceFiles()
 }
 
-koverReport {
-    filters {
-        includes {
-            classes("fanpoll.*")
+kover {
+    reports {
+        filters {
+            includes {
+                classes("fanpoll.*")
+            }
         }
-    }
-    defaults {
-        xml {
-            onCheck = true
-        }
-        html {
-            onCheck = true
+        total {
+            xml {
+                onCheck = true
+            }
+            html {
+                onCheck = true
+            }
         }
     }
 }
+

@@ -4,11 +4,15 @@
 
 package integration.api
 
-import fanpoll.club.clubMain
-import fanpoll.infra.base.json.json
+import fanpoll.club.ClubConfig
+import fanpoll.club.ClubConst
+import fanpoll.club.clubProject
+import fanpoll.infra.ProjectManager
+import fanpoll.infra.base.json.kotlinx.json
+import fanpoll.infra.config.ApplicationConfigLoader
+import fanpoll.infra.config.MyApplicationConfig
 import fanpoll.infra.main
-import integration.util.SinglePostgreSQLContainer
-import integration.util.SingleRedisContainer
+import io.github.config4k.extract
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.NamedTag
@@ -23,6 +27,8 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.TestApplication
 import org.koin.test.KoinTest
+import testcontainers.PostgresSQLContainerManager
+import testcontainers.RedisContainerManager
 
 @OptIn(ExperimentalKotest::class)
 class ApiSpec : KoinTest, FunSpec({
@@ -32,17 +38,35 @@ class ApiSpec : KoinTest, FunSpec({
     lateinit var testApplication: TestApplication
     lateinit var client: HttpClient
 
+    lateinit var appConfig: MyApplicationConfig
+    lateinit var projectConfig: ClubConfig
+
+    fun initTestContainers() {
+        appConfig = ApplicationConfigLoader.load()
+        val infraDatabaseConfig = appConfig.infra.databases.infra
+        val infraDBContainer = PostgresSQLContainerManager.create("infra", hikariConfig = infraDatabaseConfig.hikari)
+        infraDatabaseConfig.hikari = infraDatabaseConfig.hikari.copy(jdbcUrl = infraDBContainer.jdbcUrl)
+
+        projectConfig = ProjectManager.loadConfig(ClubConst.projectId).extract<ClubConfig>()
+        val projectDatabaseConfig = projectConfig.databases.club
+        val projectDBContainer = PostgresSQLContainerManager.create(ClubConst.projectId, hikariConfig = projectDatabaseConfig.hikari)
+        projectDatabaseConfig.hikari = projectDatabaseConfig.hikari.copy(jdbcUrl = projectDBContainer.jdbcUrl)
+
+        val redisConfig = appConfig.infra.redis
+        val redisContainer = RedisContainerManager.create(ClubConst.projectId, redisConfig = redisConfig)
+        appConfig.infra.redis = redisConfig.copy(port = redisContainer.firstMappedPort)
+    }
+
     beforeSpec {
+        initTestContainers()
+
         testApplication = TestApplication {
             application {
-                main {
-                    listOf(SinglePostgreSQLContainer, SingleRedisContainer).forEach {
-                        it.configure(this)
-                    }
-                }
-                clubMain()
+                main(appConfig)
+                clubProject(projectConfig)
             }
         }
+
         client = testApplication.createClient {
             install(ContentNegotiation) {
                 json(json)
@@ -57,6 +81,7 @@ class ApiSpec : KoinTest, FunSpec({
                 register(Charsets.UTF_8)
             }
         }
+
         testApplication.start()
     }
 

@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:16.3
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: fanpoll
+  redis:
+    image: redis:7.2.5
+    container_name: redis
+    ports:
+      - "6379:6379"

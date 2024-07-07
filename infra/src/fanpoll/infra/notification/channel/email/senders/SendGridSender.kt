@@ -12,30 +12,20 @@ import com.sendgrid.helpers.mail.Mail
 import com.sendgrid.helpers.mail.objects.Attachments
 import com.sendgrid.helpers.mail.objects.Content
 import com.sendgrid.helpers.mail.objects.Email
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.NotificationLogConfig
-import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.channel.NotificationChannelSender
 import fanpoll.infra.notification.channel.email.EmailContent
 import fanpoll.infra.notification.logging.NotificationMessageLog
+import fanpoll.infra.notification.message.NotificationMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 
 data class SendGridConfig(
     val apiKey: String
-) {
-
-    class Builder {
-
-        private lateinit var apiKey: String
-
-        fun build(): SendGridConfig {
-            return SendGridConfig(apiKey)
-        }
-    }
-}
+)
 
 class SendGridSender(
     config: SendGridConfig,
@@ -60,11 +50,11 @@ class SendGridSender(
         logger.info { "shutdown $senderName completed" }
     }
 
-    override fun send(message: NotificationMessage) {
+    override suspend fun send(message: NotificationMessage) {
         message.receivers.map { message.copy(receivers = listOf(it)) }.forEach { sendEmail(it) }
     }
 
-    private fun sendEmail(emailMessage: NotificationMessage) {
+    private suspend fun sendEmail(emailMessage: NotificationMessage) {
         val log = emailMessage.toNotificationMessageLog()
 
         val request = Request()
@@ -109,7 +99,7 @@ class SendGridSender(
         }
     }
 
-    private fun writeLog(notificationMessageLog: NotificationMessageLog) {
+    private suspend fun writeLog(notificationMessageLog: NotificationMessageLog) {
         if (loggingConfig.enabled)
             logWriter.write(notificationMessageLog)
     }
@@ -125,7 +115,7 @@ class SendGridSender(
         return Mail(from, subject, to, content).apply {
             attachments = myContent.attachments?.map {
                 Attachments.Builder(it.fileName, it.content.inputStream())
-                    .withType(it.mimeType.value)
+                    .withType(it.mimeType)
                     .withDisposition("attachment")
                     .build()
             }

@@ -4,7 +4,7 @@
 
 package fanpoll.infra.cache.redis
 
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import kotlinx.serialization.KSerializer
 
 interface RedisValueSerializer<T> {

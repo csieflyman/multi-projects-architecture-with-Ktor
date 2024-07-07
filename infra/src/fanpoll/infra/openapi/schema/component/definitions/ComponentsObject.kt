@@ -10,8 +10,8 @@ import fanpoll.infra.openapi.schema.operation.support.Definition
 import fanpoll.infra.openapi.schema.operation.support.Schema
 import kotlin.reflect.KClass
 
-class ComponentsObject(securitySchemes: List<SecurityScheme>) {
-    val securitySchemes: Map<String, SecuritySchemeObject> = securitySchemes.associate { it.name to it.value }
+class ComponentsObject {
+    val securitySchemes: MutableMap<String, SecuritySchemeObject> = mutableMapOf()
     val headers: MutableMap<String, HeaderObject> = mutableMapOf()
     val parameters: MutableMap<String, ParameterObject> = mutableMapOf()
     val requestBodies: MutableMap<String, RequestBodyObject> = mutableMapOf()
@@ -24,6 +24,10 @@ class ComponentsObject(securitySchemes: List<SecurityScheme>) {
     private val schemaRefMap: MutableMap<KClass<*>, Schema> = mutableMapOf()
 
     fun getSchemaRef(modelClass: KClass<*>): Schema? = schemaRefMap[modelClass]
+
+    fun add(securityScheme: SecurityScheme) {
+        securitySchemes += securityScheme.name to securityScheme.value
+    }
 
     fun add(referenceObject: ReferenceObject) = add(referenceObject.getDefinition())
 

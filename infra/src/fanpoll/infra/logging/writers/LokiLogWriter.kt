@@ -4,14 +4,14 @@
 
 package fanpoll.infra.logging.writers
 
-import fanpoll.infra.ServerConfig
 import fanpoll.infra.auth.login.logging.LoginLog
-import fanpoll.infra.base.extension.toEpocNano
-import fanpoll.infra.base.extension.toMicros
+import fanpoll.infra.base.datetime.DateTimeUtils
+import fanpoll.infra.base.datetime.toEpocNano
+import fanpoll.infra.base.datetime.toMicros
 import fanpoll.infra.base.httpclient.CIOHttpClientConfig
 import fanpoll.infra.base.httpclient.HttpClientCreator
 import fanpoll.infra.base.httpclient.bodyAsTextBlocking
-import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.config.ServerConfig
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.error.ErrorLog
 import fanpoll.infra.logging.error.ServiceRequestLog
@@ -38,24 +38,7 @@ data class LokiConfig(
     val password: String,
     val pushUrl: String,
     var cio: CIOHttpClientConfig? = null
-) {
-
-    class Builder {
-
-        lateinit var username: String
-        lateinit var password: String
-        lateinit var pushUrl: String
-        private var cio: CIOHttpClientConfig? = null
-
-        fun cio(block: CIOHttpClientConfig.Builder.() -> Unit) {
-            cio = CIOHttpClientConfig.Builder().apply(block).build()
-        }
-
-        fun build(): LokiConfig {
-            return LokiConfig(username, password, pushUrl, cio)
-        }
-    }
-}
+)
 
 class LokiLogWriter(
     private val lokiConfig: LokiConfig,
@@ -73,7 +56,7 @@ class LokiLogWriter(
 
     private val json = io.ktor.client.plugins.json.defaultSerializer()
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val response = runBlocking {
             client.post(lokiConfig.pushUrl) {
                 setBody(json.write(buildJsonObject {
@@ -134,7 +117,7 @@ class LokiLogWriter(
         with(messageLog) {
             put("notificationId", notificationId.toString())
             put("eventId", eventId.toString())
-            put("notificationType", notificationType.name)
+            put("notificationType", notificationType.id)
             version?.let { put("version", it) }
             put("channel", channel.name)
             put("lang", lang.code)
@@ -158,8 +141,7 @@ class LokiLogWriter(
         with(loginLog) {
             put("userId", userId.toString())
             put("resultCode", resultCode.name)
-            put("source", source.name)
-            tenantId?.let { put("tenantId", it.value) }
+            put("source", sourceName)
             clientId?.let { put("clientId", it) }
             clientVersion?.let { put("clientVersion", it) }
             ip?.let { put("ip", it) }
@@ -172,7 +154,6 @@ class LokiLogWriter(
             put("function", function)
             put("source", source.name)
             principalId?.let { put("principalId", it) }
-            tenantId?.let { put("tenantId", it.value) }
             tags?.let { putAll(it.mapKeys { key -> "tag.$key" }) }
 
             if (request != null) {
@@ -195,7 +176,6 @@ class LokiLogWriter(
             put("function", function)
             put("source", source.name)
             principalId?.let { put("principalId", it) }
-            tenantId?.let { put("tenantId", it.value) }
             tags?.let { putAll(it.mapKeys { key -> "tag.$key" }) }
 
             putAll(fromApplicationRequestLog(request))

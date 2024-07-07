@@ -4,10 +4,9 @@
 
 package fanpoll.infra.openapi.schema.component.support
 
-import fanpoll.infra.app.AppVersion
 import fanpoll.infra.auth.AuthConst
-import fanpoll.infra.auth.ClientVersionAttributeKey
-import fanpoll.infra.auth.ClientVersionCheckResult
+import fanpoll.infra.auth.login.ClientVersionCheckResult
+import fanpoll.infra.auth.principal.ClientAttributeKey
 import fanpoll.infra.auth.provider.UserRunAsAuthProvider
 import fanpoll.infra.base.response.*
 import fanpoll.infra.openapi.schema.component.definitions.ComponentsObject
@@ -18,11 +17,12 @@ import fanpoll.infra.openapi.schema.operation.support.Schema
 import fanpoll.infra.openapi.schema.operation.support.converters.ResponseObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.converters.SchemaObjectConverter
 import fanpoll.infra.openapi.schema.operation.support.utils.ResponseUtils
+import fanpoll.infra.release.app.domain.AppVersion
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import kotlin.reflect.KType
 
-object BuiltinComponents : ComponentLoader {
+object BuiltinComponents {
 
     // ==================== Schemas ====================
 
@@ -176,7 +176,7 @@ object BuiltinComponents : ComponentLoader {
     // ==================== Headers ====================
 
     private val ClientVersionCheckResultSchema = PropertyDef(
-        ClientVersionAttributeKey.CHECK_RESULT.name, SchemaDataType.string,
+        ClientAttributeKey.CHECK_RESULT.name, SchemaDataType.string,
         enum = ClientVersionCheckResult.entries, kClass = ClientVersionCheckResult::class,
         example = ClientVersionCheckResult.Latest
     )
@@ -199,9 +199,9 @@ object BuiltinComponents : ComponentLoader {
     private val RunAsOptionalHeader = ParameterObject(ParameterInputType.header, false, runAsTokenSchema).createRef()
 
     private val ClientVersionSchema = PropertyDef(
-        ClientVersionAttributeKey.CLIENT_VERSION.name, SchemaDataType.string,
+        ClientAttributeKey.CLIENT_VERSION.name, SchemaDataType.string,
         pattern = AppVersion.NAME_PATTERN,
-        description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => ${ClientVersionAttributeKey.CLIENT_ID.name} = ${
+        description = "App 端須帶入程式版本號，Server 會回傳驗證結果至 response header => ${ClientAttributeKey.CLIENT_ID.name} = ${
             ClientVersionCheckResult.entries
         }",
         example = "1.0.0"
@@ -353,8 +353,6 @@ object BuiltinComponents : ComponentLoader {
 
     private val exampleList: List<Example> = listOf()
 
-    override fun load(): List<ReferenceObject> {
-        return listOf(headerList, parameterList, requestBodiesList, responseList, schemaList, exampleList).flatten()
-            .map { it.getReference() }
-    }
+    val components = listOf(headerList, parameterList, requestBodiesList, responseList, schemaList, exampleList).flatten()
+        .map { it.getReference() }
 }

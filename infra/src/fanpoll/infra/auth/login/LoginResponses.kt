@@ -4,7 +4,6 @@
 
 package fanpoll.infra.auth.login
 
-import fanpoll.infra.auth.ClientVersionCheckResult
 import kotlinx.serialization.Serializable
 
 @Serializable

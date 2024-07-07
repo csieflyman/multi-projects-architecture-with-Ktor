@@ -7,6 +7,7 @@ package fanpoll.infra.auth
 import fanpoll.infra.auth.principal.*
 import fanpoll.infra.base.util.IdentifiableObject
 import fanpoll.infra.openapi.schema.component.support.SecurityScheme
+import fanpoll.infra.session.UserSession
 import io.ktor.server.application.ApplicationCall
 
 sealed class PrincipalAuth(
@@ -32,7 +33,7 @@ sealed class PrincipalAuth(
         }
 
         override fun toString(): String {
-            return "ServiceAuth => authProvider = $id, allowSources = ${allowSources.map { it.name }}"
+            return "ServiceAuth => AuthProvider = $id, allowSources = ${allowSources.map { it.name }}"
         }
     }
 
@@ -40,25 +41,25 @@ sealed class PrincipalAuth(
         providerName: String,
         securitySchemes: List<SecurityScheme>,
         allowSources: Set<PrincipalSource>,
-        val typeRolesMap: Map<UserType, Set<UserRole>?>,
+        private val typeRolesMap: Map<UserType, Set<UserRole>>,
         private val allowPredicate: ((UserPrincipal) -> Boolean)? = null,
         val runAsAuthProviderName: String? = null
     ) : PrincipalAuth(providerName, securitySchemes, allowSources) {
 
         override fun allow(principal: MyPrincipal, call: ApplicationCall): Boolean {
-            return if (principal is UserPrincipal) {
+            return if (principal is UserSession) {
                 if (!allowSources.contains(principal.source)) return false
                 if (!typeRolesMap.containsKey(principal.userType)) return false
                 val roles = typeRolesMap[principal.userType]
                 if (roles.isNullOrEmpty()) return true
-                if (principal.roles.isNullOrEmpty() || principal.roles.none { it in roles }) return false
+                if (principal.userRoles.isEmpty() || principal.userRoles.none { it in roles }) return false
                 allowPredicate?.invoke(principal) ?: true
             } else false
         }
 
         override fun toString(): String {
-            return "UserAuth => authProvider = $id, allowSources = ${allowSources.map { it.name }}, " +
-                    "userTypeRoles = ${typeRolesMap.map { it.key.name + " => " + (it.value?.joinToString(",") ?: "All") }}"
+            return "UserAuth => AuthProvider = $id, allowSources = ${allowSources.map { it.name }}, " +
+                    "allowUserTypeRoles = ${typeRolesMap.map { it.key.name + " => " + (it.value.joinToString(",")) }}"
         }
     }
 }

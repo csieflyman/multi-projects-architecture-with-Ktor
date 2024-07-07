@@ -6,24 +6,22 @@ package fanpoll.infra.logging.error
 
 import fanpoll.infra.base.exception.ExceptionUtils
 import fanpoll.infra.base.response.ResponseCodeType
-import fanpoll.infra.database.custom.principalSource
-import fanpoll.infra.database.custom.userType
-import fanpoll.infra.database.sql.UUIDTable
-import fanpoll.infra.database.sql.transaction
+import fanpoll.infra.database.exposed.sql.dbExecute
+import fanpoll.infra.database.exposed.sql.principalSourceColumn
+import fanpoll.infra.database.exposed.sql.userTypeColumn
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.duration
 import org.jetbrains.exposed.sql.javatime.timestamp
-import java.util.*
 
-class ErrorLogDBWriter : LogWriter {
+class ErrorLogDBWriter(private val db: Database) : LogWriter {
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val errorLog = logEntity as ErrorLog
-        transaction {
+        dbExecute(db) {
             ErrorLogTable.insert {
                 it[id] = errorLog.id
 
@@ -37,7 +35,6 @@ class ErrorLogDBWriter : LogWriter {
                 it[project] = errorLog.project
                 it[function] = errorLog.function
                 it[sourceId] = errorLog.source
-                it[tenantId] = errorLog.tenantId?.value
                 it[principalId] = errorLog.principalId
                 it[tags] = errorLog.tags?.toString()
 
@@ -94,12 +91,11 @@ object ErrorLogTable : UUIDTable(name = "infra_error_log") {
 
     val project = varchar("project", 20)
     val function = varchar("function", 30)
-    val sourceId = principalSource("source") // name "source" conflict
-    val tenantId = varchar("tenant_id", 20).nullable()
+    val sourceId = principalSourceColumn("source") // name "source" conflict
     val principalId = varchar("principal_id", 64).nullable()
     val tags = text("tags").nullable()
 
-    val userType = userType("user_type").nullable()
+    val userType = userTypeColumn("user_type").nullable()
     val userId = uuid("user_id").nullable()
     val runAs = bool("run_as").nullable()
 
@@ -128,8 +124,5 @@ object ErrorLogTable : UUIDTable(name = "infra_error_log") {
     val serviceRspAt = timestamp("service_rsp_at").nullable()
     val serviceRspBody = text("service_rsp_body").nullable()
     val serviceDuration = duration("service_duration").nullable()
-
-    override val naturalKeys: List<Column<out Any>> = listOf(id)
-    override val surrogateKey: Column<EntityID<UUID>> = id
 }
 

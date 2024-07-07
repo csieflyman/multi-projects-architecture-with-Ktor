@@ -8,7 +8,7 @@ import fanpoll.infra.logging.LogEntity
 
 interface LogWriter {
 
-    fun write(logEntity: LogEntity)
+    suspend fun write(logEntity: LogEntity)
 
     fun shutdown() {}
 }

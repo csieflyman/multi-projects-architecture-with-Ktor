@@ -1,4 +1,6 @@
 import com.bmuschko.gradle.docker.tasks.AbstractDockerRemoteApiTask
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.io.FileInputStream
 import java.util.*
 
@@ -8,35 +10,32 @@ plugins {
 }
 
 dependencies {
-
-    val kotestVersion = "5.8.0"
-    val testContainerVersion = "1.19.3"
-
-    val kotlinVersion = "1.9.21"
-    val ktorVersion = "2.3.6"
-    val koinVersion = "3.5.0"
+    // ========== kotlin ==========
+    testImplementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.0"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     // ========== kotest ==========
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
-    testImplementation("io.kotest:kotest-property:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation(platform("io.kotest:kotest-bom:5.9.1"))
+    testImplementation("io.kotest:kotest-runner-junit5")
+    testImplementation("io.kotest:kotest-property")
+    testImplementation("io.kotest:kotest-assertions-core")
 
-    testImplementation("io.kotest.extensions:kotest-assertions-ktor-jvm:2.0.0")
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor:2.0.0")
     testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:2.0.2")
     testImplementation("io.kotest.extensions:kotest-extensions-koin:1.3.0")
 
     // ========== ktor ==========
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation(platform("io.ktor:ktor-bom:2.3.12"))
+    testImplementation("io.ktor:ktor-server-test-host")
+    testImplementation("io.ktor:ktor-client-logging")
+    testImplementation("io.ktor:ktor-client-serialization")
+    testImplementation("io.ktor:ktor-client-content-negotiation")
 
     // ========== koin ==========
-    testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
+    testImplementation("io.insert-koin:koin-test-junit5:3.5.6")
 
     // ========== testcontainers ==========
-    testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainerVersion"))
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.8"))
     testImplementation("org.testcontainers:postgresql")
 }
 
@@ -60,6 +59,12 @@ tasks.withType<Test> {
 
     useJUnitPlatform {}
 
+    testLogging {
+        events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        showStackTraces = true
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+
     val env = "local-test"
     val properties = loadProperties("$env.properties")
 
@@ -70,6 +75,7 @@ tasks.withType<Test> {
 
     failFast = true
     ignoreFailures = false
+    //testLogging.showStandardStreams = true
 
     var reportJunitXmlEnabled = true
     var reportJunitHtmlEnabled = true

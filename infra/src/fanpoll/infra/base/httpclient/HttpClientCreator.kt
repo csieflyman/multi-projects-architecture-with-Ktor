@@ -4,7 +4,7 @@
 
 package fanpoll.infra.base.httpclient
 
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.response.InfraResponseCode
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO

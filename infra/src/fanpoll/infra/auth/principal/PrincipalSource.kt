@@ -17,15 +17,15 @@ import kotlinx.serialization.encoding.Encoder
 
 @Serializable(PrincipalSource.Companion::class)
 class PrincipalSource(
-    val projectId: String, val name: String,
-    val type: PrincipalSourceType, val login: Boolean
+    val projectId: String,
+    val name: String,
+    val clientSource: ClientSource,
+    val checkClientVersion: Boolean
 ) : IdentifiableObject<String>() {
 
     override val id: String = "${projectId}_${name}"
 
-    override fun toString(): String = name
-
-    fun checkClientVersion() = login && type.isApp()
+    override fun toString(): String = id
 
     fun getAuthConfig(): PrincipalSourceAuthConfig = getAuthConfig(id)
 
@@ -33,7 +33,7 @@ class PrincipalSource(
 
         val ATTRIBUTE_KEY = AttributeKey<PrincipalSource>("principalSource")
 
-        val System = PrincipalSource("system", "system", PrincipalSourceType.System, false)
+        val System = PrincipalSource("system", "system", ClientSource.Service, false)
 
         private val sources = setOf(System).associateBy { it.id }.toMutableMap()
 

@@ -4,9 +4,7 @@
 
 package fanpoll.infra.auth.principal
 
-class ServicePrincipal(
-    override val source: PrincipalSource
-) : MyPrincipal() {
+class ServicePrincipal(override val source: PrincipalSource) : MyPrincipal {
 
     override val id: String = source.id
 

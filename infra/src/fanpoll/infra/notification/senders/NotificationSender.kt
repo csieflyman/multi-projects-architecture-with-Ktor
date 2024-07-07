@@ -8,7 +8,7 @@ import fanpoll.infra.notification.Notification
 
 interface NotificationSender {
 
-    fun send(notification: Notification)
+    suspend fun send(notification: Notification)
 
     fun shutdown() {}
 }

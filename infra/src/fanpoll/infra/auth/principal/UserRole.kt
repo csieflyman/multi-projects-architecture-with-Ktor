@@ -4,55 +4,47 @@
 
 package fanpoll.infra.auth.principal
 
-import fanpoll.infra.base.json.json
-import fanpoll.infra.base.util.IdentifiableObject
+import fanpoll.infra.base.entity.Identifiable
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.plus
+import kotlin.reflect.KClass
 
 @Serializable(UserRole.Companion::class)
-class UserRole(
-    private val userTypeId: String,
-    override val name: String,
-    @Transient private val parent: UserRole? = null
-) : PrincipalRole, IdentifiableObject<String>() {
+interface UserRole : Identifiable<String> {
 
-    override val id: String = "${userTypeId}_$name"
+    val type: UserType
+    val name: String
 
-    override fun toString(): String = name
-
-    operator fun contains(other: PrincipalRole): Boolean {
-        return if (this.javaClass == other.javaClass)
-            this == other || this == (other as UserRole).parent
-        else
-            false
-    }
+    override fun getId(): String = "${type.projectId}_${type.name}_$name"
 
     companion object : KSerializer<UserRole> {
 
-        init {
-            json.serializersModule.plus(SerializersModule {
-                polymorphicDefaultSerializer(UserRole::class) { serializer() }
-            })
+        private val userRoleEnumMap: MutableMap<String, UserRole> = mutableMapOf()
+
+        fun registerUserRole(userRoleEnumKClass: KClass<out UserRole>) {
+            require(userRoleEnumKClass.java.isEnum)
+            userRoleEnumKClass.java.enumConstants.forEach { userRoleEnumMap[(it as UserRole).getId()] = it }
         }
 
+        fun getRoleById(roleId: String): UserRole = userRoleEnumMap[roleId]!!
+
+        fun getRolesByType(type: UserType): Set<UserRole> = userRoleEnumMap.values.filter { it.type == type }.toSet()
+
         override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("fanpoll.infra.auth.principal.UserRole", PrimitiveKind.STRING)
+            PrimitiveSerialDescriptor("fanpoll.infra.auth.principal.UserType", PrimitiveKind.STRING)
 
         override fun deserialize(decoder: Decoder): UserRole {
-            val value = decoder.decodeString()
-            return UserType.lookupRole(value)
+            val id = decoder.decodeString()
+            return userRoleEnumMap[id]!!
         }
 
         override fun serialize(encoder: Encoder, value: UserRole) {
-            encoder.encodeString(value.id)
+            encoder.encodeString(value.getId())
         }
     }
 }

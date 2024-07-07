@@ -7,12 +7,10 @@ package fanpoll.infra.logging.error
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.entity.EntityDTO
-import fanpoll.infra.base.json.DurationMicroSerializer
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
+import fanpoll.infra.base.json.kotlinx.DurationMicroSerializer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
 import fanpoll.infra.base.response.ResponseCodeType
-import fanpoll.infra.base.tenant.TenantId
-import fanpoll.infra.database.util.ResultRowDTOMapper
 import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
@@ -34,7 +32,6 @@ data class ErrorLogDTO(
     var project: String? = null
     var function: String? = null
     var source: PrincipalSource? = null
-    var tenantId: TenantId? = null
     var principalId: String? = null
     var tags: String? = null
 
@@ -82,8 +79,4 @@ data class ErrorLogDTO(
     var serviceDuration: Duration? = null
 
     override fun getId(): UUID = id
-
-    companion object {
-        val mapper: ResultRowDTOMapper<ErrorLogDTO> = ResultRowDTOMapper(ErrorLogDTO::class, ErrorLogTable)
-    }
 }

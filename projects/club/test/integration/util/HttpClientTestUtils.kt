@@ -9,12 +9,13 @@ import fanpoll.club.ClubConst
 import fanpoll.infra.ProjectManager
 import fanpoll.infra.auth.principal.PrincipalSource
 import fanpoll.infra.base.httpclient.bodyAsTextBlocking
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.response.*
+import io.github.config4k.extract
 import io.ktor.client.statement.HttpResponse
 import kotlinx.serialization.json.*
 
-val projectConfig = ProjectManager.loadConfig<ClubConfig>(ClubConst.projectId)
+val projectConfig = ProjectManager.loadConfig(ClubConst.projectId).extract<ClubConfig>()
 
 fun getServiceApiKey(principalSource: PrincipalSource): String = projectConfig.auth.getServiceAuthConfigs()
     .first { it.principalSource == principalSource }.apiKey

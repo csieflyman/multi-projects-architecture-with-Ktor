@@ -1,4 +1,9 @@
+# Agent Configuration => https://opentelemetry.io/docs/languages/java/automatic/configuration/
+# General SDK Configuration => https://opentelemetry.io/docs/languages/sdk-configuration/general/
+# OTLP Exporter Configuration => https://opentelemetry.io/docs/languages/java/automatic/configuration/
+
 otel.traces.exporter=otlp
+otel.exporter.otlp.traces.protocol=http/json
 otel.exporter.otlp.traces.endpoint=https://tempo-us-central1.grafana.net:443
 # environment variable: OTEL_EXPORTER_OTLP_TRACES_HEADERS
 otel.exporter.otlp.traces.headers=Authorization=<base64 token>

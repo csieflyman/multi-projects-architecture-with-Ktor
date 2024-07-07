@@ -53,7 +53,8 @@
     <logger name="fanpoll.infra.database" level="DEBUG"/>
     <logger name="fanpoll.infra.base.async.CoroutineUtils" level="WARN"/>
     <logger name="fanpoll.infra.openapi" level="WARN"/>
-    <logger name="fanpoll.infra.app" level="WARN"/>
 
     <logger name="fanpoll" level="DEBUG"/>
+
+    <logger name="com.twilio.http" level="DEBUG"/>
 </configuration>

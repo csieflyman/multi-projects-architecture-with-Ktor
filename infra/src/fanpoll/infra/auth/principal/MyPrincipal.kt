@@ -4,10 +4,9 @@
 
 package fanpoll.infra.auth.principal
 
-import fanpoll.infra.base.util.IdentifiableObject
 import io.ktor.server.auth.Principal
 
-abstract class MyPrincipal : Principal, IdentifiableObject<String>() {
-
-    abstract val source: PrincipalSource
+interface MyPrincipal : Principal {
+    val id: String
+    val source: PrincipalSource
 }

@@ -4,7 +4,7 @@
 
 package fanpoll.infra.base.location
 
-import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.base.datetime.DateTimeUtils
 import io.ktor.util.converters.DataConversion
 import java.time.*
 import java.util.*

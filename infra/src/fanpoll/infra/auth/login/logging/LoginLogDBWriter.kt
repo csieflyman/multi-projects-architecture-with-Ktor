@@ -5,33 +5,28 @@
 package fanpoll.infra.auth.login.logging
 
 import fanpoll.infra.auth.login.LoginResultCode
-import fanpoll.infra.database.custom.principalSource
-import fanpoll.infra.database.sql.UUIDTable
-import fanpoll.infra.database.sql.transaction
+import fanpoll.infra.database.exposed.sql.dbExecute
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.timestamp
-import java.util.*
 
 class LoginLogDBWriter : LogWriter {
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val loginLog = logEntity as LoginLog
-        transaction {
+        dbExecute {
             LoginLogTable.insert {
-                it[traceId] = loginLog.traceId
                 it[userId] = loginLog.userId
                 it[resultCode] = loginLog.resultCode
                 it[occurAt] = loginLog.occurAt
                 it[project] = loginLog.project
-                it[sourceId] = loginLog.source
-                it[tenantId] = loginLog.tenantId?.value
+                it[sourceName] = loginLog.sourceName
                 it[clientId] = loginLog.clientId
                 it[clientVersion] = loginLog.clientVersion
                 it[ip] = loginLog.ip
+                it[traceId] = loginLog.traceId
                 it[sid] = loginLog.sid
             }
         }
@@ -46,14 +41,10 @@ object LoginLogTable : UUIDTable(name = "infra_login_log") {
     val occurAt = timestamp("occur_at")
 
     val project = varchar("project", 20)
-    val sourceId = principalSource("source") // name "source" conflict
-    val tenantId = varchar("tenant_id", 20).nullable()
+    val sourceName = varchar("source", 30) // name "source" conflict
     val clientId = varchar("client_id", 36).nullable()
     val clientVersion = varchar("client_version", 36).nullable()
     val ip = varchar("ip", 39).nullable()
 
     val sid = char("sid", 120).nullable()
-
-    override val naturalKeys: List<Column<out Any>> = listOf(id)
-    override val surrogateKey: Column<EntityID<UUID>> = id
 }

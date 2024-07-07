@@ -4,24 +4,21 @@
 
 package fanpoll.infra.notification.logging
 
-import fanpoll.infra.database.custom.lang
-import fanpoll.infra.database.sql.UUIDTable
-import fanpoll.infra.database.sql.transaction
+import fanpoll.infra.database.exposed.sql.dbExecute
+import fanpoll.infra.database.exposed.sql.langColumn
 import fanpoll.infra.logging.LogEntity
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.channel.NotificationChannel
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.duration
 import org.jetbrains.exposed.sql.javatime.timestamp
-import java.util.*
 
 class NotificationMessageLogDBWriter : LogWriter {
 
-    override fun write(logEntity: LogEntity) {
+    override suspend fun write(logEntity: LogEntity) {
         val messageLog = logEntity as NotificationMessageLog
-        transaction {
+        dbExecute {
             NotificationMessageLogTable.insert {
                 it[id] = messageLog.id
                 it[notificationId] = messageLog.notificationId
@@ -57,7 +54,7 @@ object NotificationMessageLogTable : UUIDTable(name = "infra_notification_messag
     val type = varchar("type", 30)
     val version = varchar("version", 5).nullable()
     val channel = enumerationByName("channel", 20, NotificationChannel::class)
-    val lang = lang("lang")
+    val lang = langColumn("lang")
     val sendAt = timestamp("send_at").nullable()
     val errorMsg = text("error_msg").nullable()
     val receivers = text("receivers")
@@ -73,7 +70,4 @@ object NotificationMessageLogTable : UUIDTable(name = "infra_notification_messag
     val rspAt = timestamp("rsp_at").nullable()
     val duration = duration("duration").nullable()
     val rspBody = text("rsp_body").nullable()
-
-    override val naturalKeys: List<Column<out Any>> = listOf(id)
-    override val surrogateKey: Column<EntityID<UUID>> = id
 }

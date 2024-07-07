@@ -4,6 +4,10 @@
 
 package fanpoll.club
 
+import fanpoll.club.auth.AuthConfig
+import fanpoll.club.database.ClubDatabasesConfig
+
 data class ClubConfig(
-    val auth: ClubAuthConfig
+    val databases: ClubDatabasesConfig,
+    val auth: AuthConfig
 )

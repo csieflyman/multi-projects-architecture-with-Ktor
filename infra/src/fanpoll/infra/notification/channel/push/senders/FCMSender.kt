@@ -10,48 +10,35 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.*
-import fanpoll.infra.app.PushTokenStorage
 import fanpoll.infra.base.async.ThreadPoolConfig
 import fanpoll.infra.base.async.ThreadPoolUtils
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.logging.writers.LogWriter
 import fanpoll.infra.notification.NotificationLogConfig
-import fanpoll.infra.notification.NotificationMessage
 import fanpoll.infra.notification.channel.NotificationChannelSender
 import fanpoll.infra.notification.channel.push.PushContent
+import fanpoll.infra.notification.channel.push.token.DevicePushTokenExposedRepository
 import fanpoll.infra.notification.logging.NotificationMessageLog
+import fanpoll.infra.notification.message.NotificationMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ExecutorService
 
+// https://firebase.google.com/docs/cloud-messaging/manage-tokens
+
 data class FCMConfig(
     val connectTimeout: Int = 60000,
     val readTimeout: Int = 180000,
     val threadPool: ThreadPoolConfig
-) {
-
-    class Builder {
-
-        var connectTimeout: Int = 60000
-        var readTimeout: Int = 180000
-        private lateinit var threadPoolConfig: ThreadPoolConfig
-
-        fun threadPool(block: ThreadPoolConfig.Builder.() -> Unit) {
-            threadPoolConfig = ThreadPoolConfig.Builder().apply(block).build()
-        }
-
-        fun build(): FCMConfig {
-            return FCMConfig(connectTimeout, readTimeout, threadPoolConfig)
-        }
-    }
-}
+)
 
 class FCMSender(
     config: FCMConfig,
-    private val pushTokenStorage: PushTokenStorage,
+    private val devicePushTokenRepository: DevicePushTokenExposedRepository,
     private val loggingConfig: NotificationLogConfig,
     private val logWriter: LogWriter
 ) : NotificationChannelSender {
@@ -78,7 +65,7 @@ class FCMSender(
         logger.info { "shutdown $senderName completed" }
     }
 
-    override fun send(message: NotificationMessage) {
+    override suspend fun send(message: NotificationMessage) {
         if (message.receivers.size == 1)
             sendSingle(message)
         else
@@ -163,7 +150,7 @@ class FCMSender(
 
                 if (unRegisteredTokens.isNotEmpty()) {
                     log.invalidRecipientIds = unRegisteredTokens
-                    pushTokenStorage.deleteUnRegisteredTokens(unRegisteredTokens.toSet())
+                    devicePushTokenRepository.deleteUnRegisteredTokens(unRegisteredTokens.toSet())
                 }
                 if (failureResponses.isNotEmpty()) {
                     log.success = false
@@ -206,7 +193,7 @@ class FCMSender(
             if (ex.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
                 val tokens = message.receivers
                 log.invalidRecipientIds = tokens
-                pushTokenStorage.deleteUnRegisteredTokens(tokens.toSet())
+                devicePushTokenRepository.deleteUnRegisteredTokens(tokens.toSet())
             } else {
                 log.rspCode = ex.messagingErrorCode.name
                 log.rspMsg = ex.message
@@ -227,8 +214,11 @@ class FCMSender(
     }
 
     private fun writeLog(notificationMessageLog: NotificationMessageLog) {
-        if (loggingConfig.enabled)
-            logWriter.write(notificationMessageLog)
+        if (loggingConfig.enabled) {
+            runBlocking {
+                logWriter.write(notificationMessageLog)
+            }
+        }
     }
 
     private fun toFCMDataMap(message: NotificationMessage): Map<String, String> {
@@ -236,13 +226,13 @@ class FCMSender(
             val content = content as PushContent
             val map = mutableMapOf(
                 "id" to id.toString(),
-                "type" to type.name,
+                "type" to type.id,
                 "category" to type.category.name,
                 "title" to content.title,
                 "body" to content.body
             )
             version?.also { map["version"] = it }
-            content.data?.forEach { (k, v) -> map[k] = v }
+            content.data.forEach { (k, v) -> map[k] = v }
             return map.toMap()
         }
     }

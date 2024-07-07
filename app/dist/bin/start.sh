@@ -27,9 +27,15 @@ export APP_OPTS=-Dconfig.file="$APP_HOME/application.conf -Dlogback.configuratio
 export PORT="8080"
 export SERVER_SHUTDOWN_KEY="changeit"
 
-export DB_URL="jdbc:postgresql://localhost:5432/fanpoll"
-export DB_USER="fanpoll"
-export DB_PASSWORD="changeit"
+export INFRA_DB_URL="jdbc:postgresql://localhost:5432/infra"
+export INFRA_DB_USER="infra"
+export INFRA_DB_PASSWORD="changeit"
+export OPS_DB_URL="jdbc:postgresql://localhost:5432/ops"
+export OPS_DB_USER="ops"
+export OPS_DB_PASSWORD="changeit"
+export CLUB_DB_URL="jdbc:postgresql://localhost:5432/club"
+export CLUB_DB_USER="club"
+export CLUB_DB_PASSWORD="changeit"
 
 export REDIS_HOST="localhost"
 export REDIS_PORT="6379"
@@ -42,6 +48,9 @@ export GOOGLE_APPLICATION_CREDENTIALS="$APP_HOME/firebase-key.json"
 
 #export SENTRY_DSN=
 #export SENDGRID_API_KEY=
+#export TWILIO_ACCOUNT_SID=
+#export TWILIO_AUTH_TOKEN=
+#export TWILIO_FROM_PHONE_NUMBER=
 #export LOKI_USERNAME=
 #export LOKI_PASSWORD=
 

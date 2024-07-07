@@ -3,21 +3,22 @@
  */
 package fanpoll.infra.base.extension
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.kpropmap.applyProps
 import org.kpropmap.deserialize
 import org.kpropmap.propMapOf
-import java.time.Duration
-import java.time.Instant
-import java.time.temporal.ChronoUnit
+import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
-import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
+
+private val logger = KotlinLogging.logger {}
 
 // ========== Map & Bean ==========
 fun Any.toNotNullMap(prefix: String? = null): Map<String, Any> {
-    val map = propMapOf(this).filterNotNull()
+    val map = propMapOf(this).filterValuesNotNull()
     return if (prefix != null) map.mapKeys { "$prefix.$it" } else map
 }
 
@@ -34,22 +35,46 @@ inline fun <reified T : Any> Map<String, Any?>.mergeTo(obj: T, exclude: List<KPr
     return propMapOf(this).applyProps(obj, exclude)
 }
 
-fun <K : Any, V : Any> Map<out K?, V?>.filterNotNull(): Map<K, V> {
+fun <K : Any, V : Any> Map<out K?, V?>.filterValuesNotNull(): Map<K, V> {
     return filterValues { it != null } as Map<K, V>
 }
 
-fun <T : Any, R : Any> T.copyPropsFrom(fromObject: R, ignoreNullValue: Boolean? = true, vararg excludes: KProperty<*>) {
-    val mutableProps =
-        this::class.memberProperties.filterIsInstance<KMutableProperty1<T, *>>().filterNot { excludes.contains(it) }
-    val sourceProps = fromObject::class.memberProperties
-    mutableProps.forEach { targetProp ->
-        sourceProps.find {
-            // make sure properties have same name and compatible types
-            it.name == targetProp.name && targetProp.returnType.isSupertypeOf(it.returnType)
-        }?.let { matchingProp ->
-            val value = matchingProp.getter.call(fromObject)
+fun <T : Any, R : Any> T.toObject(targetKClass: KClass<R>, block: (R.(T) -> Unit)? = null): R {
+    logger.debug { "source class = " + this.javaClass.kotlin.qualifiedName }
+    logger.debug { "target class = " + targetKClass.qualifiedName }
+    val targetConstructor = targetKClass.primaryConstructor ?: targetKClass.constructors.first() // Assume primaryConstructor
+    val target = newInstanceWithConstructor(this, targetConstructor)
+    target.copyPropsFrom(this, excludes = targetConstructor.parameters.mapNotNull { it.name })
+    if (block != null)
+        target.block(this)
+    return target
+}
+
+private fun <T : Any, R : Any> newInstanceWithConstructor(source: T, targetConstructor: KFunction<R>): R {
+    val sourceProps = source.javaClass.kotlin.memberProperties
+    val parameterValueMap = targetConstructor.parameters.associateWith { targetKParameter ->
+        sourceProps.first { it.name == targetKParameter.name }.get(source)
+    }
+    logger.debug { "parameterValueMap = $parameterValueMap" }
+    return targetConstructor.callBy(parameterValueMap)
+}
+
+fun <T : Any, R : Any> T.copyPropsFrom(source: R, ignoreNullValue: Boolean? = true, excludes: List<String>? = null) {
+    val sourceProps = source::class.memberProperties
+    val targetProps = this::class.memberProperties.filterIsInstance<KMutableProperty1<T, *>>()
+        .filterNot { excludes?.contains(it.name) ?: false }
+    logger.debug { "source class = " + source.javaClass.kotlin.qualifiedName }
+    logger.debug { "source props =? " + sourceProps.map { it.name to it.returnType } }
+    logger.debug { "target class = " + this.javaClass.kotlin.qualifiedName }
+    logger.debug { "target props => " + targetProps.map { it.name to it.returnType } }
+
+    // make sure properties have same name and compatible types
+    targetProps.forEach { targetProp ->
+        sourceProps.find { it.name == targetProp.name }?.let { sourceProp ->
+            val value = sourceProp.getter.call(source)
+            logger.debug { "copy " + sourceProp.name + " value = " + value }
             if (ignoreNullValue == false || value != null)
-                targetProp.setter.call(this, matchingProp.getter.call(fromObject))
+                targetProp.setter.call(this, value)
         }
     }
 }
@@ -120,9 +145,3 @@ fun <T : Any> T.myHashCode(vararg properties: T.() -> Any?): Int {
 
     return result
 }
-
-fun Instant.toEpocMicro(): Long = ChronoUnit.MICROS.between(Instant.EPOCH, this)
-
-fun Instant.toEpocNano(): Long = ChronoUnit.NANOS.between(Instant.EPOCH, this)
-
-fun Duration.toMicros(): Long = this.toNanos() / 1000

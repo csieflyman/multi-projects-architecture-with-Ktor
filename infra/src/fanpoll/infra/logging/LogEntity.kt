@@ -4,7 +4,7 @@
 
 package fanpoll.infra.logging
 
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.util.IdentifiableObject
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement

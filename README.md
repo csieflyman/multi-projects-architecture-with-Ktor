@@ -11,8 +11,8 @@ This project has two subprojects built on common infrastructure and library but 
     application {
         modules = [
             fanpoll.infra.ApplicationKt.main,
-            fanpoll.ops.OpsProjectKt.opsMain,
-            fanpoll.club.ClubProjectKt.clubMain
+            fanpoll.ops.OpsProjectKt.opsProject,
+            fanpoll.club.ClubProjectKt.clubProject
         ]
     }
 ```
@@ -169,8 +169,8 @@ data class SessionConfig(
     application {
         modules = [
             fanpoll.infra.ApplicationKt.main,
-            fanpoll.ops.OpsProjectKt.opsMain,
-            fanpoll.club.ClubProjectKt.clubMain
+            fanpoll.ops.OpsProjectKt.opsProject,
+            fanpoll.club.ClubProjectKt.clubProject
         ]
     }
 ```

@@ -52,7 +52,6 @@ object InfraResponseCode {
         ResponseCode("BAD_REQUEST_BODY_FIELD", "1005", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.UnprocessableEntity)
     val BAD_REQUEST = ResponseCode("BAD_REQUEST", "1006", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
     val BAD_REQUEST_LANG = ResponseCode("BAD_REQUEST_LANG", "1007", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
-    val BAD_REQUEST_TENANT_ID = ResponseCode("BAD_REQUEST_HASH_ID", "1008", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
     val BAD_REQUEST_HASH_ID = ResponseCode("BAD_REQUEST_HASH_ID", "1009", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
     val BAD_REQUEST_APP_VERSION = ResponseCode("BAD_REQUEST_APP_VERSION", "1010", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.BadRequest)
 
@@ -64,12 +63,10 @@ object InfraResponseCode {
     val AUTH_ROLE_FORBIDDEN = ResponseCode("AUTH_ROLE_FORBIDDEN", "2004", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.Forbidden)
     val AUTH_SESSION_NOT_FOUND = ResponseCode("AUTH_SESSION_NOT_FOUND", "2005", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Unauthorized)
     val AUTH_PRINCIPAL_DISABLED = ResponseCode("AUTH_PRINCIPAL_DISABLED", "2006", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Forbidden)
-    val AUTH_TENANT_DISABLED = ResponseCode("AUTH_TENANT_DISABLED", "2007", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Forbidden)
     val AUTH_LOGIN_UNAUTHENTICATED =
         ResponseCode("AUTH_LOGIN_UNAUTHENTICATED", "2008", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Unauthorized)
     val AUTH_BAD_PASSWORD = ResponseCode("AUTH_BAD_PASSWORD", "2009", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Unauthorized)
     val AUTH_SESSION_INVALID = ResponseCode("AUTH_SESSION_INVALID", "2010", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Unauthorized)
-    val AUTH_TENANT_FORBIDDEN = ResponseCode("AUTH_TENANT_FORBIDDEN", "2011", ResponseCodeType.CLIENT_INFO, HttpStatusCode.Forbidden)
     val AUTH_BAD_HOST = ResponseCode("AUTH_BAD_HOST", "2012", ResponseCodeType.CLIENT_ERROR, HttpStatusCode.Unauthorized)
     val AUTH_SESSION_NOT_FOUND_OR_EXPIRED =
         ResponseCode("AUTH_SESSION_NOT_FOUND_OR_EXPIRED", "2013", ResponseCodeType.CLIENT_INFO, HttpStatusCode.OK)

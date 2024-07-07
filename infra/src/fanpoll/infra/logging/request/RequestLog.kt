@@ -5,24 +5,25 @@
 package fanpoll.infra.logging.request
 
 import fanpoll.infra.auth.AuthConst
-import fanpoll.infra.auth.ClientVersionAttributeKey
+import fanpoll.infra.auth.principal.ClientAttributeKey
 import fanpoll.infra.auth.principal.MyPrincipal
 import fanpoll.infra.auth.principal.PrincipalSource
-import fanpoll.infra.auth.principal.UserPrincipal
 import fanpoll.infra.auth.principal.UserType
 import fanpoll.infra.base.extension.bodyString
 import fanpoll.infra.base.extension.publicRemoteHost
 import fanpoll.infra.base.extension.toMap
-import fanpoll.infra.base.json.DurationMicroSerializer
-import fanpoll.infra.base.json.InstantSerializer
-import fanpoll.infra.base.json.UUIDSerializer
-import fanpoll.infra.base.tenant.tenantId
+import fanpoll.infra.base.json.kotlinx.DurationMicroSerializer
+import fanpoll.infra.base.json.kotlinx.InstantSerializer
+import fanpoll.infra.base.json.kotlinx.UUIDSerializer
 import fanpoll.infra.logging.*
 import fanpoll.infra.logging.RequestAttributeKey.TAGS
+import fanpoll.infra.session.UserSession
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.principal
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
+import io.ktor.server.sessions.get
+import io.ktor.server.sessions.sessions
 import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
@@ -43,10 +44,9 @@ class RequestLog(
     override val project = principal?.source?.projectId ?: "infra"
     val function = call.request.logFunction()
     val source = principal?.source ?: PrincipalSource.System
-    val tenantId = call.tenantId
     val principalId = principal?.id
 
-    val user = call.principal<UserPrincipal>()?.let { UserLog(it) }
+    val user = if (principal != null) call.sessions.get<UserSession>()?.let { UserLog(it) } else null
     val request = ApplicationRequestLog(call, config.includeHeaders, config.includeQueryString, config.excludeRequestBodyPaths)
     val response = ApplicationResponseLog(call, request)
 
@@ -93,8 +93,8 @@ class ApplicationRequestLog(
         if (excludeRequestBodyPaths != null && excludeRequestBodyPaths.any { call.request.path().endsWith(it) }) null
         else call.bodyString(),
         call.request.publicRemoteHost,
-        call.principal<UserPrincipal>()?.clientId ?: call.attributes.getOrNull(ClientVersionAttributeKey.CLIENT_ID),
-        call.attributes.getOrNull(ClientVersionAttributeKey.CLIENT_VERSION)
+        call.sessions.get<UserSession>()?.clientId ?: call.attributes.getOrNull(ClientAttributeKey.CLIENT_ID),
+        call.attributes.getOrNull(ClientAttributeKey.CLIENT_VERSION)
     )
 }
 
@@ -119,5 +119,5 @@ class UserLog(
     @Serializable(with = UUIDSerializer::class) val id: UUID,
     val runAs: Boolean = false
 ) {
-    constructor(principal: UserPrincipal) : this(principal.userType, principal.userId, principal.runAs)
+    constructor(session: UserSession) : this(session.userType, session.userId, session.runAs)
 }

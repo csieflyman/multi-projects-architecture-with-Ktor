@@ -4,14 +4,12 @@
 
 package fanpoll.infra.openapi
 
-import fanpoll.infra.auth.AuthConst
-import fanpoll.infra.base.util.DateTimeUtils
+import fanpoll.infra.base.datetime.DateTimeUtils
+import fanpoll.infra.openapi.route.RouteApiOperation
 import fanpoll.infra.openapi.schema.Info
 import fanpoll.infra.openapi.schema.OpenAPIObject
 import fanpoll.infra.openapi.schema.Server
 import fanpoll.infra.openapi.schema.component.support.BuiltinComponents
-import fanpoll.infra.openapi.schema.component.support.ComponentLoader
-import fanpoll.infra.openapi.schema.component.support.DefaultSecurityScheme
 import fanpoll.infra.openapi.schema.component.support.SecurityScheme
 import fanpoll.infra.openapi.schema.operation.definitions.ReferenceObject
 import kotlinx.html.div
@@ -20,13 +18,13 @@ import kotlinx.html.p
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.ul
 import java.time.LocalDateTime
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.typeOf
 
 class ProjectOpenApi(
     val projectId: String,
     private val urlRootPath: String,
     private val securitySchemes: List<SecurityScheme>,
-    private val operations: List<OpenApiOperation>,
-    private val componentLoader: ComponentLoader? = null,
     private val configure: (OpenAPIObject.() -> Unit)? = null
 ) {
 
@@ -44,7 +42,8 @@ class ProjectOpenApi(
         )
         configure?.invoke(openAPIObject)
 
-        openAPIObject.initComponents(securitySchemes)
+        securitySchemes.forEach { openAPIObject.components.add(it) }
+
         loadReusableComponents()
 
         operations.forEach { it.init(openAPIObject) }
@@ -71,18 +70,33 @@ class ProjectOpenApi(
         }
     }
 
-    private fun loadReusableComponents() {
-        val components = mutableListOf<ReferenceObject>()
-        components += BuiltinComponents.load()
-        componentLoader?.load()?.also { components += it }
-        components.forEach { openAPIObject.components.add(it) }
+    fun addModuleOpenApi(moduleOpenApi: Any) {
+        addOperations(moduleOpenApi)
+        addComponents(moduleOpenApi)
     }
 
-    companion object {
+    private val operationType = typeOf<RouteApiOperation>()
+    private val operations: MutableList<RouteApiOperation> = mutableListOf()
+    private fun addOperations(moduleOpenApi: Any) {
+        val allOperations = moduleOpenApi.javaClass.kotlin.memberProperties
+            .filter { it.returnType == operationType }
+            .map { it.getter.call(moduleOpenApi) as RouteApiOperation }
+        operations.addAll(allOperations)
+    }
 
-        val apiKeySecurityScheme = SecurityScheme.apiKeyAuth(
-            DefaultSecurityScheme.ApiKeyAuth.name,
-            AuthConst.API_KEY_HEADER_NAME
-        )
+    private val componentType = typeOf<ReferenceObject>()
+    val components: MutableList<ReferenceObject> = mutableListOf()
+    private fun addComponents(moduleOpenApi: Any) {
+        val allComponents = moduleOpenApi.javaClass.kotlin.memberProperties
+            .filter { it.returnType == componentType }
+            .map { it.getter.call(moduleOpenApi) as ReferenceObject }
+        components.addAll(allComponents)
+    }
+
+    private fun loadReusableComponents() {
+        val allComponents = mutableListOf<ReferenceObject>()
+        allComponents += BuiltinComponents.components
+        allComponents += components
+        allComponents.forEach { openAPIObject.components.add(it) }
     }
 }

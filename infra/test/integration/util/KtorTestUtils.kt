@@ -5,7 +5,7 @@
 package integration.util
 
 import fanpoll.infra.base.httpclient.bodyAsTextBlocking
-import fanpoll.infra.base.json.json
+import fanpoll.infra.base.json.kotlinx.json
 import fanpoll.infra.base.response.*
 import io.ktor.client.statement.HttpResponse
 import kotlinx.serialization.json.*
