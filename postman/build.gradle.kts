@@ -7,12 +7,12 @@ import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.task.NodeTask
 
 plugins {
-    id("com.github.node-gradle.node") version "7.0.0"
+    id("com.github.node-gradle.node") version "7.0.2"
 }
 
 // ========== Configuration ==========
 
-val openApiProjectName = "club" // club, ops
+val openApiProjectName = "ops" // club, ops
 val openApiSchemaUrl = "http://localhost:8080/apidocs/schema/$openApiProjectName.json"
 val postmanEnvironment = "localhost"
 val swaggerUserName = "fanpoll"

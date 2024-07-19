@@ -24,8 +24,12 @@ import kotlinx.serialization.serializer
 class OperationObject(
     val operationId: String,
     val tags: List<String>,
+    /**
+     * openapi operation summary correspond to openapi-to-postman converter options.requestNameSource = 'Fallback' (summary -> operationId -> description -> url) <br/>
+     * @see <a href="https://github.com/postmanlabs/openapi-to-postman/blob/HEAD/OPTIONS.md">openapi-to-postman docs</a>
+     */
     var summary: String = operationId,
-    var description: String? = null,
+    var description: String? = "",
     val deprecated: Boolean? = null
 ) {
 

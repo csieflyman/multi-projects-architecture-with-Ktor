@@ -105,11 +105,22 @@ function setResponse(response) {
 function addEvent(event) {
     event.push(
         {
+            listen: "prerequest",
+            script: {
+                type: "text/javascript",
+                exec: [
+                    "console.log('[' + pm.iterationData.get('_requestName') + '] => ' + pm.request.method + '/' + pm.request.url);"
+                ]
+            }
+        }
+    );
+    event.push(
+        {
             listen: "test",
             script: {
                 type: "text/javascript",
                 exec: [
-                    "let script = pm.iterationData.get('_test');eval(script);postman.setNextRequest(null);"
+                    "eval(pm.iterationData.get('_test'));pm.execution.setNextRequest(null);"
                 ]
             }
         }
@@ -134,7 +145,7 @@ function addDummyRequestAtFirstPosition(collection) {
                         script: {
                             type: "text/javascript",
                             exec: [
-                                "postman.setNextRequest(pm.iterationData.get('_requestName'));"
+                                "pm.execution.setNextRequest(pm.iterationData.get('_requestName'));"
                             ]
                         }
                     }

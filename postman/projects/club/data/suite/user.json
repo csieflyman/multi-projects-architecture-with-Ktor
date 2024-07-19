@@ -2,19 +2,19 @@
   {
     "_requestName": "CreateUser",
     "X-API-KEY": "club_root",
-    "_requestBody": "{\"account\": \"tester@abcde.com\",\"enabled\": true,\"role\": \"Admin\",\"name\": \"tester\",\"gender\": \"Male\",\"birthday\": 2000,\"email\": \"tester@abcde.com\",\"lang\": \"zh-TW\",\"mobile\": \"0987654321\"}",
+    "_requestBody": "{\"account\": \"tester@abcde.com\",\"enabled\": true,\"roles\": [\"Admin\"],\"name\": \"tester\",\"gender\": \"Male\",\"birthYear\": 2000,\"email\": \"tester@abcde.com\",\"lang\": \"zh-TW\",\"mobile\": \"0987654321\"}",
     "_test": "pm.test('check password required', function(){pm.response.to.have.status(400);});"
   },
   {
     "_requestName": "CreateUser",
     "X-API-KEY": "club_root",
-    "_requestBody": "{\"account\": \"tester@abcde.com\",\"password\": \"123456\",\"enabled\": true,\"role\": \"Admin\",\"name\": \"tester\",\"gender\": \"Male\",\"birthday\": 2000,\"email\": \"tester@abcde.com\",\"lang\": \"zh-TW\",\"mobile\": \"0987654321\"}",
+    "_requestBody": "{\"account\": \"tester@abcde.com\",\"password\": \"123456\",\"enabled\": true,\"roles\": [\"Admin\"],\"name\": \"tester\",\"gender\": \"Male\",\"birthYear\": 2000,\"email\": \"tester@abcde.com\",\"lang\": \"zh-TW\",\"mobile\": \"0987654321\"}",
     "_test": "pm.test('200 ok', function(){pm.response.to.have.status(200);});"
   },
   {
     "_requestName": "Login",
     "X-API-KEY": "club_android",
-    "_requestBody": "{\"account\": \"tester@abcde.com\",\"password\": \"123456\",\"deviceId\": \"623b4a70-64fc-401a-978b-8d63dfaacddc\",\"devicePushToken\": \"abcdefghijklmnopqrstuvwxyz\",\"deviceOsVersion\": \"Android 9.0\"}",
+    "_requestBody": "{\"account\": \"tester@abcde.com\",\"password\": \"123456\",\"deviceId\": \"623b4a70-64fc-401a-978b-8d63dfaacddc\",\"devicePushToken\": \"abcdefghijklmnopqrstuvwxyz\",\"appOS\": \"Android\"}",
     "_test": "pm.test('200 ok', function(){pm.response.to.have.status(200);}); pm.environment.set('sid', pm.response.json().data.sid);"
   },
   {

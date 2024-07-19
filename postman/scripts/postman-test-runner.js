@@ -89,7 +89,7 @@ function runAllFoldersAndSuitesInSequence() {
 }
 
 function runAllFoldersInParallel(next) {
-    if(!fs.existsSync(`projects/${projectName}/data/folder`))
+    if (!fs.existsSync(`projects/${projectName}/data/folder`))
         return
     console.log('==================== Run Folders Begin ====================');
     const runners = getAllFoldersRunners();
@@ -104,7 +104,7 @@ function runAllFoldersInParallel(next) {
 }
 
 function runAllSuitesInParallel(next) {
-    if(!fs.existsSync(`projects/${projectName}/data/suite`))
+    if (!fs.existsSync(`projects/${projectName}/data/suite`))
         return
     console.log('==================== Run Suites Begin ====================');
     const runners = getAllSuitesRunners();
@@ -121,9 +121,9 @@ function runAllSuitesInParallel(next) {
 function getAllFoldersRunners() {
     return fs.readdirSync(`projects/${projectName}/data/folder`).map(fileName => {
         let folderName = fileName.replace('.json', '');
+        console.log(`========== Folder ${folderName} ==========`);
         htmlextraDefaultOptions.export = `projects/${projectName}/report/folder/${folderName}-report.html`
         return function (finish) {
-            console.log(`========== Folder ${folderName} Begin ==========`);
             newman.run({
                 globals: `projects/${projectName}/globals.json`,
                 environment: envFilePath,
@@ -134,23 +134,30 @@ function getAllFoldersRunners() {
                 reporter: {
                     htmlextra: htmlextraDefaultOptions
                 }
-            }, function (err) {
-                if (err) {
-                    console.error(`[ERROR] run folder ${folderName} failure`);
+            }).on('start', function (err, args) { // on start of run, log to console
+                console.log('running a collection...');
+            }).on('done', function (err, summary) {
+                if (err || summary.error) {
+                    console.error('collection run encountered an error.');
+                } else {
+                    console.log('collection run completed.');
                 }
-                finish(err, folderName);
+            }).on('console', function (err, args) {
+                console.log(`========== ${args.messages} =============`);
+                //console.log(err);
+                //console.log(args);
             });
-            console.log(`========== Folder ${folderName} End ==========`);
         }
     });
 }
 
+
 function getAllSuitesRunners() {
     return fs.readdirSync(`projects/${projectName}/data/suite`).map(fileName => {
         let suiteName = fileName.replace('.json', '');
+        console.log(`========== Suite ${suiteName} ==========`);
         htmlextraDefaultOptions.export = `projects/${projectName}/report/suite/${suiteName}-report.html`
         return function (finish) {
-            console.log(`========== Suite ${suiteName} Begin ==========`);
             newman.run({
                 globals: `projects/${projectName}/globals.json`,
                 environment: envFilePath,
@@ -160,13 +167,19 @@ function getAllSuitesRunners() {
                 reporter: {
                     htmlextra: htmlextraDefaultOptions
                 }
-            }, function (err) {
-                if (err) {
-                    console.error(`[ERROR] run suite ${suiteName} failure`);
+            }).on('start', function (err, args) { // on start of run, log to console
+                console.log('running a collection...');
+            }).on('done', function (err, summary) {
+                if (err || summary.error) {
+                    console.error('collection run encountered an error.');
+                } else {
+                    console.log('collection run completed.');
                 }
-                finish(err, suiteName);
+            }).on('console', function (err, args) {
+                console.log(`========== ${args.messages} =============`);
+                //console.log(err);
+                //console.log(args);
             });
-            console.log(`========== Suite ${suiteName} End ==========`);
         }
     });
 }
