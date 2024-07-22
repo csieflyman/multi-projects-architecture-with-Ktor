@@ -46,7 +46,7 @@ dependencies {
     //implementation("io.insert-koin:koin-logger-slf4j:$koinVersion") // use https://github.com/oshai/kotlin-logging
 
     // =============== logging ===============
-    api("io.github.oshai:kotlin-logging:6.0.9")
+    api("io.github.oshai:kotlin-logging:7.0.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.5.6")
 
     // =============== database ===============
@@ -61,12 +61,12 @@ dependencies {
 
     implementation("com.zaxxer:HikariCP:5.1.0")
 
-    implementation("org.flywaydb:flyway-database-postgresql:10.13.0")
+    implementation("org.flywaydb:flyway-database-postgresql:10.16.0")
 
     runtimeOnly("org.postgresql:postgresql:42.7.3")
 
     // =============== jackson ===============
-    implementation(platform("com.fasterxml.jackson:jackson-bom:2.17.1"))
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.17.2"))
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.core:jackson-annotations")
@@ -78,37 +78,37 @@ dependencies {
     // download javaagent.jar and put it into "app/dist/lib" folder
     // javaagent configuration file => "app/dist/config/common/otel-javaagent.properties"
     // https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
-    api(platform("io.opentelemetry:opentelemetry-bom:1.39.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.40.0"))
     api("io.opentelemetry:opentelemetry-api")
     api("io.opentelemetry:opentelemetry-extension-kotlin")
-    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.5.0")
-    api("io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha")
+    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.6.0")
+    api("io.opentelemetry.semconv:opentelemetry-semconv:1.26.0-alpha")
 
     // don't use opentelemetry-ktor-2.0 now due to blocking issue https://stackoverflow.com/questions/77499671
     //implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-2.0:$2.1.0-alpha")
 
     // =============== utils ===============
-    api("io.konform:konform:0.5.0")
+    api("io.konform:konform:0.6.1")
     implementation("com.github.rocketraman:kpropmap:0.0.2")
     implementation("com.ufoscout.properlty:properlty-kotlin:1.9.0")
     api("io.github.config4k:config4k:0.7.0")
     implementation("org.semver4j:semver4j:5.3.0")
-    implementation("com.github.kittinunf.result:result:5.5.0")
+    implementation("com.github.kittinunf.result:result:5.6.0")
     implementation("com.github.kittinunf.result:result-coroutines:4.0.0")
     implementation("at.favre.lib:bcrypt:0.10.2")
 
-    implementation("org.apache.poi:poi:5.2.5")
-    implementation("org.apache.poi:poi-ooxml:5.2.5")
-    implementation("org.apache.commons:commons-csv:1.10.0")
-    implementation("org.apache.commons:commons-text:1.11.0")
+    implementation("org.apache.poi:poi:5.3.0")
+    implementation("org.apache.poi:poi-ooxml:5.3.0")
+    implementation("org.apache.commons:commons-csv:1.11.0")
+    implementation("org.apache.commons:commons-text:1.12.0")
     implementation("org.apache.commons:commons-compress:1.26.2")
 
     implementation("org.jetbrains.kotlinx:kotlinx-html:0.11.0")
-    implementation("org.freemarker:freemarker:2.3.32")
+    implementation("org.freemarker:freemarker:2.3.33")
 
     // ===============  third-party service ===============
     implementation("com.google.firebase:firebase-admin:9.3.0")
-    implementation("com.sendgrid:sendgrid-java:4.10.1")
+    implementation("com.sendgrid:sendgrid-java:4.10.2")
     implementation("com.twilio.sdk:twilio:10.4.1")
     implementation("io.sentry:sentry:7.11.0")
 }
