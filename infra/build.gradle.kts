@@ -50,7 +50,7 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic:1.5.6")
 
     // =============== database ===============
-    api(platform("org.jetbrains.exposed:exposed-bom:0.52.0"))
+    api(platform("org.jetbrains.exposed:exposed-bom:0.53.0"))
     api("org.jetbrains.exposed:exposed-core")
     api("org.jetbrains.exposed:exposed-dao")
     api("org.jetbrains.exposed:exposed-jdbc")

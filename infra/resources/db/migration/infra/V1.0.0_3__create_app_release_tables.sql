@@ -1,6 +1,5 @@
 CREATE TABLE infra_app_release
 (
-    id           bigint generated always as identity primary key,
     app_id       varchar(30) NOT NULL,
     os           smallint    NOT NULL,
     ver_name     varchar(6)  NOT NULL,
@@ -9,11 +8,9 @@ CREATE TABLE infra_app_release
     released_at  timestamp   NOT NULL,
     force_update bool        NOT NULL,
     created_at   timestamp   NOT NULL DEFAULT now(),
-    updated_at   timestamp   NOT NULL
+    updated_at timestamp NOT NULL,
+    PRIMARY KEY (app_id, os, ver_name)
 );
-
-create unique index infra_app_release_app_id_ver_name_idx on infra_app_release (app_id, os, ver_name);
-create index infra_app_release_released_at_idx on infra_app_release (released_at);
 
 /*
  * Copyright (c) 2024. fanpoll All rights reserved.

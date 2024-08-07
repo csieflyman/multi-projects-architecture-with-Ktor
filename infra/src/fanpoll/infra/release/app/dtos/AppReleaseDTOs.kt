@@ -7,16 +7,13 @@ package fanpoll.infra.release.app.dtos
 import fanpoll.infra.base.entity.EntityDTO
 import fanpoll.infra.base.json.kotlinx.TaiwanInstantSerializer
 import fanpoll.infra.release.app.domain.AppOS
+import fanpoll.infra.release.app.domain.AppVersion
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import java.time.Instant
 
 @Serializable
-data class AppReleaseDTO(@Transient val id: Long = 0) : EntityDTO<Long> {
+data class AppReleaseDTO(val appId: String, val os: AppOS, val verName: String) : EntityDTO<AppVersion> {
 
-    var appId: String? = null
-    var os: AppOS? = null
-    var verName: String? = null
     var verNum: Int? = null
     var enabled: Boolean? = null
 
@@ -24,5 +21,5 @@ data class AppReleaseDTO(@Transient val id: Long = 0) : EntityDTO<Long> {
     var releasedAt: Instant? = null
     var forceUpdate: Boolean? = null
 
-    override fun getId(): Long = id
+    override fun getId(): AppVersion = AppVersion(appId, os, verName)
 }

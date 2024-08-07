@@ -10,7 +10,6 @@ import fanpoll.infra.release.app.domain.AppVersion
 interface AppReleaseRepository {
     suspend fun create(appRelease: AppRelease)
     suspend fun update(appRelease: AppRelease)
-    suspend fun findByDbId(id: Long): AppRelease?
     suspend fun findByAppVersion(appVersion: AppVersion): AppRelease?
-    suspend fun checkForceUpdate(appVersion: AppVersion): Map<Long, Boolean>
+    suspend fun checkForceUpdate(appVersion: AppVersion): Map<Int, Boolean>
 }

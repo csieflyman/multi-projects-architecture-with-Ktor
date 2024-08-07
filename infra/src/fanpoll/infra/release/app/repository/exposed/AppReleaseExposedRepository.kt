@@ -11,10 +11,10 @@ import fanpoll.infra.database.exposed.sql.singleOrNull
 import fanpoll.infra.release.app.domain.AppRelease
 import fanpoll.infra.release.app.domain.AppVersion
 import fanpoll.infra.release.app.repository.AppReleaseRepository
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.dao.id.CompositeID
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IdTable
+import org.jetbrains.exposed.sql.*
 import java.time.Instant
 
 class AppReleaseExposedRepository : InfraRepositoryComponent(), AppReleaseRepository {
@@ -29,9 +29,11 @@ class AppReleaseExposedRepository : InfraRepositoryComponent(), AppReleaseReposi
         val appVersion = appRelease.appVersion
         dbExecute(infraDatabase) {
             AppReleaseTable.update({
-                (AppReleaseTable.appId eq appVersion.appId) and
-                        (AppReleaseTable.os eq appVersion.os) and
-                        (AppReleaseTable.verName eq appVersion.name)
+                AppReleaseTable.id eq CompositeID {
+                    it[AppReleaseTable.appId] = appVersion.appId
+                    it[AppReleaseTable.os] = appVersion.os
+                    it[AppReleaseTable.verName] = appVersion.name
+                }
             }) { updateStatement ->
                 appRelease.enabled?.let { updateStatement[enabled] = it }
                 appRelease.releasedAt?.let { updateStatement[releasedAt] = it }
@@ -40,32 +42,44 @@ class AppReleaseExposedRepository : InfraRepositoryComponent(), AppReleaseReposi
         }
     }
 
-    override suspend fun findByDbId(id: Long): AppRelease? {
-        return dbExecute(infraDatabase) {
-            AppReleaseTable.selectAll().where { (AppReleaseTable.id eq id) }.singleOrNull(AppRelease::class)
-        }
-    }
-
     override suspend fun findByAppVersion(appVersion: AppVersion): AppRelease? {
         return dbExecute(infraDatabase) {
             AppReleaseTable.selectAll().where {
-                (AppReleaseTable.appId eq appVersion.appId) and
-                        (AppReleaseTable.os eq appVersion.os) and
-                        (AppReleaseTable.verName eq appVersion.name)
+                AppReleaseTable.id eq CompositeID {
+                    it[AppReleaseTable.appId] = appVersion.appId
+                    it[AppReleaseTable.os] = appVersion.os
+                    it[AppReleaseTable.verName] = appVersion.name
+                }
             }.singleOrNull(AppRelease::class)
         }
     }
 
-    override suspend fun checkForceUpdate(appVersion: AppVersion): Map<Long, Boolean> {
+    override suspend fun checkForceUpdate(appVersion: AppVersion): Map<Int, Boolean> {
         return dbExecute(infraDatabase) {
             AppReleaseTable.select(AppReleaseTable.id, AppReleaseTable.forceUpdate).where {
-                (AppReleaseTable.appId eq appVersion.appId) and
-                        (AppReleaseTable.os eq appVersion.os) and
+                (AppReleaseTable.appId workaroundEq appVersion.appId) and
+                        (AppReleaseTable.os workaroundEq appVersion.os) and
                         (AppReleaseTable.verNum greater appVersion.number) and
                         (AppReleaseTable.enabled eq true) and
                         (AppReleaseTable.releasedAt lessEq Instant.now())
             }.orderBy(AppReleaseTable.releasedAt, SortOrder.DESC)
-                .toList().associate { it[AppReleaseTable.id].value to it[AppReleaseTable.forceUpdate] }
+                .toList().associate { it[AppReleaseTable.id].value[AppReleaseTable.verNum] to it[AppReleaseTable.forceUpdate] }
         }
     }
+
+    /**
+     * Workaround solution for Exposed 0.53 version
+     * Occur at: IdTable.kt:174
+     * Caused by: java.lang.ClassCastException: class java.lang.String cannot be cast to class org.jetbrains.exposed.dao.id.CompositeID
+     */
+    private infix fun <T : Comparable<T>, E : EntityID<T>?, V : T?> ExpressionWithColumnType<E>.workaroundEq(t: V): Op<Boolean> {
+        @Suppress("UNCHECKED_CAST")
+        val table = (columnType as EntityIDColumnType<*>).idColumn.table as IdTable<T>
+        val entityID = EntityID(t!!, table)
+        return EqOp(this, wrap(entityID))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T, S : T?> ExpressionWithColumnType<in S>.wrap(value: T): QueryParameter<T> =
+        QueryParameter(value, columnType as IColumnType<T & Any>)
 }

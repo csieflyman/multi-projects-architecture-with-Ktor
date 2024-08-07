@@ -119,7 +119,3 @@ fun Table.ignoreUpdateColumns(): List<Column<*>> = columns.filter {
             (it.name == "updatedAt" && it.columnType is JavaInstantColumnType) ||
             primaryKey!!.columns.contains(it)
 }
-
-interface NaturalKeyTable {
-    fun getNaturalKeys(): List<Column<*>>
-}

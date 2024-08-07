@@ -13,7 +13,6 @@ import fanpoll.infra.base.exception.RequestException
 import fanpoll.infra.base.query.DynamicQuery
 import fanpoll.infra.base.response.InfraResponseCode
 import fanpoll.infra.database.exposed.dao.toObject
-import fanpoll.infra.database.exposed.sql.NaturalKeyTable
 import fanpoll.infra.database.exposed.sql.toList
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.dao.EntityClass
@@ -61,12 +60,10 @@ class DynamicDBQuery<T : Any>(private val objectClass: KClass<T>, dynamicQuery: 
                 query.adjustSelect {
                     val allColumns = linkedSetOf<Column<*>>()
                     val idColumns = mapper.table.primaryKey!!.columns
-                    val naturalKeyColumns = (mapper.table as? NaturalKeyTable)?.getNaturalKeys() ?: emptyList()
                     val fieldsColumns = dynamicQuery.fields.flatMap { mapper.getColumns(it) }
                     val relationTables = mapper.getTables(dynamicQuery.fields)
                     val relationTableIdColumns = relationTables.flatMap { it.primaryKey!!.columns.toList() }
                     allColumns.addAll(idColumns)
-                    allColumns.addAll(naturalKeyColumns)
                     allColumns.addAll(relationTableIdColumns)
                     allColumns.addAll(fieldsColumns)
                     select(allColumns.toList())
