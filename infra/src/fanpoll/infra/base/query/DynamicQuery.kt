@@ -366,19 +366,13 @@ class DynamicQuery(
 
             private fun parseSimpleDsl(inputDsl: String): Predicate {
                 val dsl = inputDsl.trim()
-                var predicate: Predicate?
-
-                predicate = NONE_VALUE_REGEX.find(dsl)?.let {
+                val predicate = NONE_VALUE_REGEX.find(dsl)?.let {
                     val (field, operator) = it.destructured
                     return Simple(field, PredicateOperator.queryStringValueOf(operator), null)
-                }
-
-                predicate = predicate ?: SINGLE_VALUE_REGEX.find(dsl)?.let {
+                } ?: SINGLE_VALUE_REGEX.find(dsl)?.let {
                     val (field, operator, value) = it.destructured
                     return Simple(field, PredicateOperator.queryStringValueOf(operator), value)
-                }
-
-                predicate ?: MULTIPLE_VALUE_REGEX.find(dsl)?.let {
+                } ?: MULTIPLE_VALUE_REGEX.find(dsl)?.let {
                     val (field, operator, values) = it.destructured
                     return Simple(
                         field,
@@ -386,8 +380,10 @@ class DynamicQuery(
                         values.trim().split(",").map { value -> value.trim() }.toMutableSet()
                     )
                 }
-
-                throw RequestException(InfraResponseCode.BAD_REQUEST_QUERYSTRING, "invalid query filter: syntax error => $dsl")
+                return predicate ?: throw RequestException(
+                    InfraResponseCode.BAD_REQUEST_QUERYSTRING,
+                    "invalid query filter: syntax error => $dsl"
+                )
             }
         }
 

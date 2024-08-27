@@ -87,7 +87,7 @@ private fun CoroutineScope.mapToPacket(rawChannel: ReceiveChannel<Any>) = produc
 
         val packet = when {
             isMessage -> RedisPubSub.Message(channel, String(list[2] as ByteArray), isPattern)
-            isSubscription -> RedisPubSub.Subscription(channel, list[2] as Long, isSubscription, isPattern)
+            isSubscription -> RedisPubSub.Subscription(channel, list[2] as Long, true, isPattern)
             isKeyspaceNotification -> {
                 val info = String(list[2] as ByteArray)
                 val pMessage = String(list[3] as ByteArray)
