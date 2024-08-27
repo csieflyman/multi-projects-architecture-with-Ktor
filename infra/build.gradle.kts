@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     // =============== kotlin ===============
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.0"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.20"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     api("org.jetbrains.kotlin:kotlin-reflect")
 
@@ -101,7 +101,7 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:5.3.0")
     implementation("org.apache.commons:commons-csv:1.11.0")
     implementation("org.apache.commons:commons-text:1.12.0")
-    implementation("org.apache.commons:commons-compress:1.26.2")
+    implementation("org.apache.commons:commons-compress:1.27.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-html:0.11.0")
     implementation("org.freemarker:freemarker:2.3.33")

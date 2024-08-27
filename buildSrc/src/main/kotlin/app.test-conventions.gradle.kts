@@ -11,7 +11,7 @@ plugins {
 
 dependencies {
     // ========== kotlin ==========
-    testImplementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.0"))
+    testImplementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.20"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     // ========== kotest ==========
