@@ -368,13 +368,13 @@ class DynamicQuery(
                 val dsl = inputDsl.trim()
                 val predicate = NONE_VALUE_REGEX.find(dsl)?.let {
                     val (field, operator) = it.destructured
-                    return Simple(field, PredicateOperator.queryStringValueOf(operator), null)
+                    Simple(field, PredicateOperator.queryStringValueOf(operator), null)
                 } ?: SINGLE_VALUE_REGEX.find(dsl)?.let {
                     val (field, operator, value) = it.destructured
-                    return Simple(field, PredicateOperator.queryStringValueOf(operator), value)
+                    Simple(field, PredicateOperator.queryStringValueOf(operator), value)
                 } ?: MULTIPLE_VALUE_REGEX.find(dsl)?.let {
                     val (field, operator, values) = it.destructured
-                    return Simple(
+                    Simple(
                         field,
                         PredicateOperator.queryStringValueOf(operator),
                         values.trim().split(",").map { value -> value.trim() }.toMutableSet()
